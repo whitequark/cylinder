@@ -1,0 +1,7 @@
+_build/
+*.native
+*.byte
+*.d.byte
+*.docdir
+*.sublime-project
+*.sublime-workspace

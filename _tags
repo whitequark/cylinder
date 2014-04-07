@@ -1,0 +1,4 @@
+true: debug
+
+"lib": traverse, include
+"lib_test": traverse
