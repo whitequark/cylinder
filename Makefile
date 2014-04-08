@@ -10,4 +10,4 @@ clean:
 	ocamlbuild -clean
 
 dep:
-	opam install nothing ounit
+	opam install ounit sexplib extlib inotify uuidm
