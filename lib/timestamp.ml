@@ -1,11 +1,7 @@
-open Sexplib.Std
-
 type t = int
-with sexp
 
 module Delta = struct
   type t = int
-  with sexp
 
   let zero = 0
 

@@ -3,14 +3,12 @@
 (** Type of timestamps. Timestamps are represented by Unix
     time in milliseconds. *)
 type t = private int
-with sexp
 
 (** Timestamp deltas. *)
 module Delta : sig
   (** Type of timestamp deltas. Timestamp deltas are represented
       by differences in Unix times in milliseconds. *)
   type t = private int
-  with sexp
 
   (** [zero] is a delta corresponding to no difference in time. *)
   val zero : t

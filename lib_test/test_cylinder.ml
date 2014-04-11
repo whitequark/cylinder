@@ -1,6 +1,8 @@
-open OUnit
+open OUnit2
 
-let tests = "Test Cylinder" >::: []
+let suite = "Test Cylinder" >::: [
+    Test_block.suite;
+  ]
 
 let _ =
-  run_test_tt_main tests
+  run_test_tt_main suite

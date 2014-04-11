@@ -11,8 +11,8 @@ BuildTools:   ocamlbuild
 Library "cylinder"
   Path:             lib
   Modules:          Pathname, Timestamp, Tree
-  BuildDepends:     lwt, lwt.syntax, lwt.unix, extlib, sexplib, sexplib.syntax,
-                    uuidm, inotify.lwt (>= 2.0)
+  BuildDepends:     lwt, lwt.syntax, lwt.unix, extlib, uuidm,
+                    inotify.lwt (>= 2.0), sodium (>= 0.1)
 
 Executable cylinderd
   Path:             lib
@@ -24,11 +24,11 @@ Executable test_cylinder
   Path:             lib_test
   MainIs:           test_cylinder.ml
   Install:          false
-  BuildDepends:     oUnit (>= 1.1.0), cylinder
+  BuildDepends:     oUnit (>= 2.0), cylinder
   CompiledObject:   best
 
 Test inotify
-  Command:          $test_cylinder
+  Command:          $test_cylinder -runner sequential
 
 SourceRepository master
   Type:             git
