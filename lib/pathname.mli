@@ -1,83 +1,54 @@
-(* ************************************************************************** *)
-(* Project: PathName                                                          *)
-(* Description: Module to manipulate filesystem paths                         *)
-(* Author: db0 (db0company@gmail.com, http://db0.fr/)                         *)
-(* Latest Version is on GitHub: https://github.com/db0company/Pathname        *)
-(* ************************************************************************** *)
+(** Pathname manipulation.
 
-(* ************************************************************************** *)
-(* Types                                                                      *)
-(* ************************************************************************** *)
+    Derived from code by: db0 <db0company@gmail.com>,
+    originally found at: https://github.com/db0company/Pathname *)
 
+(** Type of pathnames. *)
 type t
 
-(* ************************************************************************** *)
-(* Values                                                                     *)
-(* ************************************************************************** *)
-
-(* The directory separator (Example: "/" for Unix)                            *)
+(** The directory separator ("/" on *nix, "\\" on Windows). *)
 val sep : string
 
-(* An empty path                                                              *)
+(** An empty path. *)
 val empty : t
 
-(* ************************************************************************** *)
-(* Constructors                                                               *)
-(* ************************************************************************** *)
+(** [is_empty p] returns [true] if [p] is an empty path. *)
+val is_empty : t -> bool
 
-(* Return a new empty path                                                    *)
-val make : unit -> t
-
-(* Return a new path initialized using a string                               *)
+(** [of_string s] creates a path from a string. *)
 val of_string : string -> t
 
-(* Return a new path initialized using a list                                 *)
+(** [of_list l] creates a path from a list. *)
 val of_list : ?is_real:bool -> string list -> t
 
-(* ************************************************************************** *)
-(* Operators                                                                  *)
-(* ************************************************************************** *)
-
-(* Concatenate two paths and return the result                                *)
+(** [concat a b] returns concatenation of [a] and [b]. *)
 val concat : t -> t -> t
 
-(* Extend path dir, appends the directory to the path                         *)
+(** [extend p p'] appends path [p'] (represented as string) to path [p]. *)
 val extend : t -> string -> t
 
-(* Extend path with a filename. Works only with raw filename, not paths.      *)
-(* More efficient than extend.                                                *)
-val extend' : t -> string -> t
-
-(* ************************************************************************** *)
-(* Get                                                                        *)
-(* ************************************************************************** *)
-
-(* Return a string corresponding to the path                                  *)
+(** [to_string p] converts path [p] to string. *)
 val to_string : t -> string
 
-(* Return a list of strings corresponding to the path                         *)
+(** [to_list p] returns list of components of [p]. *)
 val to_list : t -> string list
 
-(* ************************************************************************** *)
-(* Tools                                                                      *)
-(* ************************************************************************** *)
-
-(* Return the filename without the rest of the path                           *)
+(** [filename p] returns the last component of [p]. If [p]
+    is empty, raises [Invalid_argument]. *)
 val filename : t -> string
 
+(** [basename p] returns all but the last component of [p]. If [p]
+    is empty, raises [Invalid_argument]. *)
 val basename : t -> t
 
-(* Return the path without the last element                                   *)
-(* Example: "foo/bar/baz" -> "foo/bar"                                        *)
+(** [parent p] returns all but the last component of [p]. If [p]
+    is empty, returns [p]. *)
 val parent : t -> t
 
-(* Return the extansion of the given filename                                 *)
-(* Example: "document.pdf" -> "pdf"                                           *)
+(** [extension p] returns the part of the last component of [p] after
+    the last dot. *)
 val extension : t -> string
 
-(* Return filename without its extension                                      *)
-(* Example: "/foo/bar/document.pdf" -> "document"                             *)
+(** [no_extension p] returns the part of the last component of [p] before
+    the last dot. *)
 val no_extension : t -> string
-
-(* Check if the path is empty                                                 *)
-val is_empty : t -> bool
