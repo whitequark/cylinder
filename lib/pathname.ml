@@ -1,5 +1,6 @@
-(* Derived from code by: db0 <db0company@gmail.com>,
-   originally found at: https://github.com/db0company/Pathname *)
+(* Derived from code by: Barbara Lepage <db0company@gmail.com>,
+   originally found at: https://github.com/db0company/Pathname,
+   and licensed under Apache 2.0. *)
 
 (** Type of pathnames: [real, lst, str]. [real] indicates whether the path
     is absolute. [lst] contains path components in reverse order. [str]
