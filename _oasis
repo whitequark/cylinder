@@ -1,0 +1,36 @@
+OASISFormat:  0.4
+Name:         cylinder
+Version:      0.1
+Synopsis:     A trustless file synchronization engine
+Authors:      Peter Zotov <whitequark@whitequark.org>
+License:      LGPL-2.1 with OCaml linking exception
+Homepage:     https://github.com/whitequark/cylinder
+Plugins:      META (0.4), DevFiles (0.4)
+BuildTools:   ocamlbuild
+
+Library "cylinder"
+  Path:             lib
+  Modules:          Pathname, Timestamp, Tree
+  BuildDepends:     lwt, lwt.syntax, lwt.unix, extlib, sexplib, sexplib.syntax,
+                    uuidm, inotify.lwt (>= 2.0)
+
+Executable cylinderd
+  Path:             lib
+  MainIs:           cylinderd.ml
+  BuildDepends:     cylinder
+  CompiledObject:   best
+
+Executable test_cylinder
+  Path:             lib_test
+  MainIs:           test_cylinder.ml
+  Install:          false
+  BuildDepends:     oUnit (>= 1.1.0), cylinder
+  CompiledObject:   best
+
+Test inotify
+  Command:          $test_cylinder
+
+SourceRepository master
+  Type:             git
+  Location:         https://github.com/whitequark/cylinder.git
+  Browser:          https://github.com/whitequark/cylinder

@@ -5,4 +5,6 @@ _build/
 *.docdir
 *.sublime-project
 *.sublime-workspace
+setup.data
+setup.log
 tmp*

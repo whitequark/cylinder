@@ -1,1 +1,0 @@
-<cylinderd.*>|<*.{ml,mli}>: syntax(camlp4o), use_str, package(sexplib.syntax), package(extlib), package(lwt), package(lwt.unix), package(lwt.syntax), package(inotify), package(inotify.lwt), package(uuidm)
