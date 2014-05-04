@@ -12,7 +12,7 @@ Library "cylinder"
   Path:             lib
   Modules:          Pathname, Timestamp, Tree
   BuildDepends:     lwt, lwt.syntax, lwt.unix, extlib, uuidm,
-                    inotify.lwt (>= 2.0), sodium (>= 0.1)
+                    inotify, inotify.lwt, sodium (>= 0.1)
 
 Executable cylinderd
   Path:             lib
@@ -27,10 +27,5 @@ Executable test_cylinder
   BuildDepends:     oUnit (>= 2.0), cylinder
   CompiledObject:   best
 
-Test inotify
+Test test_cylinder
   Command:          $test_cylinder -runner sequential
-
-SourceRepository master
-  Type:             git
-  Location:         https://github.com/whitequark/cylinder.git
-  Browser:          https://github.com/whitequark/cylinder
