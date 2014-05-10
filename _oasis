@@ -11,8 +11,7 @@ BuildTools:   ocamlbuild
 Library "cylinder"
   Path:             lib
   Modules:          Pathname, Timestamp, Tree
-  BuildDepends:     lwt, lwt.syntax, lwt.unix, extlib, uuidm,
-                    inotify, inotify.lwt, sodium (>= 0.1)
+  BuildDepends:     lwt, lwt.unix, extlib, inotify, inotify.lwt, sodium
 
 Executable cylinderd
   Path:             lib

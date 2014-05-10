@@ -123,9 +123,13 @@ message BlockserverReq {
     Erase     = 3; // of erase_digest
     Enumerate = 4; // of enumerate_marker
   }
+  message Object {
+    required Digest.Type digest_type = 1;
+    required string      content     = 2;
+  }
   required Type type = 1;
   optional Digest get_digest       = 2;
-  optional string put_object       = 3;
+  optional Object put_object       = 3;
   optional Digest erase_digest     = 4;
   optional string enumerate_marker = 5;
 }
@@ -140,8 +144,9 @@ The response is defined as follows:
 ``` protoc
 message BlockserverGetResp {
   enum Result {
-    Ok        = 1; // of object
-    NotFound  = 2;
+    Ok          = 1; // of object
+    NotFound    = 2;
+    Unavailable = 3;
   }
   required Result result = 1;
   optional string object = 2;
@@ -154,6 +159,8 @@ A client that sends a _get_ request must verify that the received object indeed 
 
 The blockserver will return `result = NotFound` for digests with `type = Inline`.
 
+The blockserver will return `result = Unavailable` if it is unable to contact its backend.
+
 #### Put
 
 A valid _put_ request is a `BlockserverReq` with `type = Put` and only `put_object` present.
@@ -163,14 +170,17 @@ The response is defined as follows:
 ``` protoc
 message BlockserverPutResp {
   enum Result {
-    Ok        = 1;
-    Exhausted = 2;
+    Ok           = 1;
+    Unavaliable  = 2;
+    NotSupported = 3;
   }
   required Result result = 1;
 }
 ```
 
-If `result = Exhausted`, the blockserver is out of storage space.
+The blockserver will return `result = Unavailable` if the backend is temporarily unable to fulfill the request, e.g. if it is out of storage space or a network link is severed.
+
+The blockserver will return `result = NotSupported` for digests with `type` equal to any hash function that it considers insecure, or with `type = Inline`.
 
 #### Erase
 
