@@ -10,8 +10,11 @@ BuildTools:   ocamlbuild
 
 Library "cylinder"
   Path:             lib
-  Modules:          Pathname, Timestamp, Tree
-  BuildDepends:     lwt, lwt.unix, extlib, inotify, inotify.lwt, sodium
+  Modules:          Block, Pathname, Timestamp, Tree, backends/In_memory_store
+  BuildDepends:     lwt, lwt.unix, extlib, inotify, inotify.lwt, ZMQ, lwt-zmq,
+                    protobuf, sodium, uuidm
+  ByteOpt:          -ppx ppx_lwt -ppx ppx_protobuf
+  NativeOpt:        -ppx ppx_lwt -ppx ppx_protobuf
 
 Executable cylinderd
   Path:             lib
@@ -25,6 +28,8 @@ Executable test_cylinder
   Install:          false
   BuildDepends:     oUnit (>= 2.0), cylinder
   CompiledObject:   best
+  ByteOpt:          -ppx ppx_lwt
+  NativeOpt:        -ppx ppx_lwt
 
 Test test_cylinder
   Command:          $test_cylinder -runner sequential

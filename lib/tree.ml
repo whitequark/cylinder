@@ -79,12 +79,12 @@ let string_of_entry entry =
 let watch ~author path =
   let selector = Inotify.([S_Attrib; S_Create; S_Modify; S_Delete; S_Move;
                            S_Dont_follow; S_Onlydir]) in
-  lwt inotify  = Lwt_inotify.create () in
-  let watches  = Hashtbl.create 10 in
+  let%lwt inotify = Lwt_inotify.create () in
+  let watches = Hashtbl.create 10 in
   let rec entry_of_path parent path =
     let name     = Pathname.filename path in
-    try_lwt
-      lwt stat     = Lwt_unix.lstat (Pathname.to_string path) in
+    try%lwt
+      let%lwt stat = Lwt_unix.lstat (Pathname.to_string path) in
       let modified = author, Timestamp.of_unix_time stat.Lwt_unix.st_ctime in
       match stat.Lwt_unix.st_kind with
       | Lwt_unix.S_REG | Lwt_unix.S_LNK ->
@@ -96,10 +96,10 @@ let watch ~author path =
         (* Set up inotify *before* traversing; this way anything that
            is added while traversing is not lost. *)
         let selector = if parent = None then selector @ [Inotify.S_Move_self] else selector in
-        lwt watch = Lwt_inotify.add_watch inotify (Pathname.to_string path) selector in
+        let%lwt watch = Lwt_inotify.add_watch inotify (Pathname.to_string path) selector in
         Hashtbl.add watches watch entry;
         (* Traverse the directory. *)
-        lwt children = children_of_path entry path in
+        let%lwt children = children_of_path entry path in
         directory.children <- children;
         return (Some entry)
       | Lwt_unix.S_CHR  | Lwt_unix.S_BLK
@@ -115,21 +115,21 @@ let watch ~author path =
       else entry_of_path (Some parent) (Pathname.extend path fn)) |>
     Lwt_stream.to_list
   in
-  lwt root =
-    match_lwt entry_of_path None path with
+  let%lwt root =
+    match%lwt entry_of_path None path with
     | Some entry -> return entry
-    | None -> raise_lwt (Failure "root is not a file or directory")
+    | None -> [%lwt raise (Failure "root is not a file or directory")]
   in
   let cookies = ref [] in
   let rec listen () =
-    lwt (watch, events, cookie, name) = Lwt_inotify.read inotify in
+    let%lwt (watch, events, cookie, name) = Lwt_inotify.read inotify in
     prerr_endline (Inotify.string_of_event (watch, events, cookie, name));
     (* Check for queue overflow. Q_overflow arrives with watch=-1, so that
        would crash on Hashtbl.find. *)
     begin match events with
-    | [Inotify.Q_overflow] -> raise_lwt (Failure "Tree.watch: queue overflow")
-    | _ -> return_nil
-    end >>
+    | [Inotify.Q_overflow] -> [%lwt raise (Failure "Tree.watch: queue overflow")]
+    | _ -> return_unit
+    end >>= fun () ->
     (* In general, filesystem events arrive strictly in order, but may
        arbitrarily race against initial traversal of filesystem. It is guaranteed
        that no events will be missed, but at any moment, an event may arrive
@@ -149,16 +149,16 @@ let watch ~author path =
     | [Inotify.Isdir; Inotify.Create] ->
       let name = Option.get name in
       if (find_option entry name) = None then begin
-        try_lwt
+        try%lwt
           (* Create new directory in the tree. *)
           let directory = { children = [] } in
           let entry' = create entry name (author, Timestamp.now ()) (Directory directory) in
           let path'  = path_of_entry entry' in
           (* Add inotify watcher. *)
-          lwt watch  = Lwt_inotify.add_watch inotify (Pathname.to_string path') selector in
+          let%lwt watch  = Lwt_inotify.add_watch inotify (Pathname.to_string path') selector in
           Hashtbl.add watches watch entry';
           (* Populate it with (possibly already existing) children. *)
-          lwt children = children_of_path entry' path' in
+          let%lwt children = children_of_path entry' path' in
           directory.children <- children;
           return_unit
         with Unix.Unix_error(Unix.ENOENT, ("inotify_add_watch" | "opendir"), _) ->
@@ -169,7 +169,7 @@ let watch ~author path =
         return_unit
     (* File or directory was deleted *)
     | [Inotify.Delete] | [Inotify.Isdir; Inotify.Delete] ->
-      begin try_lwt
+      begin try%lwt
         delete (find entry (Option.get name));
         return_unit
       with Not_found ->
@@ -177,7 +177,7 @@ let watch ~author path =
       end
     (* File or directory was moved *)
     | [Inotify.Moved_from] | [Inotify.Isdir; Inotify.Moved_from] ->
-      begin try_lwt
+      begin try%lwt
         let entry' = find entry (Option.get name) in
         cookies := (cookie, entry') :: !cookies;
         delete entry';
@@ -186,7 +186,7 @@ let watch ~author path =
         return_unit
       end
     | [Inotify.Moved_to] | [Inotify.Isdir; Inotify.Moved_to] ->
-      begin try_lwt
+      begin try%lwt
         let entry' = List.assoc cookie !cookies in
         cookies := List.remove_assoc cookie !cookies;
         let name'  = Option.get name in
@@ -199,9 +199,9 @@ let watch ~author path =
       end
     (* Attributes of file or directory were changed, or file was modified *)
     | [Inotify.Attrib] | [Inotify.Isdir; Inotify.Attrib] | [Inotify.Modify] ->
-      begin try_lwt
+      begin try%lwt
         let entry = Option.map_default (find entry) entry name in
-        lwt stat  = Lwt_unix.lstat (Pathname.to_string (path_of_entry entry)) in
+        let%lwt stat  = Lwt_unix.lstat (Pathname.to_string (path_of_entry entry)) in
         let (author, timestamp) = entry.modified in
         entry.modified <- (author, Timestamp.of_unix_time stat.Lwt_unix.st_mtime);
         return_unit
@@ -213,10 +213,10 @@ let watch ~author path =
     (* Deleted file or directory is no longer watched *)
     | [Inotify.Ignored] -> Hashtbl.remove watches watch; return_unit
     (* The root was moved (only root has S_Move_self) *)
-    | [Inotify.Move_self] -> raise_lwt (Failure "Tree.watch: root was moved")
+    | [Inotify.Move_self] -> [%lwt raise (Failure "Tree.watch: root was moved")]
     (* Something we didn't expect *)
-    | _ -> raise_lwt (Failure (Printf.sprintf "Tree.watch: unknown event %s"
-                               (String.concat ", " (List.map Inotify.string_of_event_kind events))))
+    | _ -> [%lwt raise (Failure (Printf.sprintf "Tree.watch: unknown event %s"
+                        (String.concat ", " (List.map Inotify.string_of_event_kind events))))]
     end >>= fun () ->
     print_endline (string_of_entry root);
     listen ()
