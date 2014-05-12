@@ -319,11 +319,24 @@ The `encoding` field specifies the transformation applied to `content` prior to 
 
 #### SHA512_XSalsa20_Poly1305
 
-Let `clear_chunk` be a serialized `Chunk` message, and `key_conv` an externally selected convergence key. To encrypt a block, perform the following:
+To encrypt, perform following:
 
-  1. Let `hash` be `SHA512(key_conv || SHA512(clear_chunk))`. `hash` is 64 bytes long.
-  2. Let `key` be bytes 0..31 of `hash`.
-  3. Let `nonce` be bytes 32..55 of `hash`.
-  4. Let `enc_chunk` be `XSalsa20_Poly1305(clear_chunk, key, nonce)` as described in [secretbox][].
+  1. Let `clear_chunk` be a serialized `Chunk` message, and `key_conv` an externally selected convergence key.
+  2. Let `hash` be `SHA512(key_conv || SHA512(clear_chunk))`. `hash` is 64 bytes long.
+  3. Let `key` be bytes 0..31 of `hash`.
+  4. Let `nonce` be bytes 32..55 of `hash`.
+  5. Let `enc_chunk` be `Encrypt_XSalsa20_Poly1305(clear_chunk, key, nonce)` as described in [secretbox][].
+  6. Let `capa_key` be bytes 0..55 of `hash`.
+
+The block content is `enc_chunk`, and `Capability.handle.key` is `capa_key`.
+
+To decrypt, perform following:
+
+  1. Let `capa_key` be `Capability.handle.key`, and `enc_chunk` be `Chunk.content`.
+  2. Let `key` be bytes 0..31 of `capa_key`.
+  3. Let `nonce` be bytes 32.55 of `capa_key`.
+  4. Let `clear_chunk` be `Decrypt_XSalsa20_Poly1305(enc_chunk, key, nonce)` as described in [secretbox][].
+
+The serialized `Chunk` message is `clear_chunk`.
 
 [secretbox]: http://nacl.cr.yp.to/secretbox.html
