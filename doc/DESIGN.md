@@ -44,7 +44,7 @@ Blockserver
 
 The blockserver provides a persistent value store. That is, it allows to store opaque objects of any size and retrieve them back by their digest. Additionally, it provides means to account for and reclaim storage space to the Stateserver.
 
-The block size is limited by 16M.
+The block size is limited by 10⁶ bytes.
 
 The blockserver protocol is based on stateless request-reply. On a high level, it provides the following operations:
 
@@ -80,7 +80,7 @@ The possible race conditions arising from the stateserver garbage collector eras
 
 #### Block size limit
 
-ZeroMQ requires that the complete message could be fit into RAM. Thus, to prevent a memory exhaustion attack, it is necessary to reject clients attempting to push larger messages. It is thought that a maximal block size of 16M will provide reasonable performance.
+ZeroMQ requires that the complete message could be fit into RAM. Thus, to prevent a memory exhaustion attack, it is necessary to reject clients attempting to push larger messages. It is thought that a maximal block size of 10⁶ bytes will provide reasonable performance.
 
 #### Storage reliability
 
@@ -125,7 +125,7 @@ message BlockserverReq {
   }
   message Object {
     required Digest.Type digest_type = 1;
-    required string      content     = 2;
+    required bytes       content     = 2;
   }
   required Type type = 1;
   optional Digest get_digest       = 2;
@@ -149,7 +149,7 @@ message BlockserverGetResp {
     Unavailable = 3;
   }
   required Result result = 1;
-  optional string object = 2;
+  optional bytes  object = 2;
 }
 ```
 
@@ -211,12 +211,12 @@ The response is defined as follows:
 ``` protoc
 message BlockserverEnumerateResp {
   enum Result {
-    Ok        = 1; // of marker
+    Ok        = 1; // of cookie
     Exhausted = 2;
     Forbidden = 3;
   }
   message Listing {
-    required string marker  = 1;
+    required string cookie  = 1;
     repeated Digest digests = 2;
   }
   required Result  result  = 1;
@@ -224,6 +224,106 @@ message BlockserverEnumerateResp {
 }
 ```
 
-If `result = Ok`, `listing` must be set. Otherwise, `listing` must not be set. `listing.marker` is an opaque value that must be passed in a subsequent _enumerate_ request.
+If `result = Ok`, `listing` must be set. Otherwise, `listing` must not be set. `listing.cookie` is an opaque value that must be passed in a subsequent _enumerate_ request.
 
 A set of requests to `enumerate` ending with an `Exhausted` response will return some (ideally, all) of the digests identifying objects contained on  the blockserver, but no guarantees on order or completeness of enumeration are provided.
+
+Filesystem structure
+--------------------
+
+At its core, Cylinder provides an implementation of a filesystem with persistent, immutable, authenticated data structures that supports atomic concurrent updates of arbitrarily large trees. There is no single point of responsibility for the integrity of the filesystem; both the server and the client verify that there is an unbroken chain of signatures between the old and the new state before accepting it.
+
+The entire filesystem, data and metadata alike, is stored on the blockserver. This section explains the storage format and the invariants that ensure its integrity.
+
+Chunks
+------
+
+A _chunk_ is the unit of storage of the file contents. When stored, a file is broken into several pieces, each no bigger than the maximum block size; the content may now be represented by a list of digests corresponding to said pieces. This allows to efficiently update large files.
+
+In order to be able to deduplicate stored data, _convergent encryption_ is used. That is, the content of the chunk is symmetrically encrypted using a key derived from the content itself and a _convergence key_ using a hash function; this way, ciphertext only depends on cleartext and the convergence key.
+
+It is only possible to access the data contained in a chunk using a _capability_. A capability consists of the digest of the ciphertext (which allows to retrieve the ciphertext from the blockserver) and the encryption key. Thus, a capability is necessary and sufficient to retrieve the cleartext.
+
+This scheme is inspired by [Tahoe-LAFS][]; it is described in detail [in its documentation][convergence-secret].
+
+[tahoe-lafs]: http://tahoe-lafs.org
+[convergence-secret]: https://tahoe-lafs.org/trac/tahoe-lafs/browser/docs/convergence-secret.rst
+
+### Rationale
+
+#### Inline capabilities
+
+A capability can be quite large--a capability with SHA512 digest and SHA512-XSalsa20-Poly1305 key takes 128 bytes to store. It makes no sense to upload smaller chunks of data to the blockserver, hence, they're stored inline in the capability.
+
+#### Chunk mapping
+
+A client can choose any chunk sizes or encodings it desires. This allows a client to optimize for cases where some parts of a huge file are rarely changing and some are changing frequently, or avoid costly compression on platforms which aren't fast enough.
+
+### Storage format
+
+Like with all other data storage in Cylinder, Protobuf is used for serialization.
+
+#### Capability
+
+```
+message Capability {
+  message Handle {
+    enum Algorithm {
+      SHA512_XSalsa20_Poly1305 = 1;
+    }
+    required Digest    digest    = 1;
+    required Algorithm algorithm = 2;
+    required bytes     key       = 3;
+  }
+  enum Type {
+    Inline = 1;
+    Stored = 2;
+  }
+  required Type   type   = 1;
+  optional bytes  data   = 2;
+  optional Handle handle = 3;
+}
+```
+
+The `data` field must be present iff `type = Inline`. The `handle` field must be present iff `type = Stored`.
+
+The `handle.key` field must have the length corresponding to `handle.algorithm`:
+
+| `handle.algorithm`         | `length(handle.key)` |
+| -------------------------- | -------------------- |
+| `SHA512_XSalsa20_Poly1305` | 56                   |
+
+#### Chunk data
+
+```
+message Chunk {
+  enum Encoding {
+    None = 1;
+    LZ4  = 2;
+  }
+  required Encoding encoding = 1   [default=None];
+  required bytes    content  = 15;
+}
+```
+
+The `encoding` field specifies the transformation applied to `content` prior to serialization:
+
+| `encoding` | Operation                |
+| ---------- | ------------------------ |
+| `None`     | Identity                 |
+| `LZ4`      | Compression with [LZ4][] |
+
+[lz4]: https://code.google.com/p/lz4/
+
+### Algorithms
+
+#### SHA512_XSalsa20_Poly1305
+
+Let `clear_chunk` be a serialized `Chunk` message, and `key_conv` an externally selected convergence key. To encrypt a block, perform the following:
+
+  1. Let `hash` be `SHA512(key_conv || SHA512(clear_chunk))`. `hash` is 64 bytes long.
+  2. Let `key` be bytes 0..31 of `hash`.
+  3. Let `nonce` be bytes 32..55 of `hash`.
+  4. Let `enc_chunk` be `XSalsa20_Poly1305(clear_chunk, key, nonce)` as described in [secretbox][].
+
+[secretbox]: http://nacl.cr.yp.to/secretbox.html
