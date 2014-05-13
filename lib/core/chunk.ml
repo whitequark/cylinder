@@ -43,9 +43,6 @@ let capability_of_chunk ~convergence chunk =
       let digest      = Block.digest_bytes chunk_enc in
       Stored { digest; algorithm = `SHA512_XSalsa20_Poly1305; key = chunk_key }, Some chunk_enc)
 
-let capability_of_bytes ~convergence bytes =
-  capability_of_chunk ~convergence (chunk_of_bytes bytes)
-
 let capability_to_chunk capa data =
   match capa, data with
   | Stored { algorithm = `SHA512_XSalsa20_Poly1305; key }, Some chunk_enc ->
@@ -60,11 +57,6 @@ let capability_to_chunk capa data =
   | Inline chunk_clear, None ->
     Lwt.return (`Ok (Protobuf.Decoder.decode_bytes chunk_from_protobuf chunk_clear))
   | _ -> Lwt.return `Malformed
-
-let capability_to_bytes capa data =
-  match%lwt capability_to_chunk capa data with
-  | `Ok chunk -> Lwt.return (`Ok (chunk_to_bytes chunk))
-  | `Malformed as err -> Lwt.return err
 
 let retrieve_chunk client capa =
   match capa with

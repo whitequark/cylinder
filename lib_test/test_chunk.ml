@@ -32,46 +32,46 @@ let test_capa_encrypt ctxt =
   | _ -> assert_failure "Chunk.capability_of_chunk"
 
 let test_capa_roundtrip ctxt =
-  let data = Bytes.make 128 'A' in
-  let%lwt capa, blk = Chunk.capability_of_bytes ~convergence:"" data in
-  let%lwt data'     = Chunk.capability_to_bytes capa blk in
-  assert_equal (`Ok data) data';
+  let chunk = Chunk.chunk_of_bytes (Bytes.make 128 'A') in
+  let%lwt capa, blk = Chunk.capability_of_chunk ~convergence:"" chunk in
+  let%lwt chunk'     = Chunk.capability_to_chunk capa blk in
+  assert_equal (`Ok chunk) chunk';
   Lwt.return_unit
 
 let test_convergence_used ctxt =
-  let data = Bytes.make 128 'A' in
-  let%lwt capa,  blk  = Chunk.capability_of_bytes ~convergence:"" data in
-  let%lwt capa', blk' = Chunk.capability_of_bytes ~convergence:"1" data in
+  let chunk = Chunk.chunk_of_bytes (Bytes.make 128 'A') in
+  let%lwt capa,  blk  = Chunk.capability_of_chunk ~convergence:"" chunk in
+  let%lwt capa', blk' = Chunk.capability_of_chunk ~convergence:"1" chunk in
   assert_bool "convergence used" (capa <> capa' && blk <> blk');
   Lwt.return_unit
 
 let test_network_inline ctxt =
   let (_backend, _zctx, _server, client) = Helper.blockserver_bracket ctxt in
-  let data = "hello" in
-  let%lwt capa, blk = Chunk.capability_of_bytes ~convergence:"" data in
+  let chunk = Chunk.chunk_of_bytes (Bytes.to_string "hello") in
+  let%lwt capa, blk = Chunk.capability_of_chunk ~convergence:"" chunk in
   match capa with
   | Chunk.Inline _ ->
     let%lwt result = Chunk.store_chunk client (capa, blk) in
     assert_equal `Ok result;
     begin match%lwt Chunk.retrieve_chunk client capa with
-    | `Ok chunk ->
-      assert_equal data (Chunk.chunk_to_bytes chunk);
+    | `Ok chunk' ->
+      assert_equal chunk chunk';
       Lwt.return_unit
     | _ -> assert_failure "Chunk.retrieve_chunk"
     end
-  | _ -> assert_failure "Chunk.capability_of_bytes"
+  | _ -> assert_failure "Chunk.capability_of_chunk"
 
 let test_network_stored ctxt =
   let (backend, _zctx, _server, client) = Helper.blockserver_bracket ctxt in
-  let data = Bytes.make 128 'A' in
-  let%lwt capa, blk = Chunk.capability_of_bytes ~convergence:"" data in
+  let chunk = Chunk.chunk_of_bytes (Bytes.make 128 'A') in
+  let%lwt capa, blk = Chunk.capability_of_chunk ~convergence:"" chunk in
   match capa with
   | Chunk.Stored handle ->
     let%lwt result    = Chunk.store_chunk client (capa, blk) in
     assert_equal `Ok result;
     begin match%lwt Chunk.retrieve_chunk client capa with
-    | `Ok chunk ->
-      assert_equal data (Chunk.chunk_to_bytes chunk);
+    | `Ok chunk' ->
+      assert_equal chunk chunk';
       Lwt.return_unit
     | _ -> assert_failure "Chunk.retrieve_chunk"
     end >>= fun () ->
@@ -80,7 +80,7 @@ let test_network_stored ctxt =
     | `Not_found -> Lwt.return_unit
     | _ -> assert_failure "Chunk.retrieve_chunk"
     end
-  | _ -> assert_failure "Chunk.capability_of_bytes"
+  | _ -> assert_failure "Chunk.capability_of_chunk"
 
 let suite = "Test Chunk" >::: [
     "test_chunk_bytes_conv" >:: test_chunk_bytes_conv;

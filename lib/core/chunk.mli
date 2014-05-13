@@ -47,19 +47,12 @@ val capability_to_protobuf   : capability -> Protobuf.Encoder.t -> unit
     be stored on the blockserver for the capability to be retrievable. *)
 val capability_of_chunk      : convergence:bytes -> chunk -> (capability * bytes option) Lwt.t
 
-(** [capability_of_bytes ~convergence b] ≡
-    [capability_of_chunk ~convergence (chunk_of_bytes b)] *)
-val capability_of_bytes      : convergence:bytes -> bytes -> (capability * bytes option) Lwt.t
-
 (** [capability_to_chunk (ca, b)] either returns contents of an [Inline]
     capability [ca], or decrypts the contents contained in [Some bytes] [b]
     using [ca] and returns it.
     If [ca] is a [Stored] capability and [b] is [None], returns [`Malformed].
     If the encrypted data could not be authenticated, returns [`Malformed]. *)
 val capability_to_chunk      : capability -> bytes option -> [ `Ok of chunk | `Malformed ] Lwt.t
-
-(** [capability_to_bytes] is the composition of [capability_to_chunk] and [chunk_to_bytes]. *)
-val capability_to_bytes      : capability -> bytes option -> [ `Ok of bytes | `Malformed ] Lwt.t
 
 (** [retrieve_chunk cl ca] retrieves chunk directly from an [Inline]
     capability [ca], or from a [Stored] capability [ca] by sending a request
