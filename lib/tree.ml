@@ -4,19 +4,15 @@ open Lwt
 type entry = {
   mutable parent    : entry option;
   mutable name      : string;
-  mutable modified  : modified;
+  mutable modified  : Timestamp.t;
           content   : content;
 }
-and modified = Uuidm.t * Timestamp.t
 and content =
 | Directory of directory
 | File
 and directory = {
   mutable children  : entry list;
 }
-
-let author entry = fst entry.modified
-let timestamp entry = snd entry.modified
 
 let rec path_of_entry entry =
   match entry.parent with
@@ -58,11 +54,10 @@ let delete entry =
 let string_of_entry entry =
   let rec string_of_entry' ~level entry =
     let current =
-      Printf.sprintf "%s| %S (%s at %s)\n"
+      Printf.sprintf "%s| %S (at %s)\n"
                      (String.make (level * 2) ' ')
                      entry.name
-                     (Uuidm.to_string (author entry))
-                     (Timestamp.to_string (timestamp entry))
+                     (Timestamp.to_string entry.modified)
     in
     match entry.content with
     | File -> current
@@ -76,7 +71,7 @@ let string_of_entry entry =
   in
   string_of_entry' ~level:0 entry
 
-let watch ~author path =
+let watch path =
   let selector = Inotify.([S_Attrib; S_Create; S_Modify; S_Delete; S_Move;
                            S_Dont_follow; S_Onlydir]) in
   let%lwt inotify = Lwt_inotify.create () in
@@ -85,7 +80,7 @@ let watch ~author path =
     let name     = Pathname.filename path in
     try%lwt
       let%lwt stat = Lwt_unix.lstat (Pathname.to_string path) in
-      let modified = author, Timestamp.of_unix_time stat.Lwt_unix.st_ctime in
+      let modified = Timestamp.of_unix_time stat.Lwt_unix.st_ctime in
       match stat.Lwt_unix.st_kind with
       | Lwt_unix.S_REG | Lwt_unix.S_LNK ->
         return (Some { parent; name; modified; content = File })
@@ -143,7 +138,7 @@ let watch ~author path =
     | [Inotify.Create] ->
       let name = Option.get name in
       if (find_option entry name) = None then
-        ignore (create entry name (author, Timestamp.now ()) File);
+        ignore (create entry name (Timestamp.now ()) File);
       return_unit
     (* Directory was created *)
     | [Inotify.Isdir; Inotify.Create] ->
@@ -152,7 +147,7 @@ let watch ~author path =
         try%lwt
           (* Create new directory in the tree. *)
           let directory = { children = [] } in
-          let entry' = create entry name (author, Timestamp.now ()) (Directory directory) in
+          let entry' = create entry name (Timestamp.now ()) (Directory directory) in
           let path'  = path_of_entry entry' in
           (* Add inotify watcher. *)
           let%lwt watch  = Lwt_inotify.add_watch inotify (Pathname.to_string path') selector in
@@ -202,8 +197,7 @@ let watch ~author path =
       begin try%lwt
         let entry = Option.map_default (find entry) entry name in
         let%lwt stat  = Lwt_unix.lstat (Pathname.to_string (path_of_entry entry)) in
-        let (author, timestamp) = entry.modified in
-        entry.modified <- (author, Timestamp.of_unix_time stat.Lwt_unix.st_mtime);
+        entry.modified <- Timestamp.of_unix_time stat.Lwt_unix.st_mtime;
         return_unit
       with Not_found | Unix.Unix_error (Unix.ENOENT, "lstat", _) ->
         (* The file was deleted before we received the event, or,

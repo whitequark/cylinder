@@ -15,7 +15,7 @@ Library "cylinder"
                     Pathname, Timestamp, Tree
   BuildDepends:     threads, lwt, lwt.unix, lwt.preemptive, extlib,
                     ZMQ, lwt-zmq, protobuf, sodium,
-                    inotify, inotify.lwt, uuidm
+                    inotify, inotify.lwt
   ByteOpt:          -ppx ppx_lwt -ppx ppx_protobuf
   NativeOpt:        -ppx ppx_lwt -ppx ppx_protobuf
 
