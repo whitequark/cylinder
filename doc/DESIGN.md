@@ -44,7 +44,7 @@ Blockserver
 
 The blockserver provides a persistent value store. That is, it allows to store opaque objects of any size and retrieve them back by their digest. Additionally, it provides means to account for and reclaim storage space to the Stateserver.
 
-The block size is limited by 10⁶ bytes.
+The block size is limited by 10⁷ bytes.
 
 The blockserver protocol is based on stateless request-reply. On a high level, it provides the following operations:
 
@@ -80,7 +80,7 @@ The possible race conditions arising from the stateserver garbage collector eras
 
 #### Block size limit
 
-ZeroMQ requires that the complete message could be fit into RAM. Thus, to prevent a memory exhaustion attack, it is necessary to reject clients attempting to push larger messages. It is thought that a maximal block size of 10⁶ bytes will provide reasonable performance.
+ZeroMQ requires that the complete message could be fit into RAM. Thus, to prevent a memory exhaustion attack, it is necessary to reject clients attempting to push larger messages. It is thought that a maximal block size of 10⁷ bytes will provide reasonable performance.
 
 #### Storage reliability
 

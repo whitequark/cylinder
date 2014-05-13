@@ -20,7 +20,7 @@ val digest_from_protobuf  : Protobuf.Decoder.t -> digest
 val digest_to_protobuf    : digest -> Protobuf.Encoder.t -> unit
 
 (** [digest_kind_to_string dk] converts digest kind [dk] to an ASCII string
-    representation. *)
+    representation, ["inline"] or ["sha512"]. *)
 val digest_kind_to_string : digest_kind -> string
 
 (** [digest_kind_of_string s] converts an ASCII string to [Some digest_kind]

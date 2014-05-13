@@ -1,8 +1,9 @@
 open OUnit2
 
 let suite = "Test Cylinder" >::: [
-    Test_block.suite;
     Test_backends.suite;
+    Test_block.suite;
+    Test_chunk.suite;
   ]
 
 let _ =

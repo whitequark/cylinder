@@ -42,7 +42,7 @@ end) = struct
     | `Ok (cookie, lst) ->
       assert_equal (ExtList.List.sort  lst) (ExtList.List.sort [digest1; digest2]);
       Lwt.return_unit
-    | _ -> assert_failure "Broken Backend.enumerate"
+    | _ -> assert_failure "Backend.enumerate"
 
   let suite = [
       "test_store_retrieve" >:: run test_store_retrieve;

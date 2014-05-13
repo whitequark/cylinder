@@ -45,29 +45,8 @@ let test_digest_constr ctxt =
                          "\x6f\x7d\x60\xf1\x05\xe6\x91\xeb\xdc\x14\x37\x6e\xbb\x15\xe2\xb0")
                (Block.digest_bytes (Bytes.make 64 'A'))
 
-module In_memory_server = Block.Server(In_memory_store)
-
-let setup ctxt =
-  let backend = In_memory_store.create () in
-  let sctx    = ZMQ.Context.create () in
-  let sserver = ZMQ.Socket.create sctx ZMQ.Socket.router in
-  ZMQ.Socket.bind sserver "tcp://127.0.0.1:5555";
-  let server  = In_memory_server.create backend sserver in
-  Lwt.async (fun () ->
-    try%lwt In_memory_server.listen server
-    with Unix.Unix_error(Unix.ENOTSOCK, _, _) -> Lwt.return_unit);
-  let sclient = ZMQ.Socket.create sctx ZMQ.Socket.req in
-  ZMQ.Socket.connect sclient "tcp://127.0.0.1:5555";
-  let client  = Block.Client.create sclient in
-  (backend, sctx, server, client)
-
-let teardown (backend, sctx, server, client) ctxt =
-  ZMQ.Socket.close (In_memory_server.to_socket server);
-  ZMQ.Socket.close (Block.Client.to_socket client);
-  ZMQ.Context.terminate sctx
-
 let test_get_put ctxt =
-  let (_backend, _sctx, _server, client) = bracket setup teardown ctxt in
+  let (_backend, _sctx, _server, client) = Helper.blockserver_bracket ctxt in
   let data1   = Bytes.make 64 'A' in
   let digest1 = Block.digest_bytes data1 in
   let%lwt result = Block.Client.get client digest1 in
@@ -79,7 +58,7 @@ let test_get_put ctxt =
   Lwt.return_unit
 
 let test_erase ctxt =
-  let (_backend, _sctx, _server, client) = bracket setup teardown ctxt in
+  let (_backend, _sctx, _server, client) = Helper.blockserver_bracket ctxt in
   let data1   = Bytes.make 64 'A' in
   let digest1 = Block.digest_bytes data1 in
   Block.Client.put client `SHA512 data1 >>= fun _ ->
@@ -99,17 +78,17 @@ let put_stuff client =
   Lwt.return (digest1, digest2)
 
 let test_enumerate ctxt =
-  let (_backend, _sctx, _server, client) = bracket setup teardown ctxt in
+  let (_backend, _sctx, _server, client) = Helper.blockserver_bracket ctxt in
   let%lwt (digest1, digest2) = put_stuff client in
   match%lwt Block.Client.enumerate client "" with
   | `Ok (cookie, digests) ->
     let printer lst = String.concat "; " (List.map Block.digest_to_string digests) in
     assert_equal ~printer (ExtList.List.sort [digest1; digest2]) (ExtList.List.sort digests);
     Lwt.return_unit
-  | _ -> assert_failure "Broken Block.Client.enumerate"
+  | _ -> assert_failure "Block.Client.enumerate"
 
 let test_digests ctxt =
-  let (_backend, _sctx, _server, client) = bracket setup teardown ctxt in
+  let (_backend, _sctx, _server, client) = Helper.blockserver_bracket ctxt in
   let%lwt (digest1, digest2) = put_stuff client in
   match%lwt Block.Client.digests client with
   | `Ok stream ->
@@ -117,7 +96,7 @@ let test_digests ctxt =
     let printer lst = String.concat "; " (List.map Block.digest_to_string lst) in
     assert_equal ~printer (ExtList.List.sort [digest1; digest2]) (ExtList.List.sort lst);
     Lwt.return_unit
-  | _ -> assert_failure "Broken Block.Client.digests"
+  | _ -> assert_failure "Block.Client.digests"
 
 let suite = "Test Block" >::: [
     "test_digest_of_string" >:: test_digest_of_string;

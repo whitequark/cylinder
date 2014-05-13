@@ -10,9 +10,12 @@ BuildTools:   ocamlbuild
 
 Library "cylinder"
   Path:             lib
-  Modules:          Block, Pathname, Timestamp, Tree, backends/In_memory_store
-  BuildDepends:     lwt, lwt.unix, extlib, inotify, inotify.lwt, ZMQ, lwt-zmq,
-                    protobuf, sodium, uuidm
+  Modules:          core/Block, core/Chunk,
+                    backends/In_memory_store,
+                    Pathname, Timestamp, Tree
+  BuildDepends:     threads, lwt, lwt.unix, lwt.preemptive, extlib,
+                    ZMQ, lwt-zmq, protobuf, sodium,
+                    inotify, inotify.lwt, uuidm
   ByteOpt:          -ppx ppx_lwt -ppx ppx_protobuf
   NativeOpt:        -ppx ppx_lwt -ppx ppx_protobuf
 
@@ -21,6 +24,14 @@ Executable cylinderd
   MainIs:           cylinderd.ml
   BuildDepends:     cylinder
   CompiledObject:   best
+
+Executable cylinder_top
+  Path:             lib
+  MainIs:           cylinder_top.ml
+  Install:          false
+  BuildDepends:     cylinder, compiler-libs.toplevel, utop
+  CompiledObject:   byte
+  ByteOpt:          -linkall -predicates create_toploop
 
 Executable test_cylinder
   Path:             lib_test
