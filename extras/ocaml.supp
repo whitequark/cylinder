@@ -1,0 +1,32 @@
+{
+   weak_value8_loop
+   Memcheck:Value8
+   fun:camlWeak__loop_*
+}
+{
+   weak_cond_loop
+   Memcheck:Cond
+   fun:camlWeak__loop_*
+}
+{
+   weak_value8_loop_mod
+   Memcheck:Value8
+   fun:caml_modify
+   fun:camlWeak__loop_*
+}
+{
+   weak_cond_loop_mod
+   Memcheck:Cond
+   fun:caml_modify
+   fun:camlWeak__loop_*
+}
+{
+   weak_value8_add_aux
+   Memcheck:Value8
+   fun:camlWeak__add_aux_*
+}
+{
+   weak_cond_add_aux
+   Memcheck:Cond
+   fun:camlWeak__add_aux_*
+}
