@@ -343,7 +343,7 @@ The serialized `Chunk` message is `clear_chunk`.
 Secret box
 ----------
 
-The following sections make use of an intermediate storage structure, encapsulating data encrypted with a secret-key algorithm
+The following sections make use of an intermediate storage structure, encapsulating data encrypted with a secret-key algorithm.
 
 ### Storage format
 
@@ -361,6 +361,42 @@ message SecretBox {
   required bytes nonce = 2;
 }
 ```
+
+### Algorithms
+
+#### XSalsa20_Poly1305
+
+As described in [secret_box][].
+
+Box
+---
+
+The following sections make use of an intermediate storage structure, encapsulating data encrypted with a public-key algorithm.
+
+### Storage format
+
+```
+message BoxKey {
+  enum Algorithm {
+    Curve25519_XSalsa20_Poly1305 = 1;
+  }
+  required Algorithm algorithm = 1;
+  required bytes     key       = 2;
+}
+
+message Box {
+  required bytes data  = 1;
+  required bytes nonce = 2;
+}
+```
+
+`BoxKey` is used for storing both public and secret keys.
+
+### Algorithms
+
+#### Curve25519_XSalsa20_Poly1305
+
+As described in [box][].
 
 Graph elements
 --------------
@@ -385,12 +421,6 @@ message GraphElement {
 ```
 
 `GraphElement.edges` contains `EdgeList`, contained within a `Box` and encrypted with the public key of the stateserver.
-
-### Algorithms
-
-#### Curve25519_XSalsa20_Poly1305
-
-As described in [box][].
 
 Files
 -----

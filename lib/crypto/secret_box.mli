@@ -1,13 +1,13 @@
-(** Type-safe and algorithm-agnostic secret key encrypted container.
+(** Type-safe and algorithm-agnostic secret key based encrypted container.
     The container allows serialization round-trips without decryption. *)
 
-(** Type of secret box keys. *)
+(** Type of keys. *)
 type key
 
 (** [key_from_protobuf d] deserializes a secret box key from [d]. *)
 val key_from_protobuf : Protobuf.Decoder.t -> key
 
-(** [key_to_protobuf sb e] serializes secret box key [sb] into [e]. *)
+(** [key_to_protobuf k e] serializes secret box key [k] into [e]. *)
 val key_to_protobuf   : key -> Protobuf.Encoder.t -> unit
 
 (** [random_key ()] returns a random secret box key. *)

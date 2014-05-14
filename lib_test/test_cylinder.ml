@@ -2,6 +2,7 @@ open OUnit2
 
 let suite = "Test Cylinder" >::: [
     Test_secret_box.suite;
+    Test_box.suite;
     Test_backends.suite;
     Test_block.suite;
     Test_chunk.suite;

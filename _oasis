@@ -10,7 +10,7 @@ BuildTools:   ocamlbuild
 
 Library "cylinder"
   Path:             lib
-  Modules:          crypto/Secret_box,
+  Modules:          crypto/Secret_box, crypto/Box,
                     core/Block, core/Chunk,
                     backends/In_memory_store,
                     Pathname, Timestamp, Tree
