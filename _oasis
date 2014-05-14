@@ -10,12 +10,13 @@ BuildTools:   ocamlbuild
 
 Library "cylinder"
   Path:             lib
-  Modules:          core/Block, core/Chunk,
+  Modules:          crypto/Secret_box,
+                    core/Block, core/Chunk,
                     backends/In_memory_store,
                     Pathname, Timestamp, Tree
   BuildDepends:     threads, lwt, lwt.unix, lwt.preemptive, extlib,
-                    ZMQ, lwt-zmq, protobuf, sodium,
-                    inotify, inotify.lwt
+                    ZMQ (>= 4.0-2), lwt-zmq (>= 2.0.0), protobuf, sodium,
+                    inotify (>= 2.0), inotify.lwt
   ByteOpt:          -ppx ppx_lwt -ppx ppx_protobuf
   NativeOpt:        -ppx ppx_lwt -ppx ppx_protobuf
 
@@ -39,8 +40,8 @@ Executable test_cylinder
   Install:          false
   BuildDepends:     oUnit (>= 2.0), cylinder
   CompiledObject:   best
-  ByteOpt:          -ppx ppx_lwt
-  NativeOpt:        -ppx ppx_lwt
+  ByteOpt:          -ppx ppx_lwt -ppx ppx_protobuf
+  NativeOpt:        -ppx ppx_lwt -ppx ppx_protobuf
 
 Test test_cylinder
   Command:          $test_cylinder -runner sequential

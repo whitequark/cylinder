@@ -261,8 +261,6 @@ A client can choose any chunk sizes or encodings it desires. This allows a clien
 
 ### Storage format
 
-Like with all other data storage in Cylinder, Protobuf is used for serialization.
-
 #### Capability
 
 ```
@@ -339,4 +337,110 @@ To decrypt, perform following:
 
 The serialized `Chunk` message is `clear_chunk`.
 
+[box]: http://nacl.cr.yp.to/box.html
 [secretbox]: http://nacl.cr.yp.to/secretbox.html
+
+Secret box
+----------
+
+The following sections make use of an intermediate storage structure, encapsulating data encrypted with a secret-key algorithm
+
+### Storage format
+
+```
+message SecretBoxKey {
+  enum Algorithm {
+    XSalsa20_Poly1305 = 1;
+  }
+  required Algorithm algorithm = 1;
+  required bytes     key       = 2;
+}
+
+message SecretBox {
+  required bytes data  = 1;
+  required bytes nonce = 2;
+}
+```
+
+Graph elements
+--------------
+
+A filesystem is a directed acyclic graph: directories point to files, files point to chunks. To aid processing by the stateserver, all non-leaf graph nodes are stored in a uniform format.
+
+A graph element consists of the nested message and a list of blocks this message refers to. The entity creating the graph element is responsible for ensuring that the block list is consistent with the nested message.
+
+The block list is encrypted using the stateserver's public key.
+
+### Storage format
+
+```
+message EdgeList {
+  repeated Digest edges = 1;
+}
+
+message GraphElement {
+  required bytes content = 1;
+  required bytes edges   = 2;
+}
+```
+
+`GraphElement.edges` contains `EdgeList`, contained within a `Box` and encrypted with the public key of the stateserver.
+
+### Algorithms
+
+#### Curve25519_XSalsa20_Poly1305
+
+As described in [box][].
+
+Files
+-----
+
+A file is a graph element whose content consists of a list of chunks with the file contents and a list of attributes. Currently, the only attributes stored are the time of last modification and the *nix execute permission.
+
+File element contents is encrypted with the checkpoint key (see below).
+
+### Storage format
+
+```
+message File {
+  required int64      last_modified = 1;
+  required bool       executable    = 2 [default=false];
+  repeated Capability chunks        = 15;
+}
+```
+
+`File.last_modified` stores the number of milliseconds since 1970-01-01T00:00:00.000Z.
+
+Directories
+-----------
+
+A directory is a graph element whose content consists of a list of nested files, directories and checkpoints.
+
+Directory element contents is encrypted with the checkpoint key (see below).
+
+### Storage format
+
+```
+message Directory {
+  message Entry {
+    enum Type {
+      File       = 1;
+      Directory  = 2;
+      Checkpoint = 3;
+    }
+    required string name  = 1;
+    required Type   type  = 2;
+    required Digest block = 3;
+  }
+  repeated Entry contents = 1;
+}
+```
+
+Checkpoints
+-----------
+
+A checkpoint is a graph element that demarcates a subgraph. It is a unit of access control policy and also a unit of atomic update. Checkpoints may be nested in directories and they themselves nest a single directory; a checkpoint _owns_ the transitive closure of files and directories (but not other checkpoints) embedded in it.
+
+All of the elements owned by a checkpoint are encrypted with a secret key associated with that checkpoint. When the access control list is updated, the key is changed and all elements owned by the checkpoint are reencrypted with the new key.
+
+The stateserver ensures that a checkpoint is updated consistently; it rejects checkpoint updates that do not refer to the most recent checkpoint block in the edge list. Similarly, it rejects checkpoint updates that violate the access control policy.
