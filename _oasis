@@ -45,3 +45,19 @@ Executable test_cylinder
 
 Test test_cylinder
   Command:          $test_cylinder -runner sequential
+
+AlphaFeatures: ocamlbuild_more_args
+Document api
+  Type: ocamlbuild (0.4)
+  BuildTools: ocamldoc
+
+  Title: API reference for Cylinder
+  XOCamlbuildPath: .
+  XOCamlbuildExtraArgs: "-docflags '-colorize-code -short-functors -charset utf-8'"
+  XOCamlbuildLibraries: cylinder
+
+SourceRepository master
+  Type: git
+  Location: https://github.com/whitequark/cylinder.git
+  Branch: master
+  Browser: https://github.com/whitequark/cylinder
