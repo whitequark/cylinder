@@ -70,8 +70,6 @@ The blockserver protocol is based on stateless request-reply. On a high level, i
 
 The blockserver digests consist of the hash function output together with the identifier of the hash function. While SHA-512 is considered safe today, it is not inconceivable that it will be broken later. When this happens, it is necessary to have a smooth migration path to another hash function, which would allow to reuse existing data.
 
-As SHA-512 digests are 64 byte long, an alternative encoding for blocks shorter than 64 bytes exists that packs the actual data into the "digest". As the digest is necessary and enough to retrieve the data, this has no further implications to security.
-
 #### Erasing data
 
 A simplest persistent value store would only have the _put_ and _get_ commands. However, this ignores an important practical problem. That is, a malicious or malfunctioning client may fill the blockserver with garbage, and cause a denial of service.
@@ -101,15 +99,12 @@ The blockserver digest is defined as follows:
 ``` protoc
 message Digest {
   enum Type {
-    Inline = 1;
-    SHA512 = 2;
+    SHA512 = 1;
   }
   required Type   type    = 1;
   required string content = 2;
 }
 ```
-
-If `type = Inline`, `content` must be of same length or shorter than the output of the hash function with the longest output. Currently, that is SHA-512 with 64-byte output.
 
 #### Request
 
@@ -157,8 +152,6 @@ The `object` field in `BlockserverGetResp` must only be present if `result = Ok`
 
 A client that sends a _get_ request must verify that the received object indeed has the digest that the client requires.
 
-The blockserver will return `result = NotFound` for digests with `type = Inline`.
-
 The blockserver will return `result = Unavailable` if it is unable to contact its backend.
 
 #### Put
@@ -180,7 +173,7 @@ message BlockserverPutResp {
 
 The blockserver will return `result = Unavailable` if the backend is temporarily unable to fulfill the request, e.g. if it is out of storage space or a network link is severed.
 
-The blockserver will return `result = NotSupported` for digests with `type` equal to any hash function that it considers insecure, or with `type = Inline`.
+The blockserver will return `result = NotSupported` for digests with `type` equal to any hash function that it considers insecure.
 
 #### Erase
 
@@ -199,8 +192,6 @@ message BlockserverEraseResp {
 ```
 
 After an _erase_ request is executed, the storage will not contain the object identified by `digest` until it is restored by a corresponding _put_ request.
-
-The blockserver will return `result = Ok` for digests with `type = Inline`.
 
 #### Enumerate
 
@@ -415,12 +406,13 @@ message EdgeList {
 }
 
 message GraphElement {
-  required bytes content = 1;
-  required bytes edges   = 2;
+  required bytes  content = 1;
+  required BoxKey updater = 2;
+  required Box    edges   = 3;
 }
 ```
 
-`GraphElement.edges` contains `EdgeList`, contained within a `Box` and encrypted with the public key of the stateserver.
+`GraphElement.edges` contains `EdgeList`, encrypted with the public key of the stateserver and secret key of the client which has last updated the element.
 
 Files
 -----
@@ -434,7 +426,7 @@ File element contents is encrypted with the checkpoint key (see below).
 ```
 message File {
   required int64      last_modified = 1;
-  required bool       executable    = 2 [default=false];
+  required bool       executable    = 2;
   repeated Capability chunks        = 15;
 }
 ```

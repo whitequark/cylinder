@@ -4,17 +4,15 @@ let (>>=) = Lwt.(>>=)
 let run f ctxt = Lwt_main.run (f ctxt)
 
 let test_digest_to_string ctxt =
-  let digest = `Inline, "the quick brown fox" in
-  assert_equal ~printer:(fun x -> x)
-               "inline:dGhlIHF1aWNrIGJyb3duIGZveA" (Block.digest_to_string digest);
   let digest = `SHA512, "\x07\xe5\x47\xd9\x58\x6f\x6a\x73\xf7\x3f\xba" ^
                         "\xc0\x43\x5e\xd7\x69\x51\x21\x8f\xb7\xd0\xc8\xd7\x88" ^
                         "\xa3\x09\xd7\x85\x43\x6b\xbb\x64\x2e\x93\xa2\x52\xa9" ^
                         "\x54\xf2\x39\x12\x54\x7d\x1e\x8a\x3b\x5e\xd6\xe1\xbf" ^
                         "\xd7\x09\x78\x21\x23\x3f\xa0\x53\x8f\x3d\xb8\x54\xfe\xe6" in
   assert_equal ~printer:(fun x -> x)
-               ("sha512:B-VH2VhvanP3P7rAQ17XaVEhj7fQyNeIownXhU" ^
-                "Nru2Quk6JSqVTyORJUfR6KO17W4b_XCXghIz-gU489uFT-5g") (Block.digest_to_string digest)
+               ("CAESQAflR9lYb2pz9z-6wENe12lRIY-30MjXiKMJ14VDa7\
+                 tkLpOiUqlU8jkSVH0eijte1uG_1wl4ISM_oFOPPbhU_uY")
+               (Block.digest_to_string digest)
 
 let test_digest_of_string ctxt =
   let printer x =
@@ -22,22 +20,18 @@ let test_digest_of_string ctxt =
     | Some x -> Printf.sprintf "Some %s" (Block.digest_to_string x)
     | None   -> "None"
   in
-  assert_equal ~printer (Some (`Inline, "the quick brown fox"))
-               (Block.digest_of_string "inline:dGhlIHF1aWNrIGJyb3duIGZveA");
   assert_equal ~printer (Some (`SHA512, "\x07\xe5\x47\xd9\x58\x6f\x6a\x73\xf7\x3f\xba" ^
                                 "\xc0\x43\x5e\xd7\x69\x51\x21\x8f\xb7\xd0\xc8\xd7\x88" ^
                                 "\xa3\x09\xd7\x85\x43\x6b\xbb\x64\x2e\x93\xa2\x52\xa9" ^
                                 "\x54\xf2\x39\x12\x54\x7d\x1e\x8a\x3b\x5e\xd6\xe1\xbf" ^
                                 "\xd7\x09\x78\x21\x23\x3f\xa0\x53\x8f\x3d\xb8\x54\xfe\xe6"))
-               (Block.digest_of_string ("sha512:B-VH2VhvanP3P7rAQ17XaVEhj7fQyNeIownXhU" ^
-                                        "Nru2Quk6JSqVTyORJUfR6KO17W4b_XCXghIz-gU489uFT-5g"));
+               (Block.digest_of_string ("CAESQAflR9lYb2pz9z-6wENe12lRIY-30MjXiKMJ14VDa7\
+                                         tkLpOiUqlU8jkSVH0eijte1uG_1wl4ISM_oFOPPbhU_uY"));
   assert_equal ~printer None (Block.digest_of_string "inline:@#$@#$%#");
   assert_equal ~printer None (Block.digest_of_string "foobar:dGhl");
   assert_equal ~printer None (Block.digest_of_string "sha512:dGhl")
 
 let test_digest_constr ctxt =
-  assert_equal ~printer:Block.digest_to_string
-               (`Inline, "the quick brown fox") (Block.digest_bytes "the quick brown fox");
   assert_equal ~printer:Block.digest_to_string
                (`SHA512, "\x94\x59\x16\x4c\x6b\x4a\x58\xf4\x6a\x4f\x4b\xc0\x81\x33\xa5\xb9" ^
                          "\xc6\xb5\x0c\xa6\x9e\x14\x6a\xd1\x9b\x6d\x10\xf3\xe2\xb2\xd9\x6b" ^

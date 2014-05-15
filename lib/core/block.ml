@@ -1,25 +1,17 @@
 let (>>=) = Lwt.(>>=)
 let (>|=) = Lwt.(>|=)
 
-type digest_kind =
-[ `Inline [@key 1]
-| `SHA512 [@key 2]
-] [@@protobuf]
+type digest_kind = [ `SHA512 [@key 1] ]
+[@@protobuf]
 
 type digest = digest_kind [@bare] * string
 [@@protobuf]
 
 let digest_bytes bytes =
-  if Bytes.length bytes < 64 then
-    `Inline, Bytes.to_string bytes
-  else
-    `SHA512, Bytes.to_string (Sodium.Hash.Bytes.of_hash (Sodium.Hash.Bytes.digest bytes))
+  `SHA512, Bytes.to_string (Sodium.Hash.Bytes.of_hash (Sodium.Hash.Bytes.digest bytes))
 
 let digest_bigbytes bytes =
-  if Lwt_bytes.length bytes < 64 then
-    `Inline, Lwt_bytes.to_string bytes
-  else
-    `SHA512, Bytes.to_string (Sodium.Hash.Bytes.of_hash (Sodium.Hash.Bigbytes.digest bytes))
+  `SHA512, Bytes.to_string (Sodium.Hash.Bytes.of_hash (Sodium.Hash.Bigbytes.digest bytes))
 
 (* Base64 with URL and Filename Safe Alphabet (RFC 4648 'base64url' encoding) *)
 let base64_enctbl = [|
@@ -30,29 +22,15 @@ let base64_enctbl = [|
 |]
 let base64_dectbl = Base64.make_decoding_table base64_enctbl
 
-let digest_kind_to_string kind =
-  match kind with `Inline -> "inline" | `SHA512 -> "sha512"
-
-let digest_kind_of_string str =
-  match str with
-  | "inline" -> Some `Inline
-  | "sha512" -> Some `SHA512
-  | _ -> None
-
-let digest_to_string (kind, data) =
-  let kind' = digest_kind_to_string kind in
-  Printf.sprintf "%s:%s" kind' (Base64.str_encode ~tbl:base64_enctbl data)
+let digest_to_string digest =
+  let bytes = Protobuf.Encoder.encode_bytes digest_to_protobuf digest in
+  Base64.str_encode ~tbl:base64_enctbl bytes
 
 let digest_of_string str =
-  let base64_decode = Base64.str_decode ~tbl:base64_dectbl in
   try
-    match ExtString.String.split str ":" with
-    | "inline", data ->
-      Some (`Inline, base64_decode data)
-    | "sha512", data when String.length data = 86 (* 64 * ⅔ *) ->
-      Some (`SHA512, base64_decode data)
-    | _ -> None
-  with (ExtString.Invalid_string | Base64.Invalid_char) -> None
+    let bytes = Base64.str_decode ~tbl:base64_dectbl str in
+    Some (Protobuf.Decoder.decode_bytes digest_from_protobuf bytes)
+  with (Protobuf.Decoder.Failure _ | Base64.Invalid_char) -> None
 
 module type BACKEND = sig
   type t
@@ -75,8 +53,8 @@ module Protocol = struct
     match req with
     | `Get digest ->
       Printf.sprintf "`Get %s" (digest_to_string digest)
-    | `Put (digest_kind, obj) ->
-      Printf.sprintf "`Put (%s, %S)" (digest_kind_to_string digest_kind) obj
+    | `Put (`SHA512, obj) ->
+      Printf.sprintf "`Put (`SHA512, %S)" obj
     | `Erase digest ->
       Printf.sprintf "`Erase %s" (digest_to_string digest)
     | `Enumerate cookie ->
@@ -165,7 +143,6 @@ module Server(Backend: BACKEND) = struct
             Lwt.return `Not_supported
           else
             Backend.put server.backend digest data
-        | _ -> Lwt.return `Not_supported
         end >>= fun response ->
         Lwt_log.debug ~section (Protocol.put_response_to_string response) >>= fun () ->
         Lwt.return (Protobuf.Encoder.encode_bytes put_response_to_protobuf response)

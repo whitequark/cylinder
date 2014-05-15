@@ -1,7 +1,7 @@
 (** An opaque block storage client and server. *)
 
 (** A [digest_kind] indicates the function used for creating the digest. *)
-type digest_kind = [ `Inline | `SHA512 ]
+type digest_kind = [ `SHA512 ]
 
 (** A [digest] is required and sufficient to retrieve a chunk of opaque data. *)
 type digest = digest_kind * bytes
@@ -19,17 +19,8 @@ val digest_from_protobuf  : Protobuf.Decoder.t -> digest
 (** [digest_to_protobuf d e] serializes digest [d] into [e]. *)
 val digest_to_protobuf    : digest -> Protobuf.Encoder.t -> unit
 
-(** [digest_kind_to_string dk] converts digest kind [dk] to an ASCII string
-    representation, ["inline"] or ["sha512"]. *)
-val digest_kind_to_string : digest_kind -> string
-
-(** [digest_kind_of_string s] converts an ASCII string to [Some digest_kind]
-    or returns [None] if it is unable to recognize the format. *)
-val digest_kind_of_string : string -> digest_kind option
-
-(** [digest_to_string d] converts digest [d] to an ASCII string representation.
-    The format is ["KIND:DATA"], where [KIND] is [inline] or [sha512], and [DATA]
-    is encoded using RFC 4648 'base64url' encoding (like regular Base64, but uses
+(** [digest_to_string d] converts digest [d] to an ASCII string representation,
+    encoded using RFC 4648 'base64url' encoding (like regular Base64, but uses
     [-_] instead of [+/]). *)
 val digest_to_string      : digest -> string
 
