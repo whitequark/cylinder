@@ -5,6 +5,7 @@ type key = {
 
 type public_key = key
 type secret_key = key
+type key_pair = secret_key * public_key
 
 let public_key_from_protobuf = key_from_protobuf
 let public_key_to_protobuf = key_to_protobuf
@@ -12,7 +13,7 @@ let public_key_to_protobuf = key_to_protobuf
 let secret_key_from_protobuf = key_from_protobuf
 let secret_key_to_protobuf = key_to_protobuf
 
-let random_keypair () =
+let random_key_pair () =
   let sk, pk = Sodium.Box.random_keypair () in
   { algorithm = `Curve25519_XSalsa20_Poly1305;
     key       = Sodium.Box.Bytes.of_secret_key sk },

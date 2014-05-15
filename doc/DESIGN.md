@@ -414,6 +414,8 @@ message GraphElement {
 
 `GraphElement.edges` contains `EdgeList`, encrypted with the public key of the stateserver and secret key of the client which has last updated the element.
 
+`GraphElement.updater` contains the public key of the client which has last updated the element.
+
 Files
 -----
 

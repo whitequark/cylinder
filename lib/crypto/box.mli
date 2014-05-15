@@ -7,6 +7,9 @@ type public_key
 (** Type of secret keys. *)
 type secret_key
 
+(** Type of key pairs. *)
+type key_pair = secret_key * public_key
+
 (** [public_key_from_protobuf d] deserializes a box public key from [d]. *)
 val public_key_from_protobuf : Protobuf.Decoder.t -> public_key
 
@@ -19,8 +22,8 @@ val secret_key_from_protobuf : Protobuf.Decoder.t -> secret_key
 (** [secret_key_to_protobuf pk e] serializes box secret key [pk] into [e]. *)
 val secret_key_to_protobuf   : secret_key -> Protobuf.Encoder.t -> unit
 
-(** [random_key ()] returns a random secret box key. *)
-val random_keypair           : unit -> secret_key * public_key
+(** [random_key_pair ()] returns a random box key pair. *)
+val random_key_pair          : unit -> key_pair
 
 (** Type of serialized data in a box. *)
 type 'a box
