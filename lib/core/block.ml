@@ -32,6 +32,9 @@ let digest_of_string str =
     Some (Protobuf.Decoder.decode_bytes digest_from_protobuf bytes)
   with (Protobuf.Decoder.Failure _ | Base64.Invalid_char) -> None
 
+let inspect_digest digest =
+  (String.sub (digest_to_string digest) 0 10) ^ "..."
+
 module type BACKEND = sig
   type t
 
@@ -52,11 +55,11 @@ module Protocol = struct
   let request_to_string req =
     match req with
     | `Get digest ->
-      Printf.sprintf "`Get %s" (digest_to_string digest)
+      Printf.sprintf "`Get %s" (inspect_digest digest)
     | `Put (`SHA512, obj) ->
-      Printf.sprintf "`Put (`SHA512, %S)" obj
+      Printf.sprintf "`Put (`SHA512, %S...)" (Bytes.sub_string obj 0 10)
     | `Erase digest ->
-      Printf.sprintf "`Erase %s" (digest_to_string digest)
+      Printf.sprintf "`Erase %s" (inspect_digest digest)
     | `Enumerate cookie ->
       Printf.sprintf "`Enumerate %S" cookie
 
@@ -68,7 +71,7 @@ module Protocol = struct
 
   let get_response_to_string resp =
     match resp with
-    | `Ok bytes -> Printf.sprintf "`Ok %S" bytes
+    | `Ok bytes -> Printf.sprintf "`Ok %S..." (Bytes.sub_string bytes 0 10)
     | `Not_found -> "`Not_found"
     | `Unavailable -> "`Unavailable"
 
@@ -104,7 +107,7 @@ module Protocol = struct
     match resp with
     | `Ok (cookie, digests) ->
       Printf.sprintf "`Ok (%S, [%s])"
-                     cookie (String.concat "; " (List.map digest_to_string digests))
+                     cookie (String.concat "; " (List.map inspect_digest digests))
     | `Exhausted -> "`Exhausted"
     | `Forbidden -> "`Forbidden"
 end

@@ -11,7 +11,7 @@ BuildTools:   ocamlbuild
 Library "cylinder"
   Path:             lib
   Modules:          crypto/Secret_box, crypto/Box,
-                    core/Block, core/Chunk, core/Graph,
+                    core/Block, core/Chunk, core/Graph, core/File,
                     backends/In_memory_store,
                     Pathname, Timestamp, Tree
   BuildDepends:     threads, lwt, lwt.unix, lwt.preemptive, extlib,
@@ -48,16 +48,16 @@ Test test_cylinder
 
 AlphaFeatures: ocamlbuild_more_args
 Document api
-  Type: ocamlbuild (0.4)
-  BuildTools: ocamldoc
+  Type:             ocamlbuild (0.4)
+  BuildTools:       ocamldoc
+  Title:            API reference for Cylinder
 
-  Title: API reference for Cylinder
-  XOCamlbuildPath: .
+  XOCamlbuildPath:      .
   XOCamlbuildExtraArgs: "-docflags '-colorize-code -short-functors -charset utf-8'"
   XOCamlbuildLibraries: cylinder
 
 SourceRepository master
-  Type: git
-  Location: https://github.com/whitequark/cylinder.git
-  Branch: master
-  Browser: https://github.com/whitequark/cylinder
+  Type:             git
+  Location:         https://github.com/whitequark/cylinder.git
+  Branch:           master
+  Browser:          https://github.com/whitequark/cylinder

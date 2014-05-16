@@ -6,6 +6,9 @@ type digest_kind = [ `SHA512 ]
 (** A [digest] is required and sufficient to retrieve a chunk of opaque data. *)
 type digest = digest_kind * bytes
 
+(** [inspect_digest d] converts [d] to a human-readable string. *)
+val inspect_digest        : digest -> string
+
 (** [digest_bytes b] hashes [b] with the preferred function, or returns an [`Inline]
     digest if [b] is shorter than the length of hash function output. *)
 val digest_bytes          : bytes -> digest

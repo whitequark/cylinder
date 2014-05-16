@@ -1,11 +1,16 @@
+let (>>=) = Lwt.(>>=)
 let (>|=) = Lwt.(>|=)
 
+type encoding = [ `None [@key 1] | `LZ4 [@key 2] ]
+[@@protobuf]
+
 type chunk = {
-  encoding  : [ `None [@key 1] | `LZ4 [@key 2] ]
-                    [@key  1] [@default `None] [@bare];
-  content   : bytes [@key 15];
+  encoding  : encoding [@key  1] [@default `None] [@bare];
+  content   : bytes    [@key 15];
 }
 [@@protobuf]
+
+let max_size = 10_000_000
 
 let chunk_of_bytes bytes =
   { encoding = `None; content = bytes }
@@ -26,6 +31,14 @@ and handle = {
   key       : bytes         [@key 3];
 }
 [@@protobuf]
+
+let section = Lwt_log.Section.make "Chunk"
+
+let inspect_capability capa =
+  match capa with
+  | Inline bytes -> Printf.sprintf "inline:%S" bytes
+  | Stored { digest } ->
+    Printf.sprintf "stored:%s" (Block.inspect_digest digest)
 
 let capability_of_chunk ~convergence chunk =
   let chunk_clear = Protobuf.Encoder.encode_bytes chunk_to_protobuf chunk in
@@ -59,6 +72,7 @@ let capability_to_chunk capa data =
   | _ -> Lwt.return `Malformed
 
 let retrieve_chunk client capa =
+  Lwt_log.debug_f "retrieve: %s" (inspect_capability capa) >>= fun () ->
   match capa with
   | Inline _ -> capability_to_chunk capa None
   | Stored { digest } ->
@@ -66,7 +80,8 @@ let retrieve_chunk client capa =
     | `Ok bytes -> capability_to_chunk capa (Some bytes)
     | (`Not_found | `Unavailable) as err -> Lwt.return err
 
-let store_chunk client input =
+let store_chunk client ((capa, block_opt) as input) =
+  Lwt_log.debug_f "store: %s" (inspect_capability capa) >>= fun () ->
   match input with
   | Inline _, None -> Lwt.return `Ok
   | Stored { digest = (digest_kind, _) }, Some bytes ->

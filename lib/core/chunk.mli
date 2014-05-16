@@ -8,6 +8,9 @@ type chunk = private {
   content   : bytes;
 }
 
+(** [max_size] is the maximum size of the decoded chunk content, currently 10⁷ bytes. *)
+val max_size            : int
+
 (** [chunk_from_protobuf d] deserializes a chunk from [d]. *)
 val chunk_from_protobuf : Protobuf.Decoder.t -> chunk
 
@@ -34,6 +37,9 @@ and handle = private {
   algorithm : algorithm;
   key       : bytes;
 }
+
+(** [inspect_capability ca] converts [ca] to a human-readable string. *)
+val inspect_capability       : capability -> string
 
 (** [capability_from_protobuf d] deserializes a capability from [d]. *)
 val capability_from_protobuf : Protobuf.Decoder.t -> capability
