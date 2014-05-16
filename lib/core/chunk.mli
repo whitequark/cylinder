@@ -23,20 +23,22 @@ val chunk_of_bytes      : bytes -> chunk
 (** [chunk_to_bytes ch] decodes chunk [ch] into an opaque byte sequence. *)
 val chunk_to_bytes      : chunk -> bytes
 
-(** A capability is necessary and sufficient to retrieve a chunk. *)
-type capability =
-| Inline of bytes  (**< An [Inline] capability stores the data itself. *)
-| Stored of handle (**< A [Stored] capability is a link to a Block. *)
 (** The algorithm used for encrypting data to which the capability links. *)
-and algorithm =
+type algorithm =
 [ `SHA512_XSalsa20_Poly1305 (**< Keys are 56 bytes long. *) ]
+
 (** All information required to retrieve and decode the data chunk.
     Invariant: [handle.key] has the lenght appropriate for [handle.algorithm]. *)
-and handle = private {
+type handle = private {
   digest    : Block.digest;
   algorithm : algorithm;
   key       : bytes;
 }
+
+(** A capability is necessary and sufficient to retrieve a chunk. *)
+type capability =
+| Inline of bytes  (**< An [Inline] capability stores the data itself. *)
+| Stored of handle (**< A [Stored] capability is a link to a Block. *)
 
 (** [inspect_capability ca] converts [ca] to a human-readable string. *)
 val inspect_capability       : capability -> string

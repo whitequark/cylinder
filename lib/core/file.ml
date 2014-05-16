@@ -115,6 +115,8 @@ let retrieve_to_unix_fd ~client file fd =
     else
       Lwt.return_unit
     end >>= fun () ->
+    (* We would want to set mtimes here, but it's highly platform-specific
+       and nothing in OCaml so far exports those functions. *)
     Lwt.return `Ok
   with Error ((`Malformed | `Not_found | `Unavailable) as err) ->
     Lwt.return err
