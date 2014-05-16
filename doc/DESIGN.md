@@ -39,8 +39,8 @@ On the highest level, Cylinder has four host roles:
 [zeromq]: http://zeromq.org
 [curve]: http://rfc.zeromq.org/spec:25
 
-Blockserver
------------
+Blocks
+------
 
 The blockserver provides a persistent value store. That is, it allows to store opaque objects of any size and retrieve them back by their digest. Additionally, it provides means to account for and reclaim storage space to the Stateserver.
 
@@ -331,8 +331,8 @@ The serialized `Chunk` message is `clear_chunk`.
 [box]: http://nacl.cr.yp.to/box.html
 [secretbox]: http://nacl.cr.yp.to/secretbox.html
 
-Secret box
-----------
+Secret boxes
+------------
 
 The following sections make use of an intermediate storage structure, encapsulating data encrypted with a secret-key algorithm.
 
@@ -359,8 +359,8 @@ message SecretBox {
 
 As described in [secret_box][].
 
-Box
----
+Boxes
+-----
 
 The following sections make use of an intermediate storage structure, encapsulating data encrypted with a public-key algorithm.
 

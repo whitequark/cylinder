@@ -6,6 +6,7 @@ let suite = "Test Cylinder" >::: [
     Test_backends.suite;
     Test_block.suite;
     Test_chunk.suite;
+    Test_graph.suite;
   ]
 
 let _ =

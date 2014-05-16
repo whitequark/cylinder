@@ -11,7 +11,7 @@ BuildTools:   ocamlbuild
 Library "cylinder"
   Path:             lib
   Modules:          crypto/Secret_box, crypto/Box,
-                    core/Block, core/Chunk,
+                    core/Block, core/Chunk, core/Graph,
                     backends/In_memory_store,
                     Pathname, Timestamp, Tree
   BuildDepends:     threads, lwt, lwt.unix, lwt.preemptive, extlib,
