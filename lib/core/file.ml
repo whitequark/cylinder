@@ -68,7 +68,7 @@ let rec update_with_unix_fd ~convergence ~client file fd =
           let chunk = Chunk.chunk_of_bytes (Bytes.sub bytes 0 length) in
           let%lwt capa, block_opt = Chunk.capability_of_chunk ~convergence chunk in
           match%lwt Chunk.store_chunk client (capa, block_opt) with
-          | `Ok -> Lwt.return (capa :: capas)
+          | `Ok -> handle_chunk (capa :: capas)
           | (`Unavailable | `Not_supported) as err -> [%lwt raise (Error err)]
           | `Malformed -> assert%lwt false
         else
