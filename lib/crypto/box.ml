@@ -14,7 +14,7 @@ let secret_key_from_protobuf = key_from_protobuf
 let secret_key_to_protobuf = key_to_protobuf
 
 let random_key_pair () =
-  let sk, pk = Sodium.Box.random_keypair () in
+  let sk, pk = Sodium.Box.random_key_pair () in
   { algorithm = `Curve25519_XSalsa20_Poly1305;
     key       = Sodium.Box.Bytes.of_secret_key sk },
   { algorithm = `Curve25519_XSalsa20_Poly1305;

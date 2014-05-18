@@ -14,19 +14,20 @@ Library "cylinder"
                     core/Block, core/Chunk, core/Graph, core/File,
                     backends/In_memory_store,
                     Pathname, Timestamp, Tree
+  Pack:             true
   BuildDepends:     threads, lwt, lwt.unix, lwt.preemptive, extlib,
-                    ZMQ (>= 4.0-2), lwt-zmq (>= 2.0.0), protobuf, sodium,
-                    inotify (>= 2.0), inotify.lwt
+                    ZMQ (>= 4.0), lwt-zmq, protobuf, sodium,
+                    inotify (>= 2.0), inotify.lwt, cmdliner
   ByteOpt:          -ppx ppx_lwt -ppx ppx_protobuf
   NativeOpt:        -ppx ppx_lwt -ppx ppx_protobuf
 
-Executable cylinderd
+Executable "cylinder-cli"
   Path:             lib
-  MainIs:           cylinderd.ml
+  MainIs:           cylinder_cli.ml
   BuildDepends:     cylinder
   CompiledObject:   best
 
-Executable cylinder_top
+Executable "cylinder_top"
   Path:             lib
   MainIs:           cylinder_top.ml
   Install:          false
@@ -34,7 +35,7 @@ Executable cylinder_top
   CompiledObject:   byte
   ByteOpt:          -linkall -predicates create_toploop
 
-Executable test_cylinder
+Executable "test_cylinder"
   Path:             lib_test
   MainIs:           test_cylinder.ml
   Install:          false
@@ -43,11 +44,11 @@ Executable test_cylinder
   ByteOpt:          -ppx ppx_lwt -ppx ppx_protobuf
   NativeOpt:        -ppx ppx_lwt -ppx ppx_protobuf
 
-Test test_cylinder
+Test "test_cylinder"
   Command:          $test_cylinder -runner sequential
 
 AlphaFeatures: ocamlbuild_more_args
-Document api
+Document "api"
   Type:             ocamlbuild (0.4)
   BuildTools:       ocamldoc
   Title:            API reference for Cylinder
@@ -56,7 +57,7 @@ Document api
   XOCamlbuildExtraArgs: "-docflags '-colorize-code -short-functors -charset utf-8'"
   XOCamlbuildLibraries: cylinder
 
-SourceRepository master
+SourceRepository "master"
   Type:             git
   Location:         https://github.com/whitequark/cylinder.git
   Branch:           master
