@@ -3,6 +3,14 @@
 (** A [digest_kind] indicates the function used for creating the digest. *)
 type digest_kind = [ `SHA512 ]
 
+(** [digest_kind_to_string dk] converts digest kind [dk] to an ASCII string
+    representation. *)
+val digest_kind_to_string : digest_kind -> string
+
+(** [digest_kind_of_string s] converts an ASCII string to [Some digest_kind]
+    or returns [None] if it is unable to recognize the format. *)
+val digest_kind_of_string : string -> digest_kind option
+
 (** A [digest] is required and sufficient to retrieve a chunk of opaque data. *)
 type digest = digest_kind * bytes
 

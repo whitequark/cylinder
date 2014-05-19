@@ -4,6 +4,15 @@ let (>|=) = Lwt.(>|=)
 type digest_kind = [ `SHA512 [@key 1] ]
 [@@protobuf]
 
+let digest_kind_to_string digest_kind =
+  match digest_kind with
+  | `SHA512 -> "sha512"
+
+let digest_kind_of_string str =
+  match str with
+  | "sha512" -> Some `SHA512
+  | _ -> None
+
 type digest = digest_kind [@bare] * string
 [@@protobuf]
 
@@ -52,12 +61,17 @@ module Protocol = struct
   | `Enumerate      [@key 4] of string
   ] [@@protobuf]
 
+  let shorten bytes =
+    if Bytes.length bytes < 10
+    then Printf.sprintf "%S" (Bytes.to_string bytes)
+    else Printf.sprintf "%S..." (Bytes.sub_string bytes 0 10)
+
   let request_to_string req =
     match req with
     | `Get digest ->
       Printf.sprintf "`Get %s" (inspect_digest digest)
     | `Put (`SHA512, obj) ->
-      Printf.sprintf "`Put (`SHA512, %S...)" (Bytes.sub_string obj 0 10)
+      Printf.sprintf "`Put (`SHA512, %s)" (shorten obj)
     | `Erase digest ->
       Printf.sprintf "`Erase %s" (inspect_digest digest)
     | `Enumerate cookie ->
@@ -71,7 +85,7 @@ module Protocol = struct
 
   let get_response_to_string resp =
     match resp with
-    | `Ok bytes -> Printf.sprintf "`Ok %S..." (Bytes.sub_string bytes 0 10)
+    | `Ok bytes -> Printf.sprintf "`Ok %s..." (shorten bytes)
     | `Not_found -> "`Not_found"
     | `Unavailable -> "`Unavailable"
 
