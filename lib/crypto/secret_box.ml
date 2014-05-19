@@ -27,7 +27,7 @@ let box_to_protobuf content_to_protobuf box encoder =
   | Cleartext (content, { algorithm = `XSalsa20_Poly1305; key }) ->
     let key   = Sodium.Secret_box.Bytes.to_key key in
     let nonce = Sodium.Secret_box.random_nonce () in
-    let clear_bytes = Protobuf.Encoder.encode_bytes content_to_protobuf content in
+    let clear_bytes = Protobuf.Encoder.encode_exn content_to_protobuf content in
     let enc_bytes   = Sodium.Secret_box.Bytes.secret_box key clear_bytes nonce in
     let encrypted   = { data = enc_bytes; nonce = Sodium.Secret_box.Bytes.of_nonce nonce } in
     encrypted_to_protobuf encrypted encoder
@@ -46,7 +46,7 @@ let decrypt box key =
       let nonce = Sodium.Secret_box.Bytes.to_nonce nonce in
       try
         let clear_bytes = Sodium.Secret_box.Bytes.secret_box_open key enc_bytes nonce in
-        let content     = Protobuf.Decoder.decode_bytes content_from_protobuf clear_bytes in
+        let content     = Protobuf.Decoder.decode_exn content_from_protobuf clear_bytes in
         Some content
       with Sodium.Verification_failure ->
         None

@@ -12,7 +12,7 @@ let test_chunk_bytes_conv ctxt =
 
 let test_capa_inline ctxt =
   let chunk = Chunk.chunk_of_bytes (Bytes.of_string "hello") in
-  let bytes = Protobuf.Encoder.encode_bytes Chunk.chunk_to_protobuf chunk in
+  let bytes = Protobuf.Encoder.encode_exn Chunk.chunk_to_protobuf chunk in
   let%lwt capa, blk = Chunk.capability_of_chunk ~convergence:"" chunk in
   assert_equal (Chunk.Inline bytes) capa;
   assert_equal None blk;
@@ -20,7 +20,7 @@ let test_capa_inline ctxt =
 
 let test_capa_encrypt ctxt =
   let chunk = Chunk.chunk_of_bytes (Bytes.make 128 'A') in
-  let bytes = Protobuf.Encoder.encode_bytes Chunk.chunk_to_protobuf chunk in
+  let bytes = Protobuf.Encoder.encode_exn Chunk.chunk_to_protobuf chunk in
   match%lwt Chunk.capability_of_chunk ~convergence:"" chunk with
   | Chunk.Stored { Chunk.algorithm = `SHA512_XSalsa20_Poly1305;
                    digest = (`SHA512, digest_bytes); key }, Some enc_bytes ->

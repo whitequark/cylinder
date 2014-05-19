@@ -8,9 +8,9 @@ let test_roundtrip ctxt =
   let edges   = [Block.digest_bytes (Bytes.of_string "foo")] in
   let elem    = Graph.element ~server:server_public ~updater:(client_secret, client_public)
                               edges "bar" in
-  let bytes   = Protobuf.Encoder.encode_bytes
+  let bytes   = Protobuf.Encoder.encode_exn
                     (Graph.element_to_protobuf message_to_protobuf) elem in
-  let elem'   = Protobuf.Decoder.decode_bytes
+  let elem'   = Protobuf.Decoder.decode_exn
                     (Graph.element_from_protobuf message_from_protobuf) bytes in
   assert_equal elem.Graph.content elem'.Graph.content;
   let edges'  = Graph.edge_list ~server:server_secret elem' in

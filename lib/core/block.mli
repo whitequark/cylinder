@@ -31,8 +31,7 @@ val digest_from_protobuf  : Protobuf.Decoder.t -> digest
 val digest_to_protobuf    : digest -> Protobuf.Encoder.t -> unit
 
 (** [digest_to_string d] converts digest [d] to an ASCII string representation,
-    encoded using RFC 4648 'base64url' encoding (like regular Base64, but uses
-    [-_] instead of [+/]). *)
+    encoded . *)
 val digest_to_string      : digest -> string
 
 (** [digest_of_string s] converts an ASCII string to [Some digest] or returns [None]

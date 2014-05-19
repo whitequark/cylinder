@@ -1,10 +1,21 @@
 (** File content storage. *)
 
+(** A compression algorithm. *)
+type encoding = [ `None | `LZ4 ]
+
+(** [encoding_to_string e] converts encoding [e] to an ASCII string
+    representation. *)
+val encoding_to_string  : [ `None | `LZ4 ] -> string
+
+(** [encoding_of_string s] converts an ASCII string to [Some encoding]
+    or returns [None] if it is unable to recognize the format. *)
+val encoding_of_string  : string -> [ `None | `LZ4 ] option
+
 (** A chunk is a block of file content, suitable for efficient storage.
     Invariant: [chunk.content] contains data valid for algorithm selected
     by [chunk.encoding]. *)
 type chunk = private {
-  encoding  : [ `None | `LZ4 ];
+  encoding  : encoding;
   content   : bytes;
 }
 
@@ -27,8 +38,16 @@ val chunk_to_bytes      : chunk -> bytes
 type algorithm =
 [ `SHA512_XSalsa20_Poly1305 (**< Keys are 56 bytes long. *) ]
 
+(** [algorithm_to_string a] converts algorithm [a] to an ASCII string
+    representation. *)
+val algorithm_to_string : algorithm -> string
+
+(** [algorithm_of_string s] converts an ASCII string to [Some algorithm]
+    or returns [None] if it is unable to recognize the format. *)
+val algorithm_of_string : string -> algorithm option
+
 (** All information required to retrieve and decode the data chunk.
-    Invariant: [handle.key] has the lenght appropriate for [handle.algorithm]. *)
+    Invariant: [handle.key] has the length appropriate for [handle.algorithm]. *)
 type handle = private {
   digest    : Block.digest;
   algorithm : algorithm;
@@ -48,6 +67,14 @@ val capability_from_protobuf : Protobuf.Decoder.t -> capability
 
 (** [capability_to_protobuf ca e] serializes capability [ca] into [e]. *)
 val capability_to_protobuf   : capability -> Protobuf.Encoder.t -> unit
+
+(** [capability_of_string s] deserializes a capability from [s] and
+    returns [Some ca] or [None] if the format is not recognized. *)
+val capability_of_string     : string -> capability option
+
+(** [capability_to_string ca] serializes capability [ca] as a string.
+    See {!Block.digest_to_string} for details on encoding. *)
+val capability_to_string     : capability -> string
 
 (** [capability_of_chunk ~convergence ch] either converts chunk [ch] into
     an inline capability and returns [Inline bytes, None], or into a stored

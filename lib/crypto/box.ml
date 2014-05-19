@@ -63,7 +63,7 @@ let box_to_protobuf content_to_protobuf box encoder =
     encrypted_to_protobuf encrypted encoder
   | Cleartext (content, secret_key, public_key)
       when secret_key.algorithm = public_key.algorithm ->
-    let clear_bytes = Protobuf.Encoder.encode_bytes content_to_protobuf content in
+    let clear_bytes = Protobuf.Encoder.encode_exn content_to_protobuf content in
     let encrypted   = encrypt clear_bytes secret_key public_key in
     encrypted_to_protobuf encrypted encoder
   | _ -> assert false
@@ -81,5 +81,5 @@ let decrypt box secret_key public_key =
     Option.map (fun _ -> content)
   | Ciphertext (encrypted, content_from_protobuf) ->
     decrypt encrypted secret_key public_key |>
-    Option.map (Protobuf.Decoder.decode_bytes content_from_protobuf)
+    Option.map (Protobuf.Decoder.decode_exn content_from_protobuf)
 

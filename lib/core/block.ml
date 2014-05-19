@@ -22,24 +22,13 @@ let digest_bytes bytes =
 let digest_bigbytes bytes =
   `SHA512, Bytes.to_string (Sodium.Hash.Bytes.of_hash (Sodium.Hash.Bigbytes.digest bytes))
 
-(* Base64 with URL and Filename Safe Alphabet (RFC 4648 'base64url' encoding) *)
-let base64_enctbl = [|
-  'A';'B';'C';'D';'E';'F';'G';'H';'I';'J';'K';'L';'M';'N';'O';'P';
-  'Q';'R';'S';'T';'U';'V';'W';'X';'Y';'Z';'a';'b';'c';'d';'e';'f';
-  'g';'h';'i';'j';'k';'l';'m';'n';'o';'p';'q';'r';'s';'t';'u';'v';
-  'w';'x';'y';'z';'0';'1';'2';'3';'4';'5';'6';'7';'8';'9';'-';'_'
-|]
-let base64_dectbl = Base64.make_decoding_table base64_enctbl
-
 let digest_to_string digest =
-  let bytes = Protobuf.Encoder.encode_bytes digest_to_protobuf digest in
-  Base64.str_encode ~tbl:base64_enctbl bytes
+  Base64_url.encode (Protobuf.Encoder.encode_exn digest_to_protobuf digest)
 
 let digest_of_string str =
-  try
-    let bytes = Base64.str_decode ~tbl:base64_dectbl str in
-    Some (Protobuf.Decoder.decode_bytes digest_from_protobuf bytes)
-  with (Protobuf.Decoder.Failure _ | Base64.Invalid_char) -> None
+  match Base64_url.decode str with
+  | Some x -> Protobuf.Decoder.decode digest_from_protobuf x
+  | None   -> None
 
 let inspect_digest digest =
   (String.sub (digest_to_string digest) 0 10) ^ "..."
@@ -144,13 +133,13 @@ module Server(Backend: BACKEND) = struct
   let handle server id request =
     let open Protocol in
     try%lwt
-      let request = Protobuf.Decoder.decode_bytes request_from_protobuf request in
+      let request = Protobuf.Decoder.decode_exn request_from_protobuf request in
       Lwt_log.debug ~section (Protocol.request_to_string request) >>= fun () ->
       begin match request with
       | `Get digest ->
         Backend.get server.backend digest >>= fun response ->
         Lwt_log.debug ~section (Protocol.get_response_to_string response) >>= fun () ->
-        Lwt.return (Protobuf.Encoder.encode_bytes get_response_to_protobuf response)
+        Lwt.return (Protobuf.Encoder.encode_exn get_response_to_protobuf response)
 
       | `Put (digest_kind, data) ->
         begin match digest_kind with
@@ -162,20 +151,20 @@ module Server(Backend: BACKEND) = struct
             Backend.put server.backend digest data
         end >>= fun response ->
         Lwt_log.debug ~section (Protocol.put_response_to_string response) >>= fun () ->
-        Lwt.return (Protobuf.Encoder.encode_bytes put_response_to_protobuf response)
+        Lwt.return (Protobuf.Encoder.encode_exn put_response_to_protobuf response)
 
       | `Erase digest ->
         (* TODO check auth; needs libzmq support *)
         Backend.erase server.backend digest >>= fun () ->
         Lwt.return `Ok >>= fun response ->
         Lwt_log.debug ~section (Protocol.erase_response_to_string response) >>= fun () ->
-        Lwt.return (Protobuf.Encoder.encode_bytes erase_response_to_protobuf response)
+        Lwt.return (Protobuf.Encoder.encode_exn erase_response_to_protobuf response)
 
       | `Enumerate cookie ->
         (* TODO check auth; needs libzmq support *)
         Backend.enumerate server.backend cookie >>= fun response ->
         Lwt_log.debug ~section (Protocol.enumerate_response_to_string response) >>= fun () ->
-        Lwt.return (Protobuf.Encoder.encode_bytes enumerate_response_to_protobuf response)
+        Lwt.return (Protobuf.Encoder.encode_exn enumerate_response_to_protobuf response)
 
       end >>= fun reply ->
       Lwt_zmq.Socket.Router.send server.socket id [""; reply]
@@ -205,11 +194,11 @@ module Client = struct
 
   let roundtrip socket decoder stringifier request =
     Lwt_log.debug ~section (Protocol.request_to_string request) >>= fun () ->
-    let message = Protobuf.Encoder.encode_bytes Protocol.request_to_protobuf request in
+    let message = Protobuf.Encoder.encode_exn Protocol.request_to_protobuf request in
     Lwt_zmq.Socket.send socket message >>= fun () ->
     Lwt_zmq.Socket.recv socket >>= fun message' ->
     try
-      let response = Protobuf.Decoder.decode_bytes decoder message' in
+      let response = Protobuf.Decoder.decode_exn decoder message' in
       Lwt_log.debug ~section (stringifier response) >>= fun () ->
       Lwt.return response
     with exn ->
