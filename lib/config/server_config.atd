@@ -1,0 +1,4 @@
+type server_config = {
+  public_key : string;
+  secret_key : string;
+}

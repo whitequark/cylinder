@@ -34,12 +34,12 @@ let connect { address; port } =
 
 let handle_error err =
   match err with
-  | `Not_found ->
-    Lwt.return (`Error (false, "Block is not found"))
   | `Unavailable ->
     Lwt.return (`Error (false, "Blockserver is unavailable"))
   | `Not_supported ->
     Lwt.return (`Error (false, "Blockserver does not support this digest kind"))
+  | `Not_found ->
+    Lwt.return (`Error (false, "A requested block is missing"))
   | `Malformed ->
     Lwt.return (`Error (false, "Stored data is corrupted"))
 

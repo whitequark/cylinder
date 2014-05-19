@@ -22,3 +22,11 @@ let blockserver_teardown (backend, sctx, server, client) ctxt =
   ZMQ.Context.terminate sctx
 
 let blockserver_bracket = bracket blockserver_setup blockserver_teardown
+
+let with_env var value f =
+  let old_value = try Some (Unix.getenv var) with Not_found -> None in
+  Unix.putenv var value;
+  f ();
+  match old_value with
+  | Some old_value -> Unix.putenv var old_value
+  | None -> ExtUnix.All.unsetenv var

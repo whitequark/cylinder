@@ -16,7 +16,7 @@ opam pin ctypes git://github.com/yallop/ocaml-ctypes#whitequark-bytes
 opam pin sodium git://github.com/whitequark/ocaml-sodium#zero-copy
 opam pin zmq git://github.com/whitequark/ocaml-zmq#remap_exn1
 opam pin lwt-zmq git://github.com/whitequark/lwt-zmq
-opam install extlib lwt inotify ppx_protobuf sodium oasis lwt-zmq
+opam install extlib extunix lwt inotify ppx_protobuf sodium lwt-zmq atdgen oasis
 ./configure
 make
 ```

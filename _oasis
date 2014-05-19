@@ -1,7 +1,7 @@
 OASISFormat:  0.4
 Name:         cylinder
 Version:      0.1
-Synopsis:     A trustless file synchronization engine
+Synopsis:     A least-authority file synchronization engine
 Authors:      Peter Zotov <whitequark@whitequark.org>
 License:      LGPL-2.1 with OCaml linking exception
 Homepage:     https://github.com/whitequark/cylinder
@@ -14,11 +14,14 @@ Library "cylinder"
                     core/Base64_url, core/Block, core/Chunk, core/Graph,
                     core/Timestamp, core/File,
                     backends/In_memory_store,
+                    config/Config, config/Server_config_t, config/Server_config_j,
                     local/Pathname, local/Tree
   Pack:             true
-  BuildDepends:     threads, lwt, lwt.unix, lwt.preemptive, extlib,
+  BuildDepends:     threads, lwt, lwt.unix, lwt.preemptive,
+                    extlib, extunix (>= 0.1.1),
                     ZMQ (>= 4.0), lwt-zmq, protobuf, sodium,
-                    inotify (>= 2.0), inotify.lwt, cmdliner
+                    atdgen, cmdliner,
+                    fileutils, inotify (>= 2.0), inotify.lwt
   ByteOpt:          -ppx ppx_lwt -ppx ppx_protobuf
   NativeOpt:        -ppx ppx_lwt -ppx ppx_protobuf
 
