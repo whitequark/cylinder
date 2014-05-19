@@ -15,7 +15,7 @@ let locate ~app ~name =
   else
     assert false
 
-let load ~app ~name ?init f =
+let load ~app ~name ~loader =
   let file = locate ~app ~name in
   try
     let fd  = Unix.openfile file [Unix.O_RDONLY] 0 in
@@ -26,19 +26,17 @@ let load ~app ~name ?init f =
       | 0 -> Buffer.contents buf
       | n -> Buffer.add_subbytes buf buf' 0 n; read ()
     in
-    Some (f (read ()))
+    Some (loader (read ()))
   with Unix.Unix_error(Unix.ENOENT, _, _) ->
-    match init with
-    | Some f -> Some (f ())
-    | None -> None
+    None
 
-let store ~app ~name f cfg =
+let store ~app ~name ~dumper cfg =
   let file = locate ~app ~name in
   FileUtil.mkdir ~parent:true (FilePath.dirname file);
   let temp = file ^ ".new" in
   try Unix.unlink temp with Unix.Unix_error (Unix.ENOENT, _, _) -> ();
   let fd   = Unix.openfile temp [Unix.O_WRONLY; Unix.O_CREAT] 0o600 in
-  let buf  = f cfg in
+  let buf  = dumper cfg in
   let rec write pos =
     match Unix.write fd buf pos ((Bytes.length buf) - pos) with
     | 0 -> ()
@@ -47,3 +45,8 @@ let store ~app ~name f cfg =
   write 0;
   Unix.close fd;
   Unix.rename temp file
+
+let init ~app ~name ~init ~loader ~dumper =
+  match load ~app ~name ~loader with
+  | Some x -> x
+  | None -> let x = init () in store ~app ~name ~dumper x; x

@@ -28,18 +28,23 @@ let test_locate_linux_xdg_multi ctxt =
     assert_equal ~printer (Filename.concat dir "foo/bar.json")
                           (Config.locate ~app ~name))
 
+let test_init ctxt =
+  assert_equal ~printer "foo" (Config.init ~app ~name ~init:(fun () -> "foo")
+                                           ~loader:String.lowercase ~dumper:String.uppercase);
+  assert_equal ~printer "foo" (Config.init ~app ~name ~init:(fun () -> assert false)
+                                           ~loader:String.lowercase ~dumper:String.uppercase);
+  FileUtil.rm ~recurse:true [Config.locate ~app ~name:""]
+
 let printer x = Option.default "" x
 
 let test_load_empty ctxt =
-  let f x = x in
-  assert_equal ~printer None (Config.load ~app ~name f);
-  assert_equal ~printer (Some "x") (Config.load ~app ~name ~init:(fun () -> "x") f)
+  assert_equal ~printer None (Config.load ~app ~name ~loader:(fun x -> x))
 
 let test_roundtrip ctxt =
-  Config.store ~app ~name String.uppercase "foo";
-  assert_equal ~printer (Some "foo") (Config.load ~app ~name String.lowercase);
-  Config.store ~app ~name String.uppercase "bar";
-  assert_equal ~printer (Some "bar") (Config.load ~app ~name String.lowercase);
+  Config.store ~app ~name ~dumper:String.uppercase "foo";
+  assert_equal ~printer (Some "foo") (Config.load ~app ~name ~loader:String.lowercase);
+  Config.store ~app ~name ~dumper:String.uppercase "bar";
+  assert_equal ~printer (Some "bar") (Config.load ~app ~name ~loader:String.lowercase);
   assert_equal 0o600 (Unix.stat (Config.locate ~app ~name)).Unix.st_perm;
   FileUtil.rm ~recurse:true [Config.locate ~app ~name:""]
 
