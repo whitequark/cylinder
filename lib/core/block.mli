@@ -21,6 +21,9 @@ val inspect_digest        : digest -> string
     digest if [b] is shorter than the length of hash function output. *)
 val digest_bytes          : bytes -> digest
 
+(** [verify_bytes d b] checks whether digest [d] is indeed the digest of [b]. *)
+val verify_bytes          : digest -> bytes -> bool
+
 (** [digest_bigbytes b] behaves like [digest_bytes]. *)
 val digest_bigbytes       : Lwt_bytes.t -> digest
 
@@ -99,8 +102,8 @@ module Client : sig
   (** [to_socket client] returns the ZeroMQ socket used by [client]. *)
   val to_socket : t -> [`Req] ZMQ.Socket.t
 
-  (** See {!BACKEND.get}. *)
-  val get       : t -> digest -> [ `Ok of string | `Not_found | `Unavailable ] Lwt.t
+  (** See {!BACKEND.get}. If the returned data doesn't match the digest, returns [`Malformed] *)
+  val get       : t -> digest -> [ `Ok of string | `Not_found | `Unavailable | `Malformed ] Lwt.t
 
   (** See {!BACKEND.put}. *)
   val put       : t -> digest_kind -> string -> [ `Ok | `Unavailable | `Not_supported ] Lwt.t

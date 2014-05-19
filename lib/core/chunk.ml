@@ -112,7 +112,7 @@ let retrieve_chunk client capa =
   | Stored { digest } ->
     match%lwt Block.Client.get client digest with
     | `Ok bytes -> capability_to_chunk capa (Some bytes)
-    | (`Not_found | `Unavailable) as err -> Lwt.return err
+    | (`Not_found | `Unavailable | `Malformed) as err -> Lwt.return err
 
 let store_chunk client ((capa, block_opt) as input) =
   Lwt_log.debug_f "store: %s" (inspect_capability capa) >>= fun () ->

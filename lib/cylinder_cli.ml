@@ -41,7 +41,7 @@ let handle_error err =
   | `Not_supported ->
     Lwt.return (`Error (false, "Blockserver does not support this digest kind"))
   | `Malformed ->
-    Lwt.return (`Error (false, "Capability or chunk are malformed"))
+    Lwt.return (`Error (false, "Stored data is corrupted"))
 
 let get_block client_opts force digest =
   let client = connect client_opts in
@@ -53,7 +53,7 @@ let get_block client_opts force digest =
     match%lwt Block.Client.get client digest with
     | `Ok bytes ->
       print_bytes bytes; Lwt.return (`Ok ())
-    | (`Not_found | `Unavailable) as err -> handle_error err
+    | (`Not_found | `Unavailable | `Malformed) as err -> handle_error err
 
 let stream_of_filename filename =
   if filename = "-"

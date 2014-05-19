@@ -19,6 +19,9 @@ type digest = digest_kind [@bare] * string
 let digest_bytes bytes =
   `SHA512, Bytes.to_string (Sodium.Hash.Bytes.of_hash (Sodium.Hash.Bytes.digest bytes))
 
+let verify_bytes digest bytes =
+  (digest_bytes bytes) = digest
+
 let digest_bigbytes bytes =
   `SHA512, Bytes.to_string (Sodium.Hash.Bytes.of_hash (Sodium.Hash.Bigbytes.digest bytes))
 
@@ -207,7 +210,13 @@ module Client = struct
 
   let get socket digest =
     roundtrip socket Protocol.get_response_from_protobuf Protocol.get_response_to_string
-              (`Get digest)
+              (`Get digest) >>= fun result ->
+    match result with
+    | `Ok bytes ->
+      if verify_bytes digest bytes
+      then Lwt.return (`Ok bytes)
+      else Lwt.return `Malformed
+    | (`Not_found | `Unavailable) as err -> Lwt.return err
 
   let put socket digest_kind obj =
     roundtrip socket Protocol.put_response_from_protobuf Protocol.put_response_to_string
