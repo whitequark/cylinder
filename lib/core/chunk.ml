@@ -123,8 +123,12 @@ let store_chunk client ((capa, block_opt) as input) =
   Lwt_log.debug_f "store: %s" (inspect_capability capa) >>= fun () ->
   match input with
   | Inline _, None -> Lwt.return `Ok
-  | Stored { digest = (digest_kind, _) }, Some bytes ->
-    begin match%lwt Block.Client.put client digest_kind bytes with
-    | (`Ok | `Unavailable | `Not_supported) as result -> Lwt.return result
+  | Stored { digest = (digest_kind, _) as digest }, Some bytes ->
+    begin match%lwt Block.Client.exists client digest with
+    | `Not_found ->
+      begin match%lwt Block.Client.put client digest_kind bytes with
+      | (`Ok | `Unavailable | `Not_supported) as result -> Lwt.return result
+      end
+    | (`Ok | `Unavailable) as result -> Lwt.return result
     end
   | _ -> Lwt.return `Malformed

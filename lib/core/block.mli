@@ -53,6 +53,12 @@ module type BACKEND = sig
       [`Unavailable] is returned. *)
   val get       : t -> digest -> [> `Ok of string | `Not_found | `Unavailable ] Lwt.t
 
+  (** [exists bd digest] returns [`Ok] if an object corresponding to [digest] exists
+      in [bd], or [`Not_found] otherwise.
+      If the backend is temporarily unavailable, e.g. due to a severed network link,
+      [`Unavailable] is returned. *)
+  val exists    : t -> digest -> [> `Ok | `Not_found | `Unavailable ] Lwt.t
+
   (** [put bd digest obj] places an object [obj] to [bd] corresponding to digest
       [digest] and returns [`Ok]. No verification of [digest] is performed.
       If the backend is temporarily unavailable, e.g. due to a severed network link
@@ -104,8 +110,11 @@ module Client : sig
   (** [to_socket client] returns the ZeroMQ socket used by [client]. *)
   val to_socket : t -> [`Req] ZMQ.Socket.t
 
-  (** See {!BACKEND.get}. If the returned data doesn't match the digest, returns [`Malformed] *)
+  (** See {!BACKEND.get}. If the returned data doesn't match the digest, returns [`Malformed]. *)
   val get       : t -> digest -> [ `Ok of string | `Not_found | `Unavailable | `Malformed ] Lwt.t
+
+  (** See {!BACKEND.exists}. *)
+  val exists    : t -> digest -> [ `Ok | `Not_found | `Unavailable ] Lwt.t
 
   (** See {!BACKEND.put}. *)
   val put       : t -> digest_kind -> string -> [ `Ok | `Unavailable | `Not_supported ] Lwt.t

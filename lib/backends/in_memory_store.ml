@@ -6,6 +6,10 @@ let get store digest =
   try  Lwt.return (`Ok (Hashtbl.find store digest))
   with Not_found -> Lwt.return `Not_found
 
+let exists store digest =
+  try  ignore (Hashtbl.find store digest); Lwt.return `Ok
+  with Not_found -> Lwt.return `Not_found
+
 let put store digest obj =
   Hashtbl.replace store digest obj;
   Lwt.return `Ok

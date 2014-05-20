@@ -40,6 +40,7 @@ module type BACKEND = sig
   type t
 
   val get       : t -> digest -> [> `Ok of string | `Not_found | `Unavailable ] Lwt.t
+  val exists    : t -> digest -> [> `Ok | `Not_found | `Unavailable ] Lwt.t
   val put       : t -> digest -> string -> [> `Ok | `Unavailable ] Lwt.t
   val erase     : t -> digest -> unit Lwt.t
   val enumerate : t -> string -> [ `Ok of (string * digest list) | `Exhausted ] Lwt.t
@@ -48,9 +49,10 @@ end
 module Protocol = struct
   type request =
   [ `Get            [@key 1] of digest
-  | `Put            [@key 2] of digest_kind [@bare] * bytes
-  | `Erase          [@key 3] of digest
-  | `Enumerate      [@key 4] of string
+  | `Exists         [@key 2] of digest
+  | `Put            [@key 3] of digest_kind [@bare] * bytes
+  | `Erase          [@key 4] of digest
+  | `Enumerate      [@key 5] of string
   ] [@@protobuf]
 
   let shorten bytes =
@@ -62,6 +64,8 @@ module Protocol = struct
     match req with
     | `Get digest ->
       Printf.sprintf "`Get %s" (inspect_digest digest)
+    | `Exists digest ->
+      Printf.sprintf "`Exists %s" (inspect_digest digest)
     | `Put (`SHA512, obj) ->
       Printf.sprintf "`Put (`SHA512, %s)" (shorten obj)
     | `Erase digest ->
@@ -78,6 +82,18 @@ module Protocol = struct
   let get_response_to_string resp =
     match resp with
     | `Ok bytes -> Printf.sprintf "`Ok %s..." (shorten bytes)
+    | `Not_found -> "`Not_found"
+    | `Unavailable -> "`Unavailable"
+
+  type exists_response =
+  [ `Ok             [@key 1]
+  | `Not_found      [@key 2]
+  | `Unavailable    [@key 3]
+  ] [@@protobuf]
+
+  let exists_response_to_string resp =
+    match resp with
+    | `Ok -> Printf.sprintf "`Ok"
     | `Not_found -> "`Not_found"
     | `Unavailable -> "`Unavailable"
 
@@ -146,6 +162,11 @@ module Server(Backend: BACKEND) = struct
         Backend.get server.backend digest >>= fun response ->
         Lwt_log.debug ~section (Protocol.get_response_to_string response) >>= fun () ->
         Lwt.return (Protobuf.Encoder.encode_exn get_response_to_protobuf response)
+
+      | `Exists digest ->
+        Backend.exists server.backend digest >>= fun response ->
+        Lwt_log.debug ~section (Protocol.exists_response_to_string response) >>= fun () ->
+        Lwt.return (Protobuf.Encoder.encode_exn exists_response_to_protobuf response)
 
       | `Put (digest_kind, data) ->
         begin match digest_kind with
@@ -220,6 +241,10 @@ module Client = struct
       then Lwt.return (`Ok bytes)
       else Lwt.return `Malformed
     | (`Not_found | `Unavailable) as err -> Lwt.return err
+
+  let exists socket digest =
+    roundtrip socket Protocol.exists_response_from_protobuf Protocol.exists_response_to_string
+              (`Exists digest)
 
   let put socket digest_kind obj =
     roundtrip socket Protocol.put_response_from_protobuf Protocol.put_response_to_string

@@ -12,10 +12,14 @@ end) = struct
     let%lwt store  = Backend.create () in
     let%lwt result = Backend.get store digest in
     assert_equal `Not_found result;
+    let%lwt result = Backend.exists store digest in
+    assert_equal `Not_found result;
     let%lwt result = Backend.put store digest "the quick brown fox" in
     assert_equal `Ok result;
     let%lwt result = Backend.get store digest in
     assert_equal (`Ok "the quick brown fox") result;
+    let%lwt result = Backend.exists store digest in
+    assert_equal `Ok result;
     Lwt.return_unit
 
   let test_erase ctxt =

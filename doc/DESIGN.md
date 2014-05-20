@@ -52,6 +52,8 @@ The blockserver protocol is based on stateless request-reply. On a high level, i
 
   Client identity is not considered.
 
+  * _exists_: similar to _get_, but only returns whether the object is found.
+
   * _put_: accept an object and ensure it is present in the store, returning a digest. Alternatively, signal that the storage space is exhausted or that the client has exceeded its quota.
 
   Client identity may be used to enforce disk quotas.
@@ -114,9 +116,10 @@ The blockserver request is defined as follows:
 message BlockserverReq {
   enum Type {
     Get       = 1; // of get_digest
-    Put       = 2; // of put_object
-    Erase     = 3; // of erase_digest
-    Enumerate = 4; // of enumerate_marker
+    Exists    = 2; // of exists_digest
+    Put       = 3; // of put_object
+    Erase     = 4; // of erase_digest
+    Enumerate = 5; // of enumerate_marker
   }
   message Object {
     required Digest.Type digest_type = 1;
@@ -124,9 +127,10 @@ message BlockserverReq {
   }
   required Type type = 1;
   optional Digest get_digest       = 2;
-  optional Object put_object       = 3;
-  optional Digest erase_digest     = 4;
-  optional string enumerate_marker = 5;
+  optional Digest exists_digest    = 3;
+  optional Object put_object       = 4;
+  optional Digest erase_digest     = 5;
+  optional string enumerate_marker = 6;
 }
 ```
 
@@ -151,6 +155,26 @@ message BlockserverGetResp {
 The `object` field in `BlockserverGetResp` must only be present if `result = Ok`.
 
 A client that sends a _get_ request must verify that the received object indeed has the digest that the client requires.
+
+The blockserver will return `result = Unavailable` if it is unable to contact its backend.
+
+#### Exists
+
+A valid _Exists_ request is a `BlockserverReq` with `type = Exists` and only `exists_digest`
+present.
+
+The response is defined as follows:
+
+``` protoc
+message BlockserverExistsResp {
+  enum Result {
+    Ok          = 1;
+    NotFound    = 2;
+    Unavailable = 3;
+  }
+  required Result result = 1;
+}
+```
 
 The blockserver will return `result = Unavailable` if it is unable to contact its backend.
 
