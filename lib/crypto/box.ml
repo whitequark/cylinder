@@ -7,11 +7,25 @@ type public_key = key
 type secret_key = key
 type key_pair = secret_key * public_key
 
+let secret_key_from_protobuf = key_from_protobuf
+let secret_key_to_protobuf = key_to_protobuf
+
+let secret_key_of_string str =
+  match Base64_url.decode str with
+  | Some x -> Protobuf.Decoder.decode secret_key_from_protobuf x
+  | None -> None
+let secret_key_to_string key =
+  Base64_url.encode (Protobuf.Encoder.encode_exn secret_key_to_protobuf key)
+
 let public_key_from_protobuf = key_from_protobuf
 let public_key_to_protobuf = key_to_protobuf
 
-let secret_key_from_protobuf = key_from_protobuf
-let secret_key_to_protobuf = key_to_protobuf
+let public_key_of_string str =
+  match Base64_url.decode str with
+  | Some x -> Protobuf.Decoder.decode public_key_from_protobuf x
+  | None -> None
+let public_key_to_string key =
+  Base64_url.encode (Protobuf.Encoder.encode_exn public_key_to_protobuf key)
 
 let random_key_pair () =
   let sk, pk = Sodium.Box.random_key_pair () in

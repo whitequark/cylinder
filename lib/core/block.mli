@@ -74,13 +74,15 @@ module type BACKEND = sig
   val enumerate : t -> string -> [ `Ok of (string * digest list) | `Exhausted ] Lwt.t
 end
 
+(** Maximum message size to prevent DoS. Currently [16_777_211]. *)
+val max_message_size : int
+
 module Server(Backend: BACKEND) : sig
   (** The type of storage servers. *)
   type t
 
   (** [create backend sock] creates a server for backend [backend] and a ZeroMQ
-      socket [sock].
-      The maximum message length of [sock] is set to [16_777_211]. *)
+      socket [sock]. The maximum message length of [sock] must be set to [max_message_size]. *)
   val create    : Backend.t -> [`Router] ZMQ.Socket.t -> t
 
   (** [to_socket server] returns the ZeroMQ socket used by [server]. *)
@@ -96,7 +98,7 @@ module Client : sig
   type t
 
   (** [create sock] creates a client for a ZeroMQ socket [sock].
-      The maximum message length of [sock] is set to [16_777_211]. *)
+      The maximum message length of [sock] must be set to [max_message_size]. *)
   val create    : [`Req] ZMQ.Socket.t -> t
 
   (** [to_socket client] returns the ZeroMQ socket used by [client]. *)

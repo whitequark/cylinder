@@ -118,6 +118,9 @@ module Protocol = struct
     | `Forbidden -> "`Forbidden"
 end
 
+(* [Sys.max_string_length] on 32-bit *)
+let max_message_size = 16_777_211
+
 module Server(Backend: BACKEND) = struct
   type t = {
     backend : Backend.t;
@@ -127,7 +130,7 @@ module Server(Backend: BACKEND) = struct
   let section = Lwt_log.Section.make "Blockserver"
 
   let create backend socket =
-    ZMQ.Socket.set_max_message_size socket 16_777_211; (* max_string_length on 32-bit *)
+    assert ((ZMQ.Socket.get_max_message_size socket) = max_message_size);
     { backend; socket = Lwt_zmq.Socket.of_socket socket }
 
   let to_socket { socket } =
@@ -189,7 +192,7 @@ module Client = struct
   let section = Lwt_log.Section.make "Blockclient"
 
   let create socket =
-    ZMQ.Socket.set_max_message_size socket 16_777_211; (* max_string_length on 32-bit *)
+    assert ((ZMQ.Socket.get_max_message_size socket) = max_message_size);
     Lwt_zmq.Socket.of_socket socket
 
   let to_socket socket =

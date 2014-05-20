@@ -14,13 +14,13 @@ Library "cylinder"
                     core/Base64_url, core/Block, core/Chunk, core/Graph,
                     core/Timestamp, core/File,
                     backends/In_memory_store,
-                    config/Config, config/Server_config_t, config/Server_config_j,
+                    config/Config, config/Server_config,
                     local/Pathname, local/Tree
   Pack:             true
   BuildDepends:     threads, lwt, lwt.unix, lwt.preemptive,
                     extlib, extunix (>= 0.1.1),
                     ZMQ (>= 4.0), lwt-zmq, protobuf, sodium,
-                    atdgen, cmdliner,
+                    yojson, cmdliner,
                     fileutils, inotify (>= 2.0), inotify.lwt
   ByteOpt:          -ppx ppx_lwt -ppx ppx_protobuf
   NativeOpt:        -ppx ppx_lwt -ppx ppx_protobuf
