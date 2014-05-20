@@ -7,6 +7,13 @@ let random_key () =
   { algorithm = `XSalsa20_Poly1305;
     key       = Sodium.Secret_box.(Bytes.of_key (random_key ())) }
 
+let key_of_string str =
+  match Base64_url.decode str with
+  | Some x -> Protobuf.Decoder.decode key_from_protobuf x
+  | None -> None
+let key_to_string key =
+  Base64_url.encode (Protobuf.Encoder.encode_exn key_to_protobuf key)
+
 type encrypted = {
   data      : bytes [@key 1];
   nonce     : bytes [@key 2];

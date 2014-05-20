@@ -100,9 +100,15 @@ let create_from_unix_fd ~convergence ~client fd =
   | (`Ok _ | `Unavailable | `Not_supported) as result -> Lwt.return result
 
 let retrieve_to_unix_fd ~client file fd =
+  let ignore_espipe f =
+    try%lwt f ()
+    with Unix.Unix_error(Unix.ESPIPE, _, _) -> Lwt.return_unit
+  in
   try%lwt
     (* Go through the chunks and write them to the file. *)
-    Lwt_unix.lseek fd 0 Lwt_unix.SEEK_SET >>= fun _ ->
+    ignore_espipe (fun () ->
+      Lwt_unix.lseek fd 0 Lwt_unix.SEEK_SET >>= fun _ ->
+      Lwt.return_unit) >>= fun () ->
     file.chunks |> Lwt_list.iter_s (fun capa ->
       let%lwt bytes =
         match%lwt Chunk.retrieve_chunk client capa with
@@ -112,8 +118,9 @@ let retrieve_to_unix_fd ~client file fd =
       Lwt_unix.write fd bytes 0 (Bytes.length bytes) >>= fun _ ->
       Lwt.return_unit) >>= fun () ->
     (* Truncate the file to its current size. *)
-    let%lwt length = Lwt_unix.lseek fd 0 Lwt_unix.SEEK_CUR in
-    Lwt_unix.ftruncate fd length >>= fun () ->
+    ignore_espipe (fun () ->
+      let%lwt length = Lwt_unix.lseek fd 0 Lwt_unix.SEEK_CUR in
+      Lwt_unix.ftruncate fd length) >>= fun () ->
     (* At last, update metadata. *)
     let%lwt { Lwt_unix.st_perm } = Lwt_unix.fstat fd in
     begin if file.executable && st_perm land 0o100 = 0 then

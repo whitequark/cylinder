@@ -10,6 +10,12 @@ val key_from_protobuf : Protobuf.Decoder.t -> key
 (** [key_to_protobuf k e] serializes secret box key [k] into [e]. *)
 val key_to_protobuf   : key -> Protobuf.Encoder.t -> unit
 
+(** [key_of_string d] deserializes a secret box key from string [s]. *)
+val key_of_string     : string -> key option
+
+(** [key_to_string k] serializes secret box key [k] as a string. *)
+val key_to_string     : key -> string
+
 (** [random_key ()] returns a random secret box key. *)
 val random_key        : unit -> key
 
