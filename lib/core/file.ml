@@ -14,10 +14,10 @@ let empty = { last_modified = Timestamp.zero; executable = false; chunks = [] }
 let file_of_graph_elt ~key graph_elt =
   Secret_box.decrypt graph_elt.Graph.content key
 
-let file_to_graph_elt ~server ~updater ~key file =
+let file_to_graph_elt ~server ~key file =
   let edges      = ExtList.List.filter_map Chunk.capability_digest file.chunks in
   let secret_box = Secret_box.store file key in
-  Graph.element ~server ~updater edges secret_box
+  Graph.element ~server edges secret_box
 
 let rec update_with_unix_fd ~convergence ~client file fd =
   (* Remember mtime before we start. *)

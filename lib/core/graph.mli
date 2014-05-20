@@ -15,11 +15,10 @@ val element_from_protobuf   : (Protobuf.Decoder.t -> 'a) ->
 val element_to_protobuf     : ('a -> Protobuf.Encoder.t -> unit) ->
                               'a element -> Protobuf.Encoder.t -> unit
 
-(** [element ~server ~updater el c] creates a graph element using
-    server public key [server], updater public and private keys [updater],
-    a list of edges [el] and content [c]. *)
-val element                 : server:Box.public_key -> updater:Box.key_pair ->
-                              Block.digest list -> 'a -> 'a element
+(** [element ~server el c] creates a graph element using server public key
+    [server], a list of edges [el] and content [c]. *)
+val element                 : server:Box.public_key -> Block.digest list ->
+                              'a -> 'a element
 
 (** [edge_list ~server ge] retrieves the edge list from a graph element [ge]
     using the server secret key [server] and returns [Some edges], or [None]

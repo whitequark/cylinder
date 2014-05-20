@@ -8,11 +8,11 @@ type 'content element = {
 }
 [@@protobuf]
 
-let element ~server:server_public ~updater:(updater_secret, updater_public)
-            edges content =
+let element ~server:server_public edges content =
+  let temp_secret, temp_public = Box.random_key_pair () in
   { content;
-    updater = updater_public;
-    edges   = Box.store edges updater_secret server_public }
+    updater = temp_public;
+    edges   = Box.store edges temp_secret server_public }
 
 let edge_list ~server:server_secret { content; updater = updater_public; edges } =
   Box.decrypt edges server_secret updater_public

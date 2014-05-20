@@ -258,10 +258,7 @@ let store_file key data =
   match%lwt File.create_from_unix_fd ~convergence ~client fd with
   | (`Unavailable | `Not_supported) as err -> handle_error err
   | `Ok file ->
-    let graph_elt = File.file_to_graph_elt
-        ~server:config.server_key
-        ~updater:(config.secret_key, config.public_key)
-        ~key file in
+    let graph_elt = File.file_to_graph_elt ~server:config.server_key ~key file in
     let encoder = Secret_box.box_to_protobuf File.file_to_protobuf in
     let bytes   = Protobuf.Encoder.encode_exn (Graph.element_to_protobuf encoder) graph_elt in
     let (kind, _) as digest = Block.digest_bytes bytes in

@@ -396,7 +396,11 @@ A filesystem is a directed acyclic graph: directories point to files, files poin
 
 A graph element consists of the nested message and a list of blocks this message refers to. The entity creating the graph element is responsible for ensuring that the block list is consistent with the nested message.
 
-The block list is encrypted using the stateserver's public key.
+The block list is encrypted using the stateserver's public key and a random key pair. Essentially, the ciphertext is not authenticated.
+
+### Rationale
+
+The content of the whole block is authenticated using a Merkle tree enclosing the whole checkpoint, and the identity of the client composing the edge list is unimportant. However, using the client identity here would be disastrous: it would including the author of the each block in cleartext inside it.
 
 ### Storage format
 
