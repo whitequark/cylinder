@@ -34,7 +34,7 @@ let test_capa_encrypt ctxt =
 let test_capa_roundtrip ctxt =
   let chunk = Chunk.chunk_of_bytes (Bytes.make 128 'A') in
   let%lwt capa, blk = Chunk.capability_of_chunk ~convergence:"" chunk in
-  let%lwt chunk'     = Chunk.capability_to_chunk capa blk in
+  let%lwt chunk'    = Chunk.capability_to_chunk capa blk in
   assert_equal (`Ok chunk) chunk';
   Lwt.return_unit
 
@@ -67,7 +67,7 @@ let test_network_stored ctxt =
   let%lwt capa, blk = Chunk.capability_of_chunk ~convergence:"" chunk in
   match capa with
   | Chunk.Stored handle ->
-    let%lwt result    = Chunk.store_chunk client (capa, blk) in
+    let%lwt result = Chunk.store_chunk client (capa, blk) in
     assert_equal `Ok result;
     begin match%lwt Chunk.retrieve_chunk client capa with
     | `Ok chunk' ->

@@ -62,6 +62,11 @@ let inspect_capability capa =
   | Stored { digest } ->
     Printf.sprintf "stored:%s" (Block.inspect_digest digest)
 
+let capability_digest capa =
+  match capa with
+  | Inline _ -> None
+  | Stored { digest } -> Some digest
+
 let capability_to_string capa =
   Base64_url.encode (Protobuf.Encoder.encode_exn capability_to_protobuf capa)
 

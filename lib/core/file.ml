@@ -11,6 +11,14 @@ exception Error of [ `Not_found | `Unavailable | `Malformed | `Not_supported ]
 
 let empty = { last_modified = Timestamp.zero; executable = false; chunks = [] }
 
+let file_of_graph_elt ~key graph_elt =
+  Secret_box.decrypt graph_elt.Graph.content key
+
+let file_to_graph_elt ~server ~updater ~key file =
+  let edges      = ExtList.List.filter_map Chunk.capability_digest file.chunks in
+  let secret_box = Secret_box.store file key in
+  Graph.element ~server ~updater edges secret_box
+
 let rec update_with_unix_fd ~convergence ~client file fd =
   (* Remember mtime before we start. *)
   let%lwt { Lwt_unix.st_mtime = mtime; st_perm } = Lwt_unix.fstat fd in

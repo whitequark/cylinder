@@ -65,8 +65,28 @@ let test_roundtrip ctxt =
   roundtrip (String.make 10 'A') >>= fun () ->
   roundtrip (String.make 200 'A')
 
+let test_graph_elt ctxt =
+  let chunk = Chunk.chunk_of_bytes (Bytes.make 1024 'A') in
+  let%lwt capa, blk = Chunk.capability_of_chunk ~convergence:"" chunk in
+
+  let (server_secret, server_public) = Box.random_key_pair () in
+  let client_keypair = Box.random_key_pair () in
+  let ckpoint_key    = Secret_box.random_key () in
+  let file = File.{
+    executable    = false;
+    last_modified = Timestamp.now ();
+    chunks        = [capa] } in
+  let graph_elt = File.file_to_graph_elt
+      ~server:server_public ~updater:client_keypair ~key:ckpoint_key file in
+  let file' = File.file_of_graph_elt ~key:ckpoint_key graph_elt in
+  assert_equal (Some file) file';
+  let edges = Graph.edge_list ~server:server_secret graph_elt in
+  assert_equal (Some [Option.get (Chunk.capability_digest capa)]) edges;
+  Lwt.return_unit
+
 let suite = "Test File" >::: [
     "test_create_inline" >:: run test_create_inline;
     "test_update_inline" >:: run test_update_inline;
     "test_roundtrip"     >:: run test_roundtrip;
+    "test_graph_elt"     >:: run test_graph_elt;
   ]

@@ -62,6 +62,10 @@ type capability =
 (** [inspect_capability ca] converts [ca] to a human-readable string. *)
 val inspect_capability       : capability -> string
 
+(** [capability_digest ca] returns [Some digest] for stored capability [ca]
+    or [None] for inline capability [ca]. *)
+val capability_digest        : capability -> Block.digest option
+
 (** [capability_from_protobuf d] deserializes a capability from [d]. *)
 val capability_from_protobuf : Protobuf.Decoder.t -> capability
 
