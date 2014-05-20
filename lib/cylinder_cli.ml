@@ -1,5 +1,3 @@
-open Cmdliner
-
 let (>>=) = Lwt.(>>=)
 
 (* Command implementation *)
@@ -18,6 +16,12 @@ let resolve host service =
     Lwt.return (`Ok (Unix.string_of_inet_addr addr, port))
   | _ ->
     Lwt.return (`Error (false, Printf.sprintf "cannot resolve %s:%s" host service))
+
+let load_server_config () =
+  match Config.load ~app:"cylinder" ~name:"server.json"
+                    ~loader:Server_config.server_config_of_string with
+  | None -> `Error (false, "No server configuration found.")
+  | Some config -> `Ok config
 
 let init_server_config () =
   let open Server_config in
@@ -63,7 +67,7 @@ let load_client_config () =
   Config.load ~app:"cylinder" ~name:"client.json"
               ~loader:Client_config.client_config_of_string
 
-let client_init host port server_key =
+let init_client host port server_key =
   let open Client_config in
   let secret_key, public_key =
     match load_client_config () with
@@ -82,6 +86,8 @@ let client_init host port server_key =
 let connect () =
   let open Client_config in
   match load_client_config () with
+  | None ->
+    Lwt.return (`Error (false, "No client configuration found. Use the client-init command."))
   | Some config ->
     let zcontext = ZMQ.Context.create () in
     let zsocket  = ZMQ.Socket.create zcontext ZMQ.Socket.req in
@@ -93,15 +99,11 @@ let connect () =
     ZMQ.Socket.set_curve_secretkey zsocket secret_key;
     ZMQ.Socket.set_curve_publickey zsocket public_key;
     ZMQ.Socket.set_curve_serverkey zsocket server_key;
-    begin match%lwt resolve config.server_host (string_of_int config.server_port) with
+    match%lwt resolve config.server_host (string_of_int config.server_port) with
+    | `Error err -> Lwt.return (`Error err)
     | `Ok (addr, port) ->
       ZMQ.Socket.connect zsocket (Printf.sprintf "tcp://%s:%d" addr port);
       Lwt.return (`Ok (Block.Client.create zsocket))
-    | `Error err ->
-      Lwt.return (`Error err)
-    end
-  | None ->
-    Lwt.return (`Error (false, "No client configuration found. Use the client-init command."))
 
 let handle_error err =
   match err with
@@ -120,9 +122,9 @@ let get_block force digest =
   | `Ok client ->
     if not (Unix.isatty Unix.stdout) || force then
       match%lwt Block.Client.get client digest with
+      | (`Not_found | `Unavailable | `Malformed) as err -> handle_error err
       | `Ok bytes ->
         print_bytes bytes; Lwt.return (`Ok ())
-      | (`Not_found | `Unavailable | `Malformed) as err -> handle_error err
     else
       Lwt.return (`Error (false, "You are attempting to output binary data to a terminal. \
                                   This is inadvisable, as it may cause display problems. \
@@ -139,10 +141,10 @@ let put_block digest_kind filename =
   | `Ok client ->
     let%lwt data = stream_of_filename filename >>= Lwt_io.read in
     match%lwt Block.Client.put client digest_kind data with
+    | (`Unavailable | `Not_supported) as err -> handle_error err
     | `Ok ->
       Lwt_io.printl (Block.digest_to_string (Block.digest_bytes data)) >>= fun () ->
       Lwt.return (`Ok ())
-    | (`Unavailable | `Not_supported) as err -> handle_error err
 
 let show_chunk capa =
   match%lwt connect () with
@@ -159,11 +161,11 @@ let show_chunk capa =
       Lwt_io.printlf "Key:       %s" (Base64_url.encode key) >>= fun () ->
       Lwt_io.printlf "Digest:    %s" (Block.digest_to_string digest) >>= fun () ->
       match%lwt Chunk.retrieve_chunk client capa with
+      | (`Not_found | `Unavailable | `Malformed ) as err -> handle_error err
       | `Ok { Chunk.encoding; content } ->
         Lwt_io.printlf "Encoding:  %s" (Chunk.encoding_to_string encoding) >>= fun () ->
         Lwt_io.printlf "Length:    %d bytes" (Bytes.length content) >>= fun () ->
         Lwt.return (`Ok ())
-      | (`Not_found | `Unavailable | `Malformed ) as err -> handle_error err
 
 let store_chunk convergence filename =
   match%lwt connect () with
@@ -172,22 +174,47 @@ let store_chunk convergence filename =
     let%lwt data = stream_of_filename filename >>= Lwt_io.read in
     let%lwt capa, bytes_opt = Chunk.capability_of_chunk ~convergence (Chunk.chunk_of_bytes data) in
     match%lwt Chunk.store_chunk client (capa, bytes_opt) with
+    | (`Unavailable | `Not_supported | `Malformed) as err -> handle_error err
     | `Ok ->
       Lwt_io.printl (Chunk.capability_to_string capa) >>= fun () ->
       Lwt.return (`Ok ())
-    | (`Unavailable | `Not_supported | `Malformed) as err -> handle_error err
 
 let retrieve_chunk capa =
   match%lwt connect () with
   | `Error err -> Lwt.return (`Error err)
   | `Ok client ->
     match%lwt Chunk.retrieve_chunk client capa with
+    | (`Not_found | `Unavailable | `Malformed) as err -> handle_error err
     | `Ok chunk ->
       Lwt_io.print (Chunk.chunk_to_bytes chunk) >>= fun () ->
       Lwt.return (`Ok ())
-    | (`Not_found | `Unavailable | `Malformed) as err -> handle_error err
+
+let show_graph_elt capa =
+  match load_server_config () with
+  | `Error err -> Lwt.return (`Error err)
+  | `Ok server_config ->
+    match%lwt connect () with
+    | `Error err -> Lwt.return (`Error err)
+    | `Ok client ->
+      match%lwt Chunk.retrieve_chunk client capa with
+      | (`Not_found | `Unavailable | `Malformed) as err -> handle_error err
+      | `Ok chunk ->
+        let bytes   = Chunk.chunk_to_bytes chunk in
+        let decoder = Graph.element_from_protobuf (fun _ -> ()) in
+        match Protobuf.Decoder.decode decoder bytes with
+        | None -> Lwt.return (`Error (false, "Chunk does not contain a graph element"))
+        | Some graph_elt ->
+          match Graph.edge_list ~server:server_config.Server_config.secret_key graph_elt with
+          | None -> Lwt.return (`Error (false, "Cannot decrypt graph element; wrong server?"))
+          | Some digests ->
+            digests |>
+            List.map Block.digest_to_string |>
+            Lwt_list.iter_s Lwt_io.printl >>= fun () ->
+            Lwt.return (`Ok ())
 
 (* Command specification *)
+
+open Cmdliner
 
 let make_arg_conv of_string to_string error =
   (fun str ->
@@ -236,7 +263,7 @@ let server_cmd =
   Term.(ret (pure Lwt_main.run $ (pure server $ backend $ address $ port))),
   Term.info "server" ~doc ~docs
 
-let client_init_cmd =
+let init_client_cmd =
   let address =
     let doc = "Connect to address $(docv)" in
     Arg.(value & opt string "127.0.0.1" & info ["a"; "address"] ~docv:"ADDRESS" ~doc)
@@ -250,8 +277,8 @@ let client_init_cmd =
     Arg.(required & opt (some public_key) None & info ["k"; "server-key"] ~docv:"KEY" ~doc)
   in
   let doc = "configure client" in
-  Term.(pure client_init $ address $ port $ server_key),
-  Term.info "client-init" ~doc ~docs
+  Term.(pure init_client $ address $ port $ server_key),
+  Term.info "init-client" ~doc ~docs
 
 let docs = "LOW-LEVEL COMMANDS"
 
@@ -304,6 +331,11 @@ let retrieve_chunk_cmd =
   Term.(ret (pure Lwt_main.run $ (pure retrieve_chunk $ capability))),
   Term.info "retrieve-chunk" ~doc ~docs
 
+let show_graph_elt_cmd =
+  let doc = "show graph element properties" in
+  Term.(ret (pure Lwt_main.run $ (pure show_graph_elt $ capability))),
+  Term.info "show-graph-element" ~doc ~docs
+
 let default_cmd =
   let doc = "command-line interface for Cylinder" in
   let man = [
@@ -315,9 +347,10 @@ let default_cmd =
 
 let commands = [
     server_cmd;
-    client_init_cmd;
+    init_client_cmd;
     get_block_cmd; put_block_cmd;
     show_chunk_cmd; retrieve_chunk_cmd; store_chunk_cmd;
+    show_graph_elt_cmd;
   ]
 
 let () =
