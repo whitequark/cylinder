@@ -1,5 +1,15 @@
 let (>>=) = Lwt.(>>=)
 
+let (>:=) x f =
+  match%lwt x with
+  | (`Error _) as err -> Lwt.return err
+  | `Ok value -> f value
+
+let return_ok = Lwt.return (`Ok ())
+let return_val v = Lwt.return (`Ok v)
+let return_error v = Lwt.return (`Error (false, v))
+let return_error_f fmt = Printf.kprintf return_error fmt
+
 (* Command implementation *)
 
 type backend_kind = In_memory_backend
@@ -13,11 +23,11 @@ let resolve host service =
   let rec find_addr ais =
     match ais with
     | {ai_family = PF_INET; ai_addr = ADDR_INET(addr, port)}::_ ->
-      Lwt.return (`Ok (Unix.string_of_inet_addr addr, port))
+      return_val (Unix.string_of_inet_addr addr, port)
     | {ai_family = PF_INET6; ai_addr = ADDR_INET(addr, port)}::_ ->
-      Lwt.return (`Ok ("[" ^ (Unix.string_of_inet_addr addr) ^ "]", port))
+      return_val ("[" ^ (Unix.string_of_inet_addr addr) ^ "]", port)
     | _ :: rest -> find_addr rest
-    | [] -> Lwt.return (`Error (false, Printf.sprintf "cannot resolve %s:%s" host service))
+    | [] -> return_error_f "cannot resolve %s:%s" host service
   in
   getprotobyname "tcp" >>= fun pe ->
   getaddrinfo host service [AI_PROTOCOL pe.p_proto] >>=
@@ -26,8 +36,8 @@ let resolve host service =
 let load_server_config () =
   match Config.load ~app:"cylinder" ~name:"server.json"
                     ~loader:Server_config.server_config_of_string with
-  | None -> `Error (false, "No server configuration found.")
-  | Some config -> `Ok config
+  | None -> return_error "No server configuration found."
+  | Some config -> return_val config
 
 let init_server_config () =
   let open Server_config in
@@ -61,23 +71,20 @@ let server backend_kind host port =
     failwith "libzmq was compiled without libsodium"
   end;
   Lwt_log.notice_f "Public key: %s" (Box.public_key_to_string config.public_key) >>= fun () ->
-  match%lwt resolve host (string_of_int port) with
-  | `Error err -> Lwt.return (`Error err)
-  | `Ok (addr, port) ->
-    try
-      ZMQ.Socket.bind zsocket (Printf.sprintf "tcp://%s:%d" addr port);
-      Lwt_log.notice_f "Listening at %s:%d..." addr port >>= fun () ->
-      listen zsocket >>= fun () ->
-      Lwt.return (`Ok ())
-    with exn ->
-      Lwt.return (`Error (false, Printf.sprintf "Cannot bind to %s:%d" addr port))
+  resolve host (string_of_int port) >:= fun (addr, port) ->
+  try
+    ZMQ.Socket.bind zsocket (Printf.sprintf "tcp://%s:%d" addr port);
+    Lwt_log.notice_f "Listening at %s:%d..." addr port >>= fun () ->
+    listen zsocket >>= fun () ->
+    return_ok
+  with exn ->
+    return_error_f "Cannot bind to %s:%d" addr port
 
 let load_client_config () =
   match Config.load ~app:"cylinder" ~name:"client.json"
                     ~loader:Client_config.client_config_of_string with
-  | None ->
-    `Error (false, "No client configuration found. Use the client-init command.")
-  | Some config -> `Ok config
+  | None -> return_error "No client configuration found. Use the client-init command."
+  | Some config -> return_val config
 
 let init_client host port server_key =
   let open Client_config in
@@ -98,36 +105,32 @@ let init_client host port server_key =
 
 let connect () =
   let open Client_config in
-  match load_client_config () with
-  | `Error err -> Lwt.return (`Error err)
-  | `Ok config ->
-    let zcontext = ZMQ.Context.create () in
-    let zsocket  = ZMQ.Socket.create zcontext ZMQ.Socket.req in
-    ZMQ.Socket.set_ipv6 zsocket true;
-    ZMQ.Socket.set_max_message_size zsocket Block.max_message_size;
-    let secret_key = zmq_key (config.secret_key : Box.secret_key :> Box.key)
-    and public_key = zmq_key (config.public_key : Box.public_key :> Box.key)
-    and server_key = zmq_key (config.server_key : Box.public_key :> Box.key) in
-    ZMQ.Socket.set_curve_server zsocket false;
-    ZMQ.Socket.set_curve_secretkey zsocket secret_key;
-    ZMQ.Socket.set_curve_publickey zsocket public_key;
-    ZMQ.Socket.set_curve_serverkey zsocket server_key;
-    match%lwt resolve config.server_host (string_of_int config.server_port) with
-    | `Error err -> Lwt.return (`Error err)
-    | `Ok (addr, port) ->
-      ZMQ.Socket.connect zsocket (Printf.sprintf "tcp://%s:%d" addr port);
-      Lwt.return (`Ok (config, Block.Client.create zsocket))
+  load_client_config () >:= fun config ->
+  let zcontext = ZMQ.Context.create () in
+  let zsocket  = ZMQ.Socket.create zcontext ZMQ.Socket.req in
+  ZMQ.Socket.set_ipv6 zsocket true;
+  ZMQ.Socket.set_max_message_size zsocket Block.max_message_size;
+  let secret_key = zmq_key (config.secret_key : Box.secret_key :> Box.key)
+  and public_key = zmq_key (config.public_key : Box.public_key :> Box.key)
+  and server_key = zmq_key (config.server_key : Box.public_key :> Box.key) in
+  ZMQ.Socket.set_curve_server zsocket false;
+  ZMQ.Socket.set_curve_secretkey zsocket secret_key;
+  ZMQ.Socket.set_curve_publickey zsocket public_key;
+  ZMQ.Socket.set_curve_serverkey zsocket server_key;
+  resolve config.server_host (string_of_int config.server_port) >:= fun (addr, port) ->
+  ZMQ.Socket.connect zsocket (Printf.sprintf "tcp://%s:%d" addr port);
+  return_val (config, Block.Client.create zsocket)
 
 let handle_error err =
   match err with
   | `Unavailable ->
-    Lwt.return (`Error (false, "Blockserver is unavailable"))
+    return_error "Blockserver is unavailable"
   | `Not_supported ->
-    Lwt.return (`Error (false, "Blockserver does not support this digest kind"))
+    return_error "Blockserver does not support this digest kind"
   | `Not_found ->
-    Lwt.return (`Error (false, "A requested block is missing"))
+    return_error "A requested block is missing"
   | `Malformed ->
-    Lwt.return (`Error (false, "Stored data is corrupted"))
+    return_error "Stored data is corrupted"
 
 let istream_of_filename filename =
   if filename = "-"
@@ -140,101 +143,85 @@ let ostream_of_filename filename =
   else Lwt_io.open_file ~mode:Lwt_io.output filename
 
 let get_block force digest =
-  match%lwt connect () with
-  | `Error err -> Lwt.return (`Error err)
-  | `Ok (config, client) ->
-    if not (Unix.isatty Unix.stdout) || force then
-      match%lwt Block.Client.get client digest with
-      | (`Not_found | `Unavailable | `Malformed) as err -> handle_error err
-      | `Ok bytes ->
-        print_bytes bytes; Lwt.return (`Ok ())
-    else
-      Lwt.return (`Error (false, "You are attempting to output binary data to a terminal. \
-                                  This is inadvisable, as it may cause display problems. \
-                                  Pass -f/--force if you really want to taste it firsthand."))
+  connect () >:= fun (config, client) ->
+  if not (Unix.isatty Unix.stdout) || force then
+    match%lwt Block.Client.get client digest with
+    | (`Not_found | `Unavailable | `Malformed) as err -> handle_error err
+    | `Ok bytes -> print_bytes bytes; return_ok
+  else
+    return_error "You are attempting to output binary data to a terminal. \
+                  This is inadvisable, as it may cause display problems. \
+                  Pass -f/--force if you really want to taste it firsthand."
 
 let put_block digest_kind filename =
-  match%lwt connect () with
-  | `Error err -> Lwt.return (`Error err)
-  | `Ok (config, client) ->
-    let%lwt data = istream_of_filename filename >>= Lwt_io.read in
-    match%lwt Block.Client.put client digest_kind data with
-    | (`Unavailable | `Not_supported) as err -> handle_error err
-    | `Ok ->
-      Lwt_io.printl (Block.digest_to_string (Block.digest_bytes data)) >>= fun () ->
-      Lwt.return (`Ok ())
+  connect () >:= fun (config, client) ->
+  let%lwt data = istream_of_filename filename >>= Lwt_io.read in
+  match%lwt Block.Client.put client digest_kind data with
+  | (`Unavailable | `Not_supported) as err -> handle_error err
+  | `Ok ->
+    Lwt_io.printl (Block.digest_to_string (Block.digest_bytes data)) >>= fun () ->
+    return_ok
 
 let show_chunk capa =
-  match%lwt connect () with
-  | `Error err -> Lwt.return (`Error err)
-  | `Ok (config, client) ->
-    match capa with
-    | Chunk.Inline bytes ->
-      Lwt_io.printl  "Type:      inline" >>= fun () ->
-      Lwt_io.printlf "Length:    %d bytes" (Bytes.length bytes) >>= fun () ->
-      Lwt.return (`Ok ())
-    | Chunk.Stored { Chunk.digest; algorithm; key } ->
-      Lwt_io.printl  "Type:      stored" >>= fun () ->
-      Lwt_io.printlf "Algorithm: %s" (Chunk.algorithm_to_string algorithm) >>= fun () ->
-      Lwt_io.printlf "Key:       %s" (Base64_url.encode key) >>= fun () ->
-      Lwt_io.printlf "Digest:    %s" (Block.digest_to_string digest) >>= fun () ->
-      match%lwt Chunk.retrieve_chunk client capa with
-      | (`Not_found | `Unavailable | `Malformed ) as err -> handle_error err
-      | `Ok { Chunk.encoding; content } ->
-        Lwt_io.printlf "Encoding:  %s" (Chunk.encoding_to_string encoding) >>= fun () ->
-        Lwt_io.printlf "Length:    %d bytes" (Bytes.length content) >>= fun () ->
-        Lwt.return (`Ok ())
+  connect () >:= fun (config, client) ->
+  match capa with
+  | Chunk.Inline bytes ->
+    Lwt_io.printl  "Type:      inline" >>= fun () ->
+    Lwt_io.printlf "Length:    %d bytes" (Bytes.length bytes) >>= fun () ->
+    return_ok
+  | Chunk.Stored { Chunk.digest; algorithm; key } ->
+    Lwt_io.printl  "Type:      stored" >>= fun () ->
+    Lwt_io.printlf "Algorithm: %s" (Chunk.algorithm_to_string algorithm) >>= fun () ->
+    Lwt_io.printlf "Key:       %s" (Base64_url.encode key) >>= fun () ->
+    Lwt_io.printlf "Digest:    %s" (Block.digest_to_string digest) >>= fun () ->
+    match%lwt Chunk.retrieve_chunk client capa with
+    | (`Not_found | `Unavailable | `Malformed ) as err -> handle_error err
+    | `Ok { Chunk.encoding; content } ->
+      Lwt_io.printlf "Encoding:  %s" (Chunk.encoding_to_string encoding) >>= fun () ->
+      Lwt_io.printlf "Length:    %d bytes" (Bytes.length content) >>= fun () ->
+      return_ok
 
 let store_chunk convergence filename =
-  match%lwt connect () with
-  | `Error err -> Lwt.return (`Error err)
-  | `Ok (config, client) ->
-    let%lwt data = istream_of_filename filename >>= Lwt_io.read in
-    let%lwt capa, bytes_opt = Chunk.capability_of_chunk ~convergence (Chunk.chunk_of_bytes data) in
-    match%lwt Chunk.store_chunk client (capa, bytes_opt) with
-    | (`Unavailable | `Not_supported | `Malformed) as err -> handle_error err
-    | `Ok ->
-      Lwt_io.printl (Chunk.capability_to_string capa) >>= fun () ->
-      Lwt.return (`Ok ())
+  connect () >:= fun (config, client) ->
+  let%lwt data = istream_of_filename filename >>= Lwt_io.read in
+  let%lwt capa, bytes_opt = Chunk.capability_of_chunk ~convergence (Chunk.chunk_of_bytes data) in
+  match%lwt Chunk.store_chunk client (capa, bytes_opt) with
+  | (`Unavailable | `Not_supported | `Malformed) as err -> handle_error err
+  | `Ok ->
+    Lwt_io.printl (Chunk.capability_to_string capa) >>= fun () ->
+    return_ok
 
 let retrieve_chunk capa filename =
-  match%lwt connect () with
-  | `Error err -> Lwt.return (`Error err)
-  | `Ok (config, client) ->
-    match%lwt Chunk.retrieve_chunk client capa with
-    | (`Not_found | `Unavailable | `Malformed) as err -> handle_error err
-    | `Ok chunk ->
-      let%lwt stream = ostream_of_filename filename in
-      Lwt_io.write stream (Chunk.chunk_to_bytes chunk) >>= fun () ->
-      Lwt.return (`Ok ())
+  connect () >:= fun (config, client) ->
+  match%lwt Chunk.retrieve_chunk client capa with
+  | (`Not_found | `Unavailable | `Malformed) as err -> handle_error err
+  | `Ok chunk ->
+    let%lwt stream = ostream_of_filename filename in
+    Lwt_io.write stream (Chunk.chunk_to_bytes chunk) >>= fun () ->
+    return_ok
 
-let show_graph_elt capa =
-  match load_server_config () with
-  | `Error err -> Lwt.return (`Error err)
-  | `Ok server_config ->
-    match%lwt connect () with
-    | `Error err -> Lwt.return (`Error err)
-    | `Ok (config, client) ->
-      match%lwt Chunk.retrieve_chunk client capa with
-      | (`Not_found | `Unavailable | `Malformed) as err -> handle_error err
-      | `Ok chunk ->
-        let bytes   = Chunk.chunk_to_bytes chunk in
-        let decoder = Graph.element_from_protobuf (fun _ -> ()) in
-        match Protobuf.Decoder.decode decoder bytes with
-        | None -> Lwt.return (`Error (false, "Chunk does not contain a graph element"))
-        | Some graph_elt ->
-          match Graph.edge_list ~server:server_config.Server_config.secret_key graph_elt with
-          | None -> Lwt.return (`Error (false, "Cannot decrypt graph element; wrong server?"))
-          | Some digests ->
-            digests |>
-            List.map Block.digest_to_string |>
-            Lwt_list.iter_s Lwt_io.printl >>= fun () ->
-            Lwt.return (`Ok ())
+let show_graph_elt digest =
+  load_server_config () >:= fun server_config ->
+  connect () >:= fun (config, client) ->
+  match%lwt Block.Client.get client digest with
+  | (`Not_found | `Unavailable | `Malformed) as err -> handle_error err
+  | `Ok bytes ->
+    let decoder = Graph.element_from_protobuf (fun _ -> ()) in
+    match Protobuf.Decoder.decode decoder bytes with
+    | None -> return_error "Chunk does not contain a graph element"
+    | Some graph_elt ->
+      match Graph.edge_list ~server:server_config.Server_config.secret_key graph_elt with
+      | None -> return_error "Cannot decrypt graph element; wrong server?"
+      | Some digests ->
+        digests |>
+        List.map Block.digest_to_string |>
+        Lwt_list.iter_s Lwt_io.printl >>= fun () ->
+        return_ok
 
 let random_key () =
   let key = Secret_box.random_key () in
   Lwt_io.printl (Secret_box.key_to_string key) >>= fun () ->
-  Lwt.return (`Ok ())
+  return_ok
 
 let unix_fd_of_filename filename mode =
   if filename = "-"
@@ -247,60 +234,50 @@ let get_file client digest key =
   | `Ok bytes ->
     let decoder = Secret_box.box_from_protobuf File.file_from_protobuf in
     match Protobuf.Decoder.decode (Graph.element_from_protobuf decoder) bytes with
-    | None -> Lwt.return (`Error (false, "Block does not contain a graph element"))
+    | None -> return_error "Block does not contain a graph element"
     | Some graph_elt ->
       match Secret_box.decrypt graph_elt.Graph.content key with
-      | None -> Lwt.return (`Error (false, "File metadata cannot be decrypted with provided key"))
+      | None -> return_error "File metadata cannot be decrypted with provided key"
       | Some file -> Lwt.return (`Ok file)
 
 let show_file key digest =
-  match%lwt connect () with
-  | `Error err -> Lwt.return (`Error err)
-  | `Ok (config, client) ->
-    match%lwt get_file client digest key with
-    | `Error err -> Lwt.return (`Error err)
-    | `Ok file ->
-      Lwt_io.printlf "Modified:   %s" (Timestamp.to_string file.File.last_modified) >>= fun () ->
-      Lwt_io.printlf "Executable: %B" file.File.executable >>= fun () ->
-      Lwt_io.printl  "Chunks:" >>= fun () ->
-      file.File.chunks |> Lwt_list.iter_s (fun capa ->
-        Lwt_io.printl (Chunk.capability_to_string capa)) >>= fun () ->
-      Lwt.return (`Ok ())
+  connect () >:= fun (config, client) ->
+  get_file client digest key >:= fun file ->
+  Lwt_io.printlf "Modified:   %s" (Timestamp.to_string file.File.last_modified) >>= fun () ->
+  Lwt_io.printlf "Executable: %B" file.File.executable >>= fun () ->
+  Lwt_io.printl  "Chunks:" >>= fun () ->
+  file.File.chunks |> Lwt_list.iter_s (fun capa ->
+    Lwt_io.printl (Chunk.capability_to_string capa)) >>= fun () ->
+  return_ok
 
 let store_file key data =
   let open Client_config in
-  match%lwt connect () with
-  | `Error err -> Lwt.return (`Error err)
-  | `Ok (config, client) ->
-    let convergence = Protobuf.Encoder.encode_exn Secret_box.key_to_protobuf key in
-    let%lwt fd = unix_fd_of_filename data Lwt_unix.[O_RDONLY] in
-    match%lwt File.create_from_unix_fd ~convergence ~client fd with
+  connect () >:= fun (config, client) ->
+  let convergence = Protobuf.Encoder.encode_exn Secret_box.key_to_protobuf key in
+  let%lwt fd = unix_fd_of_filename data Lwt_unix.[O_RDONLY] in
+  match%lwt File.create_from_unix_fd ~convergence ~client fd with
+  | (`Unavailable | `Not_supported) as err -> handle_error err
+  | `Ok file ->
+    let graph_elt = File.file_to_graph_elt
+        ~server:config.server_key
+        ~updater:(config.secret_key, config.public_key)
+        ~key file in
+    let encoder = Secret_box.box_to_protobuf File.file_to_protobuf in
+    let bytes   = Protobuf.Encoder.encode_exn (Graph.element_to_protobuf encoder) graph_elt in
+    let (kind, _) as digest = Block.digest_bytes bytes in
+    match%lwt Block.Client.put client kind bytes with
     | (`Unavailable | `Not_supported) as err -> handle_error err
-    | `Ok file ->
-      let graph_elt = File.file_to_graph_elt
-          ~server:config.server_key
-          ~updater:(config.secret_key, config.public_key)
-          ~key file in
-      let encoder = Secret_box.box_to_protobuf File.file_to_protobuf in
-      let bytes   = Protobuf.Encoder.encode_exn (Graph.element_to_protobuf encoder) graph_elt in
-      let (kind, _) as digest = Block.digest_bytes bytes in
-      match%lwt Block.Client.put client kind bytes with
-      | (`Unavailable | `Not_supported) as err -> handle_error err
-      | `Ok ->
-        Lwt_io.printl (Block.digest_to_string digest) >>= fun () ->
-        Lwt.return (`Ok ())
+    | `Ok ->
+      Lwt_io.printl (Block.digest_to_string digest) >>= fun () ->
+      return_ok
 
 let retrieve_file key digest data =
-  match%lwt connect () with
-  | `Error err -> Lwt.return (`Error err)
-  | `Ok (config, client) ->
-    match%lwt get_file client digest key with
-    | `Error err -> Lwt.return (`Error err)
-    | `Ok file ->
-      let%lwt fd = unix_fd_of_filename data Lwt_unix.[O_WRONLY; O_CREAT] in
-      match%lwt File.retrieve_to_unix_fd ~client file fd with
-      | (`Not_found | `Unavailable | `Malformed) as err -> handle_error err
-      | `Ok -> Lwt.return (`Ok ())
+  connect () >:= fun (config, client) ->
+  get_file client digest key >:= fun file ->
+  let%lwt fd = unix_fd_of_filename data Lwt_unix.[O_WRONLY; O_CREAT] in
+  match%lwt File.retrieve_to_unix_fd ~client file fd with
+  | (`Not_found | `Unavailable | `Malformed) as err -> handle_error err
+  | `Ok -> return_ok
 
 (* Command specification *)
 
@@ -431,7 +408,7 @@ let retrieve_chunk_cmd =
 
 let show_graph_elt_cmd =
   let doc = "show graph element properties" in
-  Term.(ret (pure Lwt_main.run $ (pure show_graph_elt $ capability))),
+  Term.(ret (pure Lwt_main.run $ (pure show_graph_elt $ digest 0))),
   Term.info "show-graph-element" ~doc ~docs
 
 let random_key_cmd =
