@@ -33,12 +33,6 @@ let resolve host service =
   getaddrinfo host service [AI_PROTOCOL pe.p_proto] >>=
   find_addr
 
-let load_server_config () =
-  match Config.load ~app:"cylinder" ~name:"server.json"
-                    ~loader:Server_config.server_config_of_string with
-  | None -> return_error "No server configuration found."
-  | Some config -> return_val config
-
 let init_server_config () =
   let open Server_config in
   Config.init ~app:"cylinder" ~name:"server.json"
@@ -174,53 +168,44 @@ let show_chunk capa =
     Lwt_io.printlf "Algorithm: %s" (Chunk.algorithm_to_string algorithm) >>= fun () ->
     Lwt_io.printlf "Key:       %s" (Base64_url.encode key) >>= fun () ->
     Lwt_io.printlf "Digest:    %s" (Block.digest_to_string digest) >>= fun () ->
-    match%lwt Chunk.retrieve_chunk client capa with
-    | (`Not_found | `Unavailable | `Malformed ) as err -> handle_error err
-    | `Ok { Chunk.encoding; content } ->
-      Lwt_io.printlf "Encoding:  %s" (Chunk.encoding_to_string encoding) >>= fun () ->
-      Lwt_io.printlf "Length:    %d bytes" (Bytes.length content) >>= fun () ->
-      return_ok
-
-let store_chunk convergence filename =
-  connect () >:= fun (config, client) ->
-  let%lwt data = istream_of_filename filename >>= Lwt_io.read in
-  let%lwt capa, bytes_opt = Chunk.capability_of_chunk ~convergence (Chunk.chunk_of_bytes data) in
-  match%lwt Chunk.store_chunk client (capa, bytes_opt) with
-  | (`Unavailable | `Not_supported | `Malformed) as err -> handle_error err
-  | `Ok ->
-    Lwt_io.printl (Chunk.capability_to_string capa) >>= fun () ->
     return_ok
 
-let retrieve_chunk capa filename =
-  connect () >:= fun (config, client) ->
-  match%lwt Chunk.retrieve_chunk client capa with
-  | (`Not_found | `Unavailable | `Malformed) as err -> handle_error err
-  | `Ok chunk ->
-    let%lwt stream = ostream_of_filename filename in
-    Lwt_io.write stream (Chunk.chunk_to_bytes chunk) >>= fun () ->
-    return_ok
+let get_chunk ~decoder client capa =
+  match%lwt Chunk.retrieve_data ~decoder client capa with
+  | (`Not_found | `Unavailable | `Malformed ) as err -> handle_error err
+  | (`Ok _) as result -> Lwt.return result
 
-let show_graph_elt digest =
-  load_server_config () >:= fun server_config ->
-  connect () >:= fun (config, client) ->
-  match%lwt Block.Client.get client digest with
-  | (`Not_found | `Unavailable | `Malformed) as err -> handle_error err
-  | `Ok bytes ->
-    let decoder = Graph.element_from_protobuf (fun _ -> ()) in
-    match Protobuf.Decoder.decode decoder bytes with
-    | None -> return_error "Chunk does not contain a graph element"
-    | Some graph_elt ->
-      match Graph.edge_list ~server:server_config.Server_config.secret_key graph_elt with
-      | None -> return_error "Cannot decrypt graph element; wrong server?"
-      | Some digests ->
-        digests |>
-        List.map Block.digest_to_string |>
-        Lwt_list.iter_s Lwt_io.printl >>= fun () ->
-        return_ok
+let put_chunk ~convergence ~encoder client data =
+  match%lwt Chunk.store_data ~convergence ~encoder client data with
+  | (`Unavailable | `Not_supported ) as err -> handle_error err
+  | (`Ok _) as result -> Lwt.return result
 
-let random_key () =
-  let key = Secret_box.random_key () in
-  Lwt_io.printl (Secret_box.key_to_string key) >>= fun () ->
+let show_data capa =
+  connect () >:= fun (config, client) ->
+  get_chunk ~decoder:Data.data_from_protobuf client capa >:= fun { Data.encoding; content } ->
+  Lwt_io.printlf "Encoding: %s" (Data.encoding_to_string encoding) >>= fun () ->
+  Lwt_io.printlf "Length:   %d bytes" (Bytes.length content) >>= fun () ->
+  return_ok
+
+let store_data convergence filename =
+  connect () >:= fun (config, client) ->
+  let%lwt input = istream_of_filename filename >>= Lwt_io.read in
+  put_chunk ~convergence ~encoder:Data.data_to_protobuf
+            client (Data.data_of_bytes input) >:= fun capa ->
+  Lwt_io.printl (Chunk.capability_to_string capa) >>= fun () ->
+  return_ok
+
+let retrieve_data capa filename =
+  connect () >:= fun (config, client) ->
+  get_chunk ~decoder:Data.data_from_protobuf client capa >:= fun data ->
+  let%lwt stream = ostream_of_filename filename in
+  Lwt_io.write stream (Data.data_to_bytes data) >>= fun () ->
+  return_ok
+
+let show_shadow capa =
+  connect () >:= fun (config, client) ->
+  get_chunk ~decoder:Graph.shadow_from_protobuf client capa >:= fun shadow ->
+  Lwt_list.iter_s Lwt_io.printl (List.map Block.digest_to_string shadow) >>= fun () ->
   return_ok
 
 let unix_fd_of_filename filename mode =
@@ -228,21 +213,9 @@ let unix_fd_of_filename filename mode =
   then Lwt.return Lwt_unix.stdout
   else Lwt_unix.openfile filename mode 0o644
 
-let get_file client digest key =
-  match%lwt Block.Client.get client digest with
-  | (`Not_found | `Unavailable | `Malformed) as err -> handle_error err
-  | `Ok bytes ->
-    let decoder = Secret_box.box_from_protobuf File.file_from_protobuf in
-    match Protobuf.Decoder.decode (Graph.element_from_protobuf decoder) bytes with
-    | None -> return_error "Block does not contain a graph element"
-    | Some graph_elt ->
-      match Secret_box.decrypt graph_elt.Graph.content key with
-      | None -> return_error "File metadata cannot be decrypted with provided key"
-      | Some file -> Lwt.return (`Ok file)
-
-let show_file key digest =
+let show_file capa =
   connect () >:= fun (config, client) ->
-  get_file client digest key >:= fun file ->
+  get_chunk ~decoder:File.file_from_protobuf client capa >:= fun file ->
   Lwt_io.printlf "Modified:   %s" (Timestamp.to_string file.File.last_modified) >>= fun () ->
   Lwt_io.printlf "Executable: %B" file.File.executable >>= fun () ->
   Lwt_io.printl  "Chunks:" >>= fun () ->
@@ -250,27 +223,22 @@ let show_file key digest =
     Lwt_io.printl (Chunk.capability_to_string capa)) >>= fun () ->
   return_ok
 
-let store_file key data =
-  let open Client_config in
+let store_file convergence data =
   connect () >:= fun (config, client) ->
-  let convergence = Protobuf.Encoder.encode_exn Secret_box.key_to_protobuf key in
   let%lwt fd = unix_fd_of_filename data Lwt_unix.[O_RDONLY] in
   match%lwt File.create_from_unix_fd ~convergence ~client fd with
   | (`Unavailable | `Not_supported) as err -> handle_error err
   | `Ok file ->
-    let graph_elt = File.file_to_graph_elt ~server:config.server_key ~key file in
-    let encoder = Secret_box.box_to_protobuf File.file_to_protobuf in
-    let bytes   = Protobuf.Encoder.encode_exn (Graph.element_to_protobuf encoder) graph_elt in
-    let (kind, _) as digest = Block.digest_bytes bytes in
-    match%lwt Block.Client.put client kind bytes with
-    | (`Unavailable | `Not_supported) as err -> handle_error err
-    | `Ok ->
-      Lwt_io.printl (Block.digest_to_string digest) >>= fun () ->
-      return_ok
+    let shadow = File.file_shadow file in
+    put_chunk ~convergence ~encoder:File.file_to_protobuf client file >:= fun file_capa ->
+    put_chunk ~convergence ~encoder:Graph.shadow_to_protobuf client shadow >:= fun shadow_capa ->
+    Lwt_io.printl (Chunk.capability_to_string file_capa) >>= fun () ->
+    Lwt_io.printl (Chunk.capability_to_string shadow_capa) >>= fun () ->
+    return_ok
 
-let retrieve_file key digest data =
+let retrieve_file capa data =
   connect () >:= fun (config, client) ->
-  get_file client digest key >:= fun file ->
+  get_chunk ~decoder:File.file_from_protobuf client capa >:= fun file ->
   let%lwt fd = unix_fd_of_filename data Lwt_unix.[O_WRONLY; O_CREAT] in
   match%lwt File.retrieve_to_unix_fd ~client file fd with
   | (`Not_found | `Unavailable | `Malformed) as err -> handle_error err
@@ -296,8 +264,11 @@ let digest =
                 "Invalid digest format"
 
 let capability =
-  make_arg_conv Chunk.capability_of_string Chunk.capability_to_string
-                "Invalid capability format"
+  (fun str ->
+    match Chunk.capability_of_string str with
+    | Some x -> `Ok x | None -> `Error "Invalid capability format"),
+  (fun fmt digest ->
+    Format.pp_print_string fmt (Chunk.capability_to_string digest))
 
 let base64url =
   make_arg_conv Base64_url.decode Base64_url.encode
@@ -380,56 +351,52 @@ let put_block_cmd =
   Term.(ret (pure Lwt_main.run $ (pure put_block $ digest_kind $ data_in 0))),
   Term.info "put-block" ~doc ~docs
 
-let capability =
+let capability p =
   let doc = "Retrieve chunk with capability $(docv)" in
-  Arg.(required & pos 0 (some capability) None & info [] ~docv:"CAPABILITY" ~doc)
+  Arg.(required & pos p (some capability) None & info [] ~docv:"CAPABILITY" ~doc)
 
 let show_chunk_cmd =
   let doc = "show chunk properties" in
-  Term.(ret (pure Lwt_main.run $ (pure show_chunk $ capability))),
+  Term.(ret (pure Lwt_main.run $ (pure show_chunk $ capability 0))),
   Term.info "show-chunk" ~doc ~docs
 
 let convergence =
   let doc = "Use specified convergence key (in RFC 4648 'base64url' format)" in
   Arg.(value & opt base64url "" & info ["c"; "convergence-key"] ~docv:"KEY" ~doc)
 
-let store_chunk_cmd =
-  let doc = "store chunk" in
-  Term.(ret (pure Lwt_main.run $ (pure store_chunk $ convergence $ data_in 1))),
-  Term.info "store-chunk" ~doc ~docs
+let show_data_cmd =
+  let doc = "show data properties" in
+  Term.(ret (pure Lwt_main.run $ (pure show_data $ capability 0))),
+  Term.info "show-data" ~doc ~docs
 
-let retrieve_chunk_cmd =
-  let doc = "retrieve chunk" in
-  Term.(ret (pure Lwt_main.run $ (pure retrieve_chunk $ capability $ data_out 1))),
-  Term.info "retrieve-chunk" ~doc ~docs
+let store_data_cmd =
+  let doc = "store data" in
+  Term.(ret (pure Lwt_main.run $ (pure store_data $ convergence $ data_in 0))),
+  Term.info "store-data" ~doc ~docs
 
-let show_graph_elt_cmd =
-  let doc = "show graph element properties" in
-  Term.(ret (pure Lwt_main.run $ (pure show_graph_elt $ digest 0))),
-  Term.info "show-graph-element" ~doc ~docs
+let retrieve_data_cmd =
+  let doc = "retrieve data" in
+  Term.(ret (pure Lwt_main.run $ (pure retrieve_data $ capability 0 $ data_out 1))),
+  Term.info "retrieve-data" ~doc ~docs
 
-let random_key_cmd =
-  let doc = "generate a symmetric key" in
-  Term.(ret (pure Lwt_main.run $ (pure random_key $ pure ()))),
-  Term.info "random-key" ~doc ~docs
-
-let checkpoint_key p =
-  let doc = "Use checkpoint secret key $(docv)" in
-  Arg.(required & pos p (some symmetric_key) None & info [] ~docv:"CKPOINT-KEY" ~doc)
+let show_shadow_cmd =
+  let doc = "show shadow properties" in
+  Term.(ret (pure Lwt_main.run $ (pure show_shadow $ capability 0))),
+  Term.info "show-shadow" ~doc ~docs
 
 let show_file_cmd =
   let doc = "show file" in
-  Term.(ret (pure Lwt_main.run $ (pure show_file $ checkpoint_key 0 $ digest 1))),
+  Term.(ret (pure Lwt_main.run $ (pure show_file $ capability 0))),
   Term.info "show-file" ~doc ~docs
 
 let store_file_cmd =
   let doc = "store file" in
-  Term.(ret (pure Lwt_main.run $ (pure store_file $ checkpoint_key 0 $ data_in 1))),
+  Term.(ret (pure Lwt_main.run $ (pure store_file $ convergence $ data_in 0))),
   Term.info "store-file" ~doc ~docs
 
 let retrieve_file_cmd =
   let doc = "retrieve file" in
-  Term.(ret (pure Lwt_main.run $ (pure retrieve_file $ checkpoint_key 0 $ digest 1 $ data_out 2))),
+  Term.(ret (pure Lwt_main.run $ (pure retrieve_file $ capability 0 $ data_out 1))),
   Term.info "retrieve-file" ~doc ~docs
 
 let default_cmd =
@@ -444,10 +411,10 @@ let default_cmd =
 let commands = [
     server_cmd;
     init_client_cmd;
-    random_key_cmd;
     get_block_cmd; put_block_cmd;
-    show_chunk_cmd; retrieve_chunk_cmd; store_chunk_cmd;
-    show_graph_elt_cmd;
+    show_chunk_cmd;
+    show_data_cmd; retrieve_data_cmd; store_data_cmd;
+    show_shadow_cmd;
     show_file_cmd; retrieve_file_cmd; store_file_cmd;
   ]
 

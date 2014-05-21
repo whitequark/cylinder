@@ -1,4 +1,4 @@
-type client_config = {
+ type client_config = {
   secret_key  : Box.secret_key;
   public_key  : Box.public_key;
   server_key  : Box.public_key;

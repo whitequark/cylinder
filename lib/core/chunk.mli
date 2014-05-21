@@ -1,38 +1,7 @@
-(** File content storage. *)
-
-(** A compression algorithm. *)
-type encoding = [ `None | `LZ4 ]
-
-(** [encoding_to_string e] converts encoding [e] to an ASCII string
-    representation. *)
-val encoding_to_string  : [ `None | `LZ4 ] -> string
-
-(** [encoding_of_string s] converts an ASCII string to [Some encoding]
-    or returns [None] if it is unable to recognize the format. *)
-val encoding_of_string  : string -> [ `None | `LZ4 ] option
-
-(** A chunk is a block of file content, suitable for efficient storage.
-    Invariant: [chunk.content] contains data valid for algorithm selected
-    by [chunk.encoding]. *)
-type chunk = private {
-  encoding  : encoding;
-  content   : bytes;
-}
+(** Encrypted content-addressable storage. *)
 
 (** [max_size] is the maximum size of the decoded chunk content, currently 10⁷ bytes. *)
 val max_size            : int
-
-(** [chunk_from_protobuf d] deserializes a chunk from [d]. *)
-val chunk_from_protobuf : Protobuf.Decoder.t -> chunk
-
-(** [chunk_to_protobuf ch e] serializes chunk [ch] into [e]. *)
-val chunk_to_protobuf   : chunk -> Protobuf.Encoder.t -> unit
-
-(** [chunk_of_bytes b] encodes opaque byte sequence [b] into a chunk. *)
-val chunk_of_bytes      : bytes -> chunk
-
-(** [chunk_to_bytes ch] decodes chunk [ch] into an opaque byte sequence. *)
-val chunk_to_bytes      : chunk -> bytes
 
 (** The algorithm used for encrypting data to which the capability links. *)
 type algorithm =
@@ -55,53 +24,57 @@ type handle = private {
 }
 
 (** A capability is necessary and sufficient to retrieve a chunk. *)
-type capability =
+type 'a capability =
 | Inline of bytes  (**< An [Inline] capability stores the data itself. *)
 | Stored of handle (**< A [Stored] capability is a link to a Block. *)
 
 (** [inspect_capability ca] converts [ca] to a human-readable string. *)
-val inspect_capability       : capability -> string
+val inspect_capability        : 'a capability -> string
 
 (** [capability_digest ca] returns [Some digest] for stored capability [ca]
     or [None] for inline capability [ca]. *)
-val capability_digest        : capability -> Block.digest option
+val capability_digest         : 'a capability -> Block.digest option
 
 (** [capability_from_protobuf d] deserializes a capability from [d]. *)
-val capability_from_protobuf : Protobuf.Decoder.t -> capability
+val capability_from_protobuf  : (Protobuf.Decoder.t -> 'a) ->
+                                Protobuf.Decoder.t -> 'a capability
 
 (** [capability_to_protobuf ca e] serializes capability [ca] into [e]. *)
-val capability_to_protobuf   : capability -> Protobuf.Encoder.t -> unit
+val capability_to_protobuf    : ('a -> Protobuf.Encoder.t -> unit) ->
+                                'a capability -> Protobuf.Encoder.t -> unit
 
 (** [capability_of_string s] deserializes a capability from [s] and
     returns [Some ca] or [None] if the format is not recognized. *)
-val capability_of_string     : string -> capability option
+val capability_of_string      : string -> 'a capability option
 
 (** [capability_to_string ca] serializes capability [ca] as a string.
     See {!Block.digest_to_string} for details on encoding. *)
-val capability_to_string     : capability -> string
+val capability_to_string      : 'a capability -> string
 
-(** [capability_of_chunk ~convergence ch] either converts chunk [ch] into
+(** [capability_of_data ~encoder ~convergence ch] either converts data [ch] into
     an inline capability and returns [Inline bytes, None], or into a stored
     capability and returns [Stored handle, Some bytes], where [bytes] must
     be stored on the blockserver for the capability to be retrievable. *)
-val capability_of_chunk      : convergence:bytes -> chunk -> (capability * bytes option) Lwt.t
+val capability_of_data        : encoder:('a -> Protobuf.Encoder.t -> unit) ->
+                                convergence:bytes -> 'a -> ('a capability * bytes option) Lwt.t
 
-(** [capability_to_chunk (ca, b)] either returns contents of an [Inline]
+(** [capability_to_data ~decoder ca b] either returns contents of an [Inline]
     capability [ca], or decrypts the contents contained in [Some bytes] [b]
     using [ca] and returns it.
     If [ca] is a [Stored] capability and [b] is [None], returns [`Malformed].
     If the encrypted data could not be authenticated, returns [`Malformed]. *)
-val capability_to_chunk      : capability -> bytes option -> [ `Ok of chunk | `Malformed ] Lwt.t
+val capability_to_data        : decoder:(Protobuf.Decoder.t -> 'a) ->
+                                'a capability -> bytes option ->
+                                [ `Ok of 'a | `Malformed ] Lwt.t
 
-(** [retrieve_chunk cl ca] retrieves chunk directly from an [Inline]
-    capability [ca], or from a [Stored] capability [ca] by sending a request
-    through blockserver client [cl]. *)
-val retrieve_chunk           : Block.Client.t -> capability ->
-                               [ `Ok of chunk | `Not_found | `Unavailable | `Malformed ] Lwt.t
+(** [store_data ~encoder cl ca] stores data using blockserver client [cl] and
+    returns a capability that would allow to access it. *)
+val store_data                : encoder:('a -> Protobuf.Encoder.t -> unit) ->
+                                convergence:bytes -> Block.Client.t -> 'a ->
+                                [ `Ok of 'a capability | `Unavailable | `Not_supported ] Lwt.t
 
-(** [store_chunk cl ca] stores a [Stored] chunk through blockserver client [cl],
-    and does nothing for an [Inline] chunk.
-    If [ca] is a [Stored] capability and [b] is [None], or [ca] is an [Inline] capability
-    and [b] is [Some bytes], returns [`Malformed]. *)
-val store_chunk              : Block.Client.t -> capability * bytes option ->
-                               [ `Ok | `Unavailable | `Not_supported | `Malformed ] Lwt.t
+(** [retrieve_data ~decoder cl ca] retrieves data from capability [ca] using
+    blockserver client [cl]. *)
+val retrieve_data             : decoder:(Protobuf.Decoder.t -> 'a) -> Block.Client.t ->
+                                'a capability ->
+                                [ `Ok of 'a | `Not_found | `Unavailable | `Malformed ] Lwt.t

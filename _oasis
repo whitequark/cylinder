@@ -11,10 +11,10 @@ BuildTools:   ocamlbuild
 Library "cylinder"
   Path:             lib
   Modules:          crypto/Secret_box, crypto/Box,
-                    core/Base64_url, core/Block, core/Chunk, core/Graph,
-                    core/Timestamp, core/File, core/Directory,
+                    core/Base64_url, core/Block, core/Chunk,
+                    core/Timestamp, core/Data, core/Graph, core/File, core/Directory,
                     backends/In_memory_store,
-                    config/Config, config/Server_config,
+                    config/Config, config/Server_config, config/Client_config,
                     local/Pathname, local/Tree
   Pack:             true
   BuildDepends:     threads, lwt, lwt.unix, lwt.preemptive,

@@ -253,7 +253,7 @@ The entire filesystem, data and metadata alike, is stored on the blockserver. Th
 Chunks
 ------
 
-A _chunk_ is the unit of storage of the file contents. When stored, a file is broken into several pieces, each no bigger than the maximum block size; the content may now be represented by a list of digests corresponding to said pieces. This allows to efficiently update large files.
+A _chunk_ is the unit of content-addressable encrypted storage.
 
 In order to be able to deduplicate stored data, _convergent encryption_ is used. That is, the content of the chunk is symmetrically encrypted using a key derived from the content itself and a _convergence key_ using a hash function; this way, ciphertext only depends on cleartext and the convergence key.
 
@@ -275,8 +275,6 @@ A capability can be quite large--a capability with SHA512 digest and SHA512-XSal
 A client can choose any chunk sizes or encodings it desires. This allows a client to optimize for cases where some parts of a huge file are rarely changing and some are changing frequently, or avoid costly compression on platforms which aren't fast enough.
 
 ### Storage format
-
-#### Capability
 
 ```
 message Capability {
@@ -306,28 +304,6 @@ The `handle.key` field must have the length corresponding to `handle.algorithm`:
 | -------------------------- | -------------------- |
 | `SHA512_XSalsa20_Poly1305` | 56                   |
 
-#### Chunk data
-
-```
-message Chunk {
-  enum Encoding {
-    None = 1;
-    LZ4  = 2;
-  }
-  required Encoding encoding = 1   [default=None];
-  required bytes    content  = 15;
-}
-```
-
-The `encoding` field specifies the transformation applied to `content` prior to serialization:
-
-| `encoding` | Operation                |
-| ---------- | ------------------------ |
-| `None`     | Identity                 |
-| `LZ4`      | Compression with [LZ4][] |
-
-[lz4]: https://code.google.com/p/lz4/
-
 ### Algorithms
 
 #### SHA512_XSalsa20_Poly1305
@@ -354,6 +330,33 @@ The serialized `Chunk` message is `clear_chunk`.
 
 [box]: http://nacl.cr.yp.to/box.html
 [secretbox]: http://nacl.cr.yp.to/secretbox.html
+
+Data chunks
+-----------
+
+When stored, a file is broken into several pieces, each no bigger than the maximum block size; the content may now be represented by a list of chunks corresponding to said pieces. This allows to efficiently update large files.
+
+### Storage format
+
+```
+message Data {
+  enum Encoding {
+    None = 1;
+    LZ4  = 2;
+  }
+  required Encoding encoding = 1   [default=None];
+  required bytes    content  = 15;
+}
+```
+
+The `encoding` field specifies the transformation applied to `content` prior to serialization:
+
+| `encoding` | Operation                |
+| ---------- | ------------------------ |
+| `None`     | Identity                 |
+| `LZ4`      | Compression with [LZ4][] |
+
+[lz4]: https://code.google.com/p/lz4/
 
 Secret boxes
 ------------
@@ -413,43 +416,23 @@ message Box {
 
 As described in [box][].
 
-Graph elements
---------------
+Shadow blocks
+-------------
 
-A filesystem is a directed acyclic graph: directories point to files, files point to chunks. To aid processing by the stateserver, all non-leaf graph nodes are stored in a uniform format.
-
-A graph element consists of the nested message and a list of blocks this message refers to. The entity creating the graph element is responsible for ensuring that the block list is consistent with the nested message.
-
-The block list is encrypted using the stateserver's public key and a random key pair. Essentially, the ciphertext is not authenticated.
-
-### Rationale
-
-The content of the whole block is authenticated using a Merkle tree enclosing the whole checkpoint, and the identity of the client composing the edge list is unimportant. However, using the client identity here would be disastrous: it would including the author of the each block in cleartext inside it.
+In order to allow the stateserver to perform garbage collection without being able to decrypt file content, so-called shadow blocks are used. A shadow block corresponding to a file or directory includes a list of all referenced data blocks, and a list of all shadow blocks, if any.
 
 ### Storage format
 
 ```
-message EdgeList {
+message ShadowBlock {
   repeated Digest edges = 1;
 }
-
-message GraphElement {
-  required bytes  content = 1;
-  required BoxKey updater = 2;
-  required Box    edges   = 3;
-}
 ```
-
-`GraphElement.edges` contains `EdgeList`, encrypted with the public key of the stateserver and secret key of the client which has last updated the element.
-
-`GraphElement.updater` contains the public key of the client which has last updated the element.
 
 Files
 -----
 
-A file is a graph element whose content consists of a list of chunks with the file contents and a list of attributes. Currently, the only attributes stored are the time of last modification and the *nix execute permission.
-
-File element contents is encrypted with the checkpoint key (see below).
+A file is a chunk whose content consists of a list of chunks with the file contents and a list of attributes. Currently, the only attributes stored are the time of last modification and the *nix execute permission.
 
 ### Storage format
 
@@ -466,9 +449,7 @@ message File {
 Directories
 -----------
 
-A directory is a graph element whose content consists of a list of nested files, directories and checkpoints.
-
-Directory element contents is encrypted with the checkpoint key (see below).
+A directory is a chunk whose content consists of a list of nested files, directories and checkpoints.
 
 ### Storage format
 

@@ -1,9 +1,9 @@
 let (>>=) = Lwt.(>>=)
 
 type file = {
-  last_modified : Timestamp.t           [@key 1];
-  executable    : bool                  [@key 2];
-  chunks        : Chunk.capability list [@key 15];
+  last_modified : Timestamp.t                      [@key 1];
+  executable    : bool                             [@key 2];
+  chunks        : Data.data Chunk.capability list [@key 15];
 } [@@protobuf]
 
 exception Retry
@@ -11,13 +11,8 @@ exception Error of [ `Not_found | `Unavailable | `Malformed | `Not_supported ]
 
 let empty = { last_modified = Timestamp.zero; executable = false; chunks = [] }
 
-let file_of_graph_elt ~key graph_elt =
-  Secret_box.decrypt graph_elt.Graph.content key
-
-let file_to_graph_elt ~server ~key file =
-  let edges      = ExtList.List.filter_map Chunk.capability_digest file.chunks in
-  let secret_box = Secret_box.store file key in
-  Graph.element ~server edges secret_box
+let file_shadow file =
+  ExtList.List.filter_map Chunk.capability_digest file.chunks
 
 let rec update_with_unix_fd ~convergence ~client file fd =
   (* Remember mtime before we start. *)
@@ -35,8 +30,8 @@ let rec update_with_unix_fd ~convergence ~client file fd =
           check_mtime () >>= fun () ->
           (* Pull out the existing chunk to compare it with present data. *)
           let%lwt old_bytes =
-            match%lwt Chunk.retrieve_chunk client capa with
-            | `Ok chunk -> Lwt.return (Chunk.chunk_to_bytes chunk)
+            match%lwt Chunk.retrieve_data ~decoder:Data.data_from_protobuf client capa with
+            | `Ok data -> Lwt.return (Data.data_to_bytes data)
             | (`Not_found | `Unavailable | `Malformed) as err -> [%lwt raise (Error err)]
           in
           (* Pull out the corresponding region of the file. Mmapped access is not used,
@@ -56,12 +51,11 @@ let rec update_with_unix_fd ~convergence ~client file fd =
               Lwt.return (capa :: capas)
             else
               (* Different content, recreate chunk. *)
-              let chunk = Chunk.chunk_of_bytes new_bytes in
-              let%lwt capa, block_opt = Chunk.capability_of_chunk ~convergence chunk in
-              match%lwt Chunk.store_chunk client (capa, block_opt) with
-              | `Ok -> Lwt.return (capa :: capas)
-              | (`Unavailable | `Not_supported) as err -> [%lwt raise (Error err)]
-              | `Malformed -> assert%lwt false)
+              let data = Data.data_of_bytes new_bytes in
+              match%lwt Chunk.store_data ~convergence ~encoder:Data.data_to_protobuf
+                                         client data with
+              | `Ok capa -> Lwt.return (capa :: capas)
+              | (`Unavailable | `Not_supported) as err -> [%lwt raise (Error err)])
         [] file.chunks
     in
     (* Append the rest of the file to the chunk list *)
@@ -73,12 +67,11 @@ let rec update_with_unix_fd ~convergence ~client file fd =
         let%lwt length = Lwt_unix.read fd bytes 0 (Bytes.length bytes) in
         if length > 0 then
           (* We have a next chunk. *)
-          let chunk = Chunk.chunk_of_bytes (Bytes.sub bytes 0 length) in
-          let%lwt capa, block_opt = Chunk.capability_of_chunk ~convergence chunk in
-          match%lwt Chunk.store_chunk client (capa, block_opt) with
-          | `Ok -> handle_chunk (capa :: capas)
+          let data = Data.data_of_bytes (Bytes.sub bytes 0 length) in
+          match%lwt Chunk.store_data ~convergence ~encoder:Data.data_to_protobuf
+                                     client data with
+          | `Ok capa -> handle_chunk (capa :: capas)
           | (`Unavailable | `Not_supported) as err -> [%lwt raise (Error err)]
-          | `Malformed -> assert%lwt false
         else
           (* EOF. *)
           Lwt.return capas
@@ -111,8 +104,8 @@ let retrieve_to_unix_fd ~client file fd =
       Lwt.return_unit) >>= fun () ->
     file.chunks |> Lwt_list.iter_s (fun capa ->
       let%lwt bytes =
-        match%lwt Chunk.retrieve_chunk client capa with
-        | `Ok chunk -> Lwt.return (Chunk.chunk_to_bytes chunk)
+        match%lwt Chunk.retrieve_data ~decoder:Data.data_from_protobuf client capa with
+        | `Ok data -> Lwt.return (Data.data_to_bytes data)
         | (`Not_found | `Unavailable | `Malformed) as err -> [%lwt raise (Error err)]
       in
       Lwt_unix.write fd bytes 0 (Bytes.length bytes) >>= fun _ ->
