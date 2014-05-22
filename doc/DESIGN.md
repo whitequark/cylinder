@@ -458,15 +458,19 @@ A directory is a chunk whose content consists of a list of nested files, directo
 
 ```
 message Directory {
-  message Entry {
+  message Content {
     enum Type {
-      File       = 1;
-      Directory  = 2;
-      Checkpoint = 3;
+      File       = 1; // of file_capability
+      Directory  = 2; // of directory_capability
+      Checkpoint = 3; // of ???
     }
-    required string name  = 1;
-    required Type   type  = 2;
-    required Digest block = 3;
+    required Type       type                 = 1;
+    optional Capability file_capability      = 2;
+    optional Capability directory_capability = 3;
+  }
+  message Entry {
+    required string  name    = 1;
+    required Content content = 2;
   }
   repeated Entry contents = 1;
 }

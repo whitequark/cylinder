@@ -8,5 +8,6 @@ let file_shadow file =
     blocks   = ExtList.List.filter_map Chunk.capability_digest file.File.chunks }
 
 let directory_shadow directory =
+  assert false(*
   { children = [];
-    blocks   = List.map (fun entry -> entry.Directory.content) directory }
+    blocks   = List.map (fun entry -> entry.Directory.content) directory } *)

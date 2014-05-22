@@ -125,6 +125,8 @@ let handle_error err =
     return_error "A requested block is missing"
   | `Malformed ->
     return_error "Stored data is corrupted"
+  | `Not_empty ->
+    return_error "Directory is not empty"
 
 let istream_of_filename filename =
   if filename = "-"
@@ -233,10 +235,7 @@ let store_file convergence data =
   match%lwt File.create_from_unix_fd ~convergence ~client fd with
   | (`Unavailable | `Not_supported) as err -> handle_error err
   | `Ok file_capa ->
-    (* let shadow = Graph.file_shadow file in *)
-    (* put_chunk ~convergence ~encoder:Graph.shadow_to_protobuf client shadow >:= fun shadow_capa -> *)
     Lwt_io.printl (Chunk.capability_to_string file_capa) >>= fun () ->
-    (* Lwt_io.printl (Chunk.capability_to_string shadow_capa) >>= fun () -> *)
     return_ok
 
 let retrieve_file capa data =
@@ -244,6 +243,21 @@ let retrieve_file capa data =
   let%lwt fd = unix_fd_of_filename data Lwt_unix.[O_WRONLY; O_CREAT] in
   match%lwt File.retrieve_to_unix_fd ~client capa fd with
   | (`Not_found | `Unavailable | `Malformed) as err -> handle_error err
+  | `Ok -> return_ok
+
+let store_directory convergence path =
+  connect () >:= fun (config, client) ->
+  match%lwt Directory.create_from_path ~convergence ~client path with
+  | (`Unavailable | `Not_supported) as err -> handle_error err
+  | `Ok dir_capa ->
+    Lwt_io.printl (Chunk.capability_to_string dir_capa) >>= fun () ->
+    return_ok
+
+let retrieve_directory capa path =
+  connect () >:= fun (config, client) ->
+  match%lwt Directory.retrieve_to_path ~client capa path with
+  | (`Not_found | `Unavailable | `Malformed |
+     `Not_supported | `Not_empty) as err -> handle_error err
   | `Ok -> return_ok
 
 (* Command specification *)
@@ -401,6 +415,20 @@ let retrieve_file_cmd =
   Term.(ret (pure Lwt_main.run $ (pure retrieve_file $ capability 0 $ data_out 1))),
   Term.info "retrieve-file" ~doc ~docs
 
+let directory p =
+  let doc = "Use directory $(docv)" in
+  Arg.(required & pos p (some string) None & info [] ~docv:"DIRECTORY" ~doc)
+
+let store_directory_cmd =
+  let doc = "store directory" in
+  Term.(ret (pure Lwt_main.run $ (pure store_directory $ convergence $ directory 0))),
+  Term.info "store-directory" ~doc ~docs
+
+let retrieve_directory_cmd =
+  let doc = "retrieve directory" in
+  Term.(ret (pure Lwt_main.run $ (pure retrieve_directory $ capability 0 $ directory 1))),
+  Term.info "retrieve-directory" ~doc ~docs
+
 let default_cmd =
   let doc = "command-line interface for Cylinder" in
   let man = [
@@ -418,6 +446,7 @@ let commands = [
     show_data_cmd; retrieve_data_cmd; store_data_cmd;
     show_shadow_cmd;
     show_file_cmd; retrieve_file_cmd; store_file_cmd;
+    store_directory_cmd; retrieve_directory_cmd;
   ]
 
 let () =
