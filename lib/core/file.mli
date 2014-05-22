@@ -12,9 +12,6 @@ val file_from_protobuf  : Protobuf.Decoder.t -> file
 (** [file_to_protobuf f e] serializes file metadata [f] into [e]. *)
 val file_to_protobuf    : file -> Protobuf.Encoder.t -> unit
 
-(** [file_shadow f] returns the shadow for file [f]. *)
-val file_shadow         : file -> Graph.shadow
-
 (** [create_from_unix_fd ~convergence ~client fd] returns a file
     reflecting the metadata and content of Unix file descriptor [fd] and
     uploads the blocks representing its content via [client]. *)

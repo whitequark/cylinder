@@ -13,6 +13,3 @@ val directory_from_protobuf : Protobuf.Decoder.t -> directory
 
 (** [directory_to_protobuf dir e] serializes directory [dir] into [e]. *)
 val directory_to_protobuf   : directory -> Protobuf.Encoder.t -> unit
-
-(** [directory_shadow f] returns the shadow for directory [f]. *)
-val directory_shadow        : directory -> Graph.shadow

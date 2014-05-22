@@ -65,20 +65,8 @@ let test_roundtrip ctxt =
   roundtrip (String.make 10 'A') >>= fun () ->
   roundtrip (String.make 200 'A')
 
-let test_shadow ctxt =
-  let%lwt capa, _ =
-    Chunk.capability_of_data ~encoder:Data.data_to_protobuf ~convergence:""
-                             (Data.data_of_bytes (Bytes.make 1024 'A')) in
-  let file = File.{
-    executable    = false;
-    last_modified = Timestamp.now ();
-    chunks        = [capa] } in
-  assert_equal [Option.get (Chunk.capability_digest capa)] (File.file_shadow file);
-  Lwt.return_unit
-
 let suite = "Test File" >::: [
     "test_create_inline" >:: run test_create_inline;
     "test_update_inline" >:: run test_update_inline;
     "test_roundtrip"     >:: run test_roundtrip;
-    "test_graph_elt"     >:: run test_shadow;
   ]

@@ -425,9 +425,12 @@ In order to allow the stateserver to perform garbage collection without being ab
 
 ```
 message ShadowBlock {
-  repeated Digest edges = 1;
+  repeated Capability children = 1;
+  repeated Digest     edges    = 2;
 }
 ```
+
+`ShadowBlock.children` is a list of references to referenced shadow blocks. `ShadowBlock.edges` is a list of references to filesystem tree blocks.
 
 Files
 -----

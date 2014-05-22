@@ -12,6 +12,3 @@ type entry = {
 
 type directory = entry list
 [@@protobuf]
-
-let directory_shadow directory =
-  List.map (fun entry -> entry.content) directory

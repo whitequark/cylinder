@@ -205,7 +205,11 @@ let retrieve_data capa filename =
 let show_shadow capa =
   connect () >:= fun (config, client) ->
   get_chunk ~decoder:Graph.shadow_from_protobuf client capa >:= fun shadow ->
-  Lwt_list.iter_s Lwt_io.printl (List.map Block.digest_to_string shadow) >>= fun () ->
+  let { Graph.children; blocks } = shadow in
+  Lwt_io.printl "Children:" >>= fun () ->
+  Lwt_list.iter_s Lwt_io.printl (List.map Chunk.capability_to_string children) >>= fun () ->
+  Lwt_io.printl "Blocks:" >>= fun () ->
+  Lwt_list.iter_s Lwt_io.printl (List.map Block.digest_to_string blocks) >>= fun () ->
   return_ok
 
 let unix_fd_of_filename filename mode =
@@ -229,7 +233,7 @@ let store_file convergence data =
   match%lwt File.create_from_unix_fd ~convergence ~client fd with
   | (`Unavailable | `Not_supported) as err -> handle_error err
   | `Ok file ->
-    let shadow = File.file_shadow file in
+    let shadow = Graph.file_shadow file in
     put_chunk ~convergence ~encoder:File.file_to_protobuf client file >:= fun file_capa ->
     put_chunk ~convergence ~encoder:Graph.shadow_to_protobuf client shadow >:= fun shadow_capa ->
     Lwt_io.printl (Chunk.capability_to_string file_capa) >>= fun () ->

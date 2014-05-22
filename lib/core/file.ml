@@ -11,9 +11,6 @@ exception Error of [ `Not_found | `Unavailable | `Malformed | `Not_supported ]
 
 let empty = { last_modified = Timestamp.zero; executable = false; chunks = [] }
 
-let file_shadow file =
-  ExtList.List.filter_map Chunk.capability_digest file.chunks
-
 let rec update_with_unix_fd ~convergence ~client file fd =
   (* Remember mtime before we start. *)
   let%lwt { Lwt_unix.st_mtime = mtime; st_perm } = Lwt_unix.fstat fd in
