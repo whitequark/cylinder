@@ -480,3 +480,34 @@ A checkpoint is a graph element that demarcates a subgraph. It is a unit of acce
 All of the elements owned by a checkpoint are encrypted with a secret key associated with that checkpoint. When the access control list is updated, the key is changed and all elements owned by the checkpoint are reencrypted with the new key.
 
 The stateserver ensures that a checkpoint is updated consistently; it rejects checkpoint updates that do not refer to the most recent checkpoint block in the edge list. Similarly, it rejects checkpoint updates that violate the access control policy.
+
+### Storage format
+
+```
+message AccessGrant {
+  enum Access {
+    Owner  = 1;
+    Writer = 2;
+    Reader = 3;
+  }
+  required BoxKey identity = 1;
+  required Access level    = 2;
+}
+
+message CheckpointShadow {
+  required BoxKey      updater     = 1;
+  repeated AccessGrant grants      = 2;
+  required Capability  shadow_root = 3;
+}
+
+message AccessCapability {
+  required SecretBoxKey shadow_key = 1;
+  required SecretBoxKey shiny_key  = 2;
+}
+
+message Checkpoint {
+  repeated Box       access_capabilites = 1;
+  required SecretBox shadow_data        = 2; // of ShadowData
+  required SecretBox shiny_root         = 3; // of Capability
+}
+```

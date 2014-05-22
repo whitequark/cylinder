@@ -12,7 +12,14 @@ let test_create_inline ctxt =
   let _, _, _, client = Helper.blockserver_bracket ctxt in
   let%lwt fd = bracket_tmpdata ctxt "hello" in
   match%lwt File.create_from_unix_fd ~convergence:"" ~client fd with
-  | `Ok { File.executable = false; chunks = [Chunk.Inline "\x7a\x05hello"] } ->
+  | `Ok file_capa ->
+    let%lwt file = Helper.get_chunk ~decoder:File.file_from_protobuf client file_capa in
+    let%lwt stat = Lwt_unix.fstat fd in
+    assert_equal File.{
+      executable    = false;
+      chunks        = [Chunk.Inline "\x7a\x05hello"];
+      last_modified = Timestamp.of_unix_time (stat.Lwt_unix.st_mtime);
+    } file;
     Lwt.return_unit
   | _ -> assert_failure "File.create_from_unix_fd"
 
@@ -25,21 +32,25 @@ let test_update_inline ctxt =
                        Chunk.Inline "\x7a\x03foo";
                        Chunk.Inline "\x7a\x03bar";] }
   in
+  let%lwt origin_capa = Helper.put_chunk ~encoder:File.file_to_protobuf client origin in
   let%lwt fd = bracket_tmpdata ctxt "hellobazbar" in
-  begin match%lwt File.update_with_unix_fd ~convergence:"" ~client origin fd with
-  | `Ok { File.chunks = [Chunk.Inline "\x7a\x05hello";
-                         Chunk.Inline "\x7a\x03baz";
-                         Chunk.Inline "\x7a\x03bar";] } ->
+  begin match%lwt File.update_with_unix_fd ~convergence:"" ~client origin_capa fd with
+  | `Ok file_capa' ->
+    let%lwt file' = Helper.get_chunk ~decoder:File.file_from_protobuf client file_capa' in
+    assert_equal [Chunk.Inline "\x7a\x05hello";
+                  Chunk.Inline "\x7a\x03baz";
+                  Chunk.Inline "\x7a\x03bar";]
+                 (file'.File.chunks);
     Lwt.return_unit
   | _ -> assert_failure "File.update_with_unix_fd"
   end >>= fun () ->
   let%lwt fd = bracket_tmpdata ctxt "helloHI" in
-  begin match%lwt File.update_with_unix_fd ~convergence:"" ~client origin fd with
-  | `Ok { File.chunks = [Chunk.Inline "\x7a\x05hello";
-                         Chunk.Inline "\x7a\x02HI";] } ->
-    Lwt.return_unit
-  | `Ok { File.chunks } ->
-    List.iter (fun x -> print_endline (Chunk.inspect_capability x)) chunks;
+  begin match%lwt File.update_with_unix_fd ~convergence:"" ~client origin_capa fd with
+  | `Ok file_capa' ->
+    let%lwt file' = Helper.get_chunk ~decoder:File.file_from_protobuf client file_capa' in
+    assert_equal [Chunk.Inline "\x7a\x05hello";
+                  Chunk.Inline "\x7a\x02HI";]
+                 (file'.File.chunks);
     Lwt.return_unit
   | _ -> assert_failure "File.update_with_unix_fd"
   end
@@ -49,11 +60,11 @@ let test_roundtrip ctxt =
   let roundtrip data =
     let%lwt fd = bracket_tmpdata ctxt data in
     begin match%lwt File.create_from_unix_fd ~convergence:"" ~client fd with
-    | `Ok file -> Lwt.return file | _ -> assert_failure "File.create_from_unix_fd"
-    end >>= fun file ->
+    | `Ok capa -> Lwt.return capa | _ -> assert_failure "File.create_from_unix_fd"
+    end >>= fun capa ->
 
     let%lwt fd' = bracket_tmpdata ctxt "" in
-    begin match%lwt File.retrieve_to_unix_fd ~client file fd' with
+    begin match%lwt File.retrieve_to_unix_fd ~client capa fd' with
     | `Ok -> Lwt.return_unit | _ -> assert_failure "File.restore_to_unix_fd"
     end >>= fun () ->
 

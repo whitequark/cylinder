@@ -1,5 +1,13 @@
 open OUnit2
 
+let with_env var value f =
+  let old_value = try Some (Unix.getenv var) with Not_found -> None in
+  Unix.putenv var value;
+  f ();
+  match old_value with
+  | Some old_value -> Unix.putenv var old_value
+  | None -> ExtUnix.All.unsetenv var
+
 module In_memory_server = Block.Server(In_memory_store)
 
 let blockserver_setup ctxt =
@@ -25,10 +33,12 @@ let blockserver_teardown (backend, sctx, server, client) ctxt =
 
 let blockserver_bracket = bracket blockserver_setup blockserver_teardown
 
-let with_env var value f =
-  let old_value = try Some (Unix.getenv var) with Not_found -> None in
-  Unix.putenv var value;
-  f ();
-  match old_value with
-  | Some old_value -> Unix.putenv var old_value
-  | None -> ExtUnix.All.unsetenv var
+let get_chunk ~decoder client capa =
+  match%lwt Chunk.retrieve_data ~decoder client capa with
+  | `Ok data -> Lwt.return data
+  | _ -> assert_failure "Chunk.retrieve_data"
+
+let put_chunk ?(convergence="") ~encoder client data =
+  match%lwt Chunk.store_data ~convergence ~encoder client data with
+  | `Ok capa -> Lwt.return capa
+  | _ -> assert_failure "Chunk.store_data"

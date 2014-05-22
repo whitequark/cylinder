@@ -10,8 +10,9 @@ exception Retry
 exception Error of [ `Not_found | `Unavailable | `Malformed | `Not_supported ]
 
 let empty = { last_modified = Timestamp.zero; executable = false; chunks = [] }
+let empty_capa = Chunk.Inline (Protobuf.Encoder.encode_exn file_to_protobuf empty)
 
-let rec update_with_unix_fd ~convergence ~client file fd =
+let rec update_with_unix_fd ~convergence ~client file_capa fd =
   (* Remember mtime before we start. *)
   let%lwt { Lwt_unix.st_mtime = mtime; st_perm } = Lwt_unix.fstat fd in
   let check_mtime () =
@@ -20,6 +21,12 @@ let rec update_with_unix_fd ~convergence ~client file fd =
     if mtime <> mtime' then [%lwt raise Retry] else Lwt.return_unit
   in
   try%lwt
+    (* Retrieve the file metadata. *)
+    let%lwt file =
+      match%lwt Chunk.retrieve_data ~decoder:file_from_protobuf client file_capa with
+      | `Ok file -> Lwt.return file
+      | (`Not_found | `Unavailable | `Malformed) as err -> [%lwt raise (Error err)]
+    in
     (* Update the chunk list while trying to share as much as possible. *)
     Lwt_unix.lseek fd 0 Lwt_unix.SEEK_SET >>= fun _ ->
     let%lwt capas =
@@ -74,27 +81,36 @@ let rec update_with_unix_fd ~convergence ~client file fd =
           Lwt.return capas
       in handle_chunk capas
     in
-    Lwt.return (`Ok {
+    let file = {
       last_modified = Timestamp.of_unix_time mtime;
       executable    = st_perm land 0o100 <> 0;
-      chunks        = List.rev capas; })
+      chunks        = List.rev capas; } in
+    match%lwt Chunk.store_data ~convergence ~encoder:file_to_protobuf client file with
+    | (`Ok _) as result -> Lwt.return result
+    | (`Unavailable | `Not_supported) as err -> [%lwt raise (Error err)]
   with
   | Retry ->
-    update_with_unix_fd ~convergence ~client file fd
+    update_with_unix_fd ~convergence ~client file_capa fd
   | Error ((`Malformed | `Not_found | `Not_supported | `Unavailable) as err) ->
     Lwt.return err
 
 let create_from_unix_fd ~convergence ~client fd =
-  match%lwt update_with_unix_fd ~convergence ~client empty fd with
+  match%lwt update_with_unix_fd ~convergence ~client empty_capa fd with
   | `Malformed | `Not_found -> assert%lwt false
   | (`Ok _ | `Unavailable | `Not_supported) as result -> Lwt.return result
 
-let retrieve_to_unix_fd ~client file fd =
+let retrieve_to_unix_fd ~client file_capa fd =
   let ignore_espipe f =
     try%lwt f ()
     with Unix.Unix_error(Unix.ESPIPE, _, _) -> Lwt.return_unit
   in
   try%lwt
+    (* Retrieve the file metadata. *)
+    let%lwt file =
+      match%lwt Chunk.retrieve_data ~decoder:file_from_protobuf client file_capa with
+      | `Ok file -> Lwt.return file
+      | (`Not_found | `Unavailable | `Malformed) as err -> [%lwt raise (Error err)]
+    in
     (* Go through the chunks and write them to the file. *)
     ignore_espipe (fun () ->
       Lwt_unix.lseek fd 0 Lwt_unix.SEEK_SET >>= fun _ ->

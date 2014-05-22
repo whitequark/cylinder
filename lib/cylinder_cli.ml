@@ -232,19 +232,17 @@ let store_file convergence data =
   let%lwt fd = unix_fd_of_filename data Lwt_unix.[O_RDONLY] in
   match%lwt File.create_from_unix_fd ~convergence ~client fd with
   | (`Unavailable | `Not_supported) as err -> handle_error err
-  | `Ok file ->
-    let shadow = Graph.file_shadow file in
-    put_chunk ~convergence ~encoder:File.file_to_protobuf client file >:= fun file_capa ->
-    put_chunk ~convergence ~encoder:Graph.shadow_to_protobuf client shadow >:= fun shadow_capa ->
+  | `Ok file_capa ->
+    (* let shadow = Graph.file_shadow file in *)
+    (* put_chunk ~convergence ~encoder:Graph.shadow_to_protobuf client shadow >:= fun shadow_capa -> *)
     Lwt_io.printl (Chunk.capability_to_string file_capa) >>= fun () ->
-    Lwt_io.printl (Chunk.capability_to_string shadow_capa) >>= fun () ->
+    (* Lwt_io.printl (Chunk.capability_to_string shadow_capa) >>= fun () -> *)
     return_ok
 
 let retrieve_file capa data =
   connect () >:= fun (config, client) ->
-  get_chunk ~decoder:File.file_from_protobuf client capa >:= fun file ->
   let%lwt fd = unix_fd_of_filename data Lwt_unix.[O_WRONLY; O_CREAT] in
-  match%lwt File.retrieve_to_unix_fd ~client file fd with
+  match%lwt File.retrieve_to_unix_fd ~client capa fd with
   | (`Not_found | `Unavailable | `Malformed) as err -> handle_error err
   | `Ok -> return_ok
 

@@ -16,7 +16,7 @@ val file_to_protobuf    : file -> Protobuf.Encoder.t -> unit
     reflecting the metadata and content of Unix file descriptor [fd] and
     uploads the blocks representing its content via [client]. *)
 val create_from_unix_fd : convergence:bytes -> client:Block.Client.t -> Lwt_unix.file_descr ->
-                          [ `Ok of file | `Unavailable | `Not_supported ] Lwt.t
+                          [ `Ok of file Chunk.capability | `Unavailable | `Not_supported ] Lwt.t
 
 (** [update_with_unix_fd ~convergence ~client base fd] returns a file reflecting
     the metadata and content of Unix file descriptor [fd] and uploads the blocks
@@ -27,13 +27,13 @@ val create_from_unix_fd : convergence:bytes -> client:Block.Client.t -> Lwt_unix
 
     [fd] will be rewound to the end of file. *)
 val update_with_unix_fd : convergence:bytes -> client:Block.Client.t ->
-                          file -> Lwt_unix.file_descr ->
-                          [ `Ok of file | `Unavailable | `Not_supported
+                          file Chunk.capability -> Lwt_unix.file_descr ->
+                          [ `Ok of file Chunk.capability | `Unavailable | `Not_supported
                           | `Not_found | `Malformed ] Lwt.t
 
 (** [retrieve_to_unix_fd ~client file fd] updates the metadata and content of [fd],
     downloading all necessary blocks via [client].
 
     [fd] will be rewound to the end of file. *)
-val retrieve_to_unix_fd : client:Block.Client.t -> file -> Lwt_unix.file_descr ->
+val retrieve_to_unix_fd : client:Block.Client.t -> file Chunk.capability -> Lwt_unix.file_descr ->
                           [ `Ok | `Not_found | `Unavailable | `Malformed ] Lwt.t
