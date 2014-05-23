@@ -260,6 +260,16 @@ let retrieve_directory capa path =
      `Not_supported | `Not_empty) as err -> handle_error err
   | `Ok -> return_ok
 
+let shadow fn convergence capa =
+  connect() >:= fun (config, client) ->
+  match%lwt fn ~convergence ~client capa with
+  | (`Not_found | `Unavailable | `Malformed | `Not_supported) as err -> handle_error err
+  | `Ok shadow_capa ->
+    Lwt_io.printl (Chunk.capability_to_string shadow_capa) >>= fun () ->
+    return_ok
+
+let shadow_file = shadow Graph.file_shadow
+
 (* Command specification *)
 
 open Cmdliner
@@ -429,6 +439,11 @@ let retrieve_directory_cmd =
   Term.(ret (pure Lwt_main.run $ (pure retrieve_directory $ capability 0 $ directory 1))),
   Term.info "retrieve-directory" ~doc ~docs
 
+let shadow_file_cmd =
+  let doc = "create a file shadow" in
+  Term.(ret (pure Lwt_main.run $ (pure shadow_file $ convergence $ capability 0))),
+  Term.info "shadow-file" ~doc ~docs
+
 let default_cmd =
   let doc = "command-line interface for Cylinder" in
   let man = [
@@ -447,6 +462,7 @@ let commands = [
     show_shadow_cmd;
     show_file_cmd; retrieve_file_cmd; store_file_cmd;
     store_directory_cmd; retrieve_directory_cmd;
+    shadow_file_cmd;
   ]
 
 let () =

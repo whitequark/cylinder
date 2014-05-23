@@ -65,16 +65,16 @@ val capability_of_data        : encoder:('a -> Protobuf.Encoder.t -> unit) ->
     If the encrypted data could not be authenticated, returns [`Malformed]. *)
 val capability_to_data        : decoder:(Protobuf.Decoder.t -> 'a) ->
                                 'a capability -> bytes option ->
-                                [ `Ok of 'a | `Malformed ] Lwt.t
+                                [> `Ok of 'a | `Malformed ] Lwt.t
 
 (** [store_data ~encoder cl ca] stores data using blockserver client [cl] and
     returns a capability that would allow to access it. *)
 val store_data                : encoder:('a -> Protobuf.Encoder.t -> unit) ->
                                 convergence:bytes -> Block.Client.t -> 'a ->
-                                [ `Ok of 'a capability | `Unavailable | `Not_supported ] Lwt.t
+                                [> `Ok of 'a capability | `Unavailable | `Not_supported ] Lwt.t
 
 (** [retrieve_data ~decoder cl ca] retrieves data from capability [ca] using
     blockserver client [cl]. *)
 val retrieve_data             : decoder:(Protobuf.Decoder.t -> 'a) -> Block.Client.t ->
                                 'a capability ->
-                                [ `Ok of 'a | `Not_found | `Unavailable | `Malformed ] Lwt.t
+                                [> `Ok of 'a | `Not_found | `Unavailable | `Malformed ] Lwt.t

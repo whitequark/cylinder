@@ -1,4 +1,4 @@
-(** An opaque block storage client and server. *)
+(** Content addressable storage. *)
 
 (** A [digest_kind] indicates the function used for creating the digest. *)
 type digest_kind = [ `SHA512 ]
