@@ -269,6 +269,7 @@ let shadow fn convergence capa =
     return_ok
 
 let shadow_file = shadow Graph.file_shadow
+let shadow_directory = shadow Graph.directory_shadow
 
 (* Command specification *)
 
@@ -444,6 +445,11 @@ let shadow_file_cmd =
   Term.(ret (pure Lwt_main.run $ (pure shadow_file $ convergence $ capability 0))),
   Term.info "shadow-file" ~doc ~docs
 
+let shadow_directory_cmd =
+  let doc = "create a directory shadow" in
+  Term.(ret (pure Lwt_main.run $ (pure shadow_directory $ convergence $ capability 0))),
+  Term.info "shadow-directory" ~doc ~docs
+
 let default_cmd =
   let doc = "command-line interface for Cylinder" in
   let man = [
@@ -462,7 +468,7 @@ let commands = [
     show_shadow_cmd;
     show_file_cmd; retrieve_file_cmd; store_file_cmd;
     store_directory_cmd; retrieve_directory_cmd;
-    shadow_file_cmd;
+    shadow_file_cmd; shadow_directory_cmd;
   ]
 
 let () =
