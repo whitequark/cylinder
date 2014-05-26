@@ -494,8 +494,8 @@ message AccessGrant {
     Writer = 2;
     Reader = 3;
   }
-  required BoxKey identity = 1;
-  required Access level    = 2;
+  required Access level    = 1;
+  required BoxKey identity = 2;
 }
 
 message CheckpointShadow {

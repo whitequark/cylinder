@@ -13,6 +13,7 @@ Library "cylinder"
   Modules:          crypto/Secret_box, crypto/Box,
                     core/Base64_url, core/Block, core/Chunk,
                     core/Timestamp, core/Data, core/Graph, core/File, core/Directory,
+                    core/Checkpoint,
                     backends/In_memory_store,
                     config/Config, config/Server_config, config/Client_config,
                     local/Pathname, local/Tree
