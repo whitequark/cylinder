@@ -1,3 +1,5 @@
+(** Tree access control. *)
+
 type grant  = [ `Owner | `Writer | `Reader ] * Box.public_key
 
 type shadow = {
