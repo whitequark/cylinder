@@ -476,6 +476,8 @@ message Directory {
 }
 ```
 
+When `Directory.Content.type` is `File`, only `Directory.Content.file_capability` must also be present. When `Directory.Content.type` is `Directory`, only `Directory.Content.directory_capability` must also be present.
+
 Checkpoints
 -----------
 
@@ -504,14 +506,14 @@ message CheckpointShadow {
   required Capability  shadow_root = 3;
 }
 
-message AccessCapability {
+message Keyring {
   required SecretBoxKey shadow_key = 1;
   required SecretBoxKey shiny_key  = 2;
 }
 
 message Checkpoint {
-  repeated Box       access_capabilites = 1;
-  required SecretBox shadow_data        = 2; // of ShadowData
-  required SecretBox shiny_root         = 3; // of Capability
+  repeated Box       keyrings      = 1;
+  required SecretBox shadow_data   = 2; // with ShadowData
+  required SecretBox shiny_root    = 3; // with Capability
 }
 ```

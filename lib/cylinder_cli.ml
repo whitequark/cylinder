@@ -261,7 +261,7 @@ let retrieve_directory capa path =
   | `Ok -> return_ok
 
 let shadow fn convergence capa =
-  connect() >:= fun (config, client) ->
+  connect () >:= fun (config, client) ->
   match%lwt fn ~convergence ~client capa with
   | (`Not_found | `Unavailable | `Malformed | `Not_supported) as err -> handle_error err
   | `Ok shadow_capa ->
@@ -270,6 +270,52 @@ let shadow fn convergence capa =
 
 let shadow_file = shadow Graph.file_shadow
 let shadow_directory = shadow Graph.directory_shadow
+
+let create_checkpoint convergence dir_capa =
+  let open Client_config in
+  connect () >:= fun (config, client) ->
+  match%lwt Checkpoint.create ~convergence ~client
+                              ~owner:config.public_key ~server:config.server_key dir_capa with
+  | (`Not_found | `Unavailable | `Malformed | `Not_supported) as err -> handle_error err
+  | `Ok digest ->
+    Lwt_io.printl (Block.digest_to_string digest) >>= fun () ->
+    return_ok
+
+let show_checkpoint digest =
+  let open Client_config in
+  connect () >:= fun (config, client) ->
+  match%lwt Block.Client.get client digest with
+  | (`Not_found | `Unavailable | `Malformed) as err -> handle_error err
+  | `Ok bytes ->
+    let checkpoint = Protobuf.Decoder.decode_exn Checkpoint.checkpoint_from_protobuf bytes in
+    Lwt_io.printlf "Ring key:    %s" (Box.public_key_to_string checkpoint.Checkpoint.ring_key) >>= fun () ->
+    match Checkpoint.unlock ~owner:config.secret_key checkpoint with
+    | None ->
+      Lwt_io.printl "No access." >>= fun () ->
+      return_ok
+    | Some keyring ->
+      match Secret_box.decrypt checkpoint.Checkpoint.shadow keyring.Checkpoint.shadow_key with
+      | None -> return_error "Cannot decrypt shadow."
+      | Some shadow ->
+        Lwt_io.printlf "Updater:     %s" (Box.public_key_to_string shadow.Checkpoint.updater) >>= fun () ->
+        Lwt_io.printl  "Grants:" >>= fun () ->
+        shadow.Checkpoint.grants |> Lwt_list.iter_s (fun (level, public_key) ->
+          let level' = match level with `Owner -> "Owner " | `Writer -> "Writer" | `Reader -> "Reader" in
+          Lwt_io.printlf "%s %s" (Box.public_key_to_string shadow.Checkpoint.updater) level') >>= fun () ->
+        let shadow_root = Chunk.capability_to_string shadow.Checkpoint.shadow_root in
+        Lwt_io.printlf "Shadow root: %s" shadow_root >>= fun () ->
+        match keyring.Checkpoint.shiny_key with
+        | Some shiny_key ->
+          begin match Secret_box.decrypt checkpoint.Checkpoint.shiny shiny_key with
+          | None -> return_error "Cannot decrypt shiny."
+          | Some shiny ->
+            let shiny_root = Chunk.capability_to_string shiny.Checkpoint.shiny_root in
+            Lwt_io.printlf "Shiny root:  %s" shiny_root >>= fun () ->
+            return_ok
+          end
+        | None ->
+          Lwt_io.printl  "No shiny access." >>= fun () ->
+          return_ok
 
 (* Command specification *)
 
@@ -450,6 +496,16 @@ let shadow_directory_cmd =
   Term.(ret (pure Lwt_main.run $ (pure shadow_directory $ convergence $ capability 0))),
   Term.info "shadow-directory" ~doc ~docs
 
+let create_checkpoint_cmd =
+  let doc = "create a checkpoint" in
+  Term.(ret (pure Lwt_main.run $ (pure create_checkpoint $ convergence $ capability 0))),
+  Term.info "create-checkpoint" ~doc ~docs
+
+let show_checkpoint_cmd =
+  let doc = "show checkpoint properties" in
+  Term.(ret (pure Lwt_main.run $ (pure show_checkpoint $ digest 0))),
+  Term.info "show-checkpoint" ~doc ~docs
+
 let default_cmd =
   let doc = "command-line interface for Cylinder" in
   let man = [
@@ -469,6 +525,7 @@ let commands = [
     show_file_cmd; retrieve_file_cmd; store_file_cmd;
     store_directory_cmd; retrieve_directory_cmd;
     shadow_file_cmd; shadow_directory_cmd;
+    create_checkpoint_cmd; show_checkpoint_cmd;
   ]
 
 let () =
