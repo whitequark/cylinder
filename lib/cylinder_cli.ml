@@ -43,16 +43,14 @@ let init_server_config () =
     let secret_key, public_key = Box.random_key_pair () in
     { secret_key; public_key })
 
-let server backend_kind host port =
+let in_memory_listener socket =
+  let module Server = Block.Server(In_memory_store) in
+  let backend = In_memory_store.create () in
+  Server.listen (Server.create backend socket)
+
+let server listener host port =
   let open Server_config in
   let config = init_server_config () in
-  let listen socket  =
-    match backend_kind with
-    | In_memory_backend ->
-      let module Server = Block.Server(In_memory_store) in
-      let backend = In_memory_store.create () in
-      Server.listen (Server.create backend socket)
-  in
   let zcontext = ZMQ.Context.create () in
   let zsocket  = ZMQ.Socket.create zcontext ZMQ.Socket.router in
   ZMQ.Socket.set_ipv6 zsocket true;
@@ -69,7 +67,7 @@ let server backend_kind host port =
   try
     ZMQ.Socket.bind zsocket (Printf.sprintf "tcp://%s:%d" addr port);
     Lwt_log.notice_f "Listening at %s:%d..." addr port >>= fun () ->
-    listen zsocket >>= fun () ->
+    listener zsocket >>= fun () ->
     return_ok
   with exn ->
     return_error_f "Cannot bind to %s:%d" addr port
@@ -357,23 +355,21 @@ let symmetric_key =
 
 let docs = "HIGH-LEVEL COMMANDS"
 
-let server_cmd =
-  let backend =
-    let doc = "Use $(docv) (one of: in-memory) for storing blocks." in
-    let xs  = ["in-memory", Some In_memory_backend; "", None] in
-    Arg.(required & pos 0 (enum xs) None & info [] ~docv:"BACKEND" ~doc)
-  in
+let server_cmd doc listener =
   let address =
     let doc = "Bind ZeroMQ socket to address $(docv)" in
-    Arg.(value & opt string "*" & info ["b"; "bind-to"] ~docv:"ADDRESS" ~doc)
+    Arg.(value & opt string "::" & info ["b"; "bind-to"] ~docv:"ADDRESS" ~doc)
   in
   let port =
     let doc = "Bind ZeroMQ socket to port $(docv)" in
     Arg.(value & opt int 5555 & info ["p"; "port"] ~docv:"PORT" ~doc)
   in
-  let doc = "run a server" in
-  Term.(ret (pure Lwt_main.run $ (pure server $ backend $ address $ port))),
+  Term.(ret (pure Lwt_main.run $ (pure server $ listener $ address $ port))),
   Term.info "server" ~doc ~docs
+
+let in_memory_server_cmd =
+  let doc = "run a server with in-memory storage" in
+  server_cmd doc Term.(pure in_memory_listener)
 
 let init_client_cmd =
   let address =
@@ -516,7 +512,7 @@ let default_cmd =
   Term.info "cylinder-cli" ~version:"0.1" ~doc ~man
 
 let commands = [
-    server_cmd;
+    in_memory_server_cmd;
     init_client_cmd;
     get_block_cmd; put_block_cmd;
     show_chunk_cmd;
