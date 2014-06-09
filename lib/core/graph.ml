@@ -34,5 +34,5 @@ let rec directory_shadow ~convergence ~client dir_capa =
       in
       let shadow = { children; blocks = [] } in
       Chunk.store_data ~convergence ~encoder:shadow_to_protobuf client shadow
-    with Error err ->
+    with Error ((`Not_found | `Unavailable | `Malformed | `Not_supported) as err) ->
       Lwt.return err

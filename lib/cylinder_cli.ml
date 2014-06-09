@@ -12,7 +12,9 @@ let return_error_f fmt = Printf.kprintf return_error fmt
 
 (* Command implementation *)
 
-type backend_kind = In_memory_backend
+let _ =
+  Lwt.async_exception_hook := fun exn ->
+    Lwt_log.ign_error ~exn "async exception"
 
 let zmq_key key =
   match key with
@@ -46,6 +48,11 @@ let init_server_config () =
 let in_memory_listener socket =
   let module Server = Block.Server(In_memory_store) in
   let backend = In_memory_store.create () in
+  Server.listen (Server.create backend socket)
+
+let filesystem_listener path socket =
+  let module Server = Block.Server(Filesystem_store) in
+  let backend = Filesystem_store.create path in
   Server.listen (Server.create backend socket)
 
 let server listener host port =
@@ -355,7 +362,7 @@ let symmetric_key =
 
 let docs = "HIGH-LEVEL COMMANDS"
 
-let server_cmd doc listener =
+let server_cmd ~doc name listener =
   let address =
     let doc = "Bind ZeroMQ socket to address $(docv)" in
     Arg.(value & opt string "::" & info ["b"; "bind-to"] ~docv:"ADDRESS" ~doc)
@@ -365,11 +372,19 @@ let server_cmd doc listener =
     Arg.(value & opt int 5555 & info ["p"; "port"] ~docv:"PORT" ~doc)
   in
   Term.(ret (pure Lwt_main.run $ (pure server $ listener $ address $ port))),
-  Term.info "server" ~doc ~docs
+  Term.info name ~doc ~docs
 
-let in_memory_server_cmd =
+let serve_in_memory_cmd =
   let doc = "run a server with in-memory storage" in
-  server_cmd doc Term.(pure in_memory_listener)
+  server_cmd "serve-in-memory" ~doc Term.(pure in_memory_listener)
+
+let serve_filesystem_cmd =
+  let doc = "run a server with filesystem storage" in
+  let path =
+    let doc = "Store data at $(docv)" in
+    Arg.(value & opt string "./data" & info ["p"; "path"] ~docv:"PATH" ~doc)
+  in
+  server_cmd "serve-filesystem" ~doc Term.(pure filesystem_listener $ path)
 
 let init_client_cmd =
   let address =
@@ -512,7 +527,7 @@ let default_cmd =
   Term.info "cylinder-cli" ~version:"0.1" ~doc ~man
 
 let commands = [
-    in_memory_server_cmd;
+    serve_in_memory_cmd; serve_filesystem_cmd;
     init_client_cmd;
     get_block_cmd; put_block_cmd;
     show_chunk_cmd;
