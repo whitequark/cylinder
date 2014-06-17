@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Pathname.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Secret_box" rel="Chapter" href="Secret_box.html">
+<link title="Box" rel="Chapter" href="Box.html">
+<link title="Base64_url" rel="Chapter" href="Base64_url.html">
+<link title="Block" rel="Chapter" href="Block.html">
+<link title="Chunk" rel="Chapter" href="Chunk.html">
+<link title="Timestamp" rel="Chapter" href="Timestamp.html">
+<link title="Data" rel="Chapter" href="Data.html">
+<link title="Graph" rel="Chapter" href="Graph.html">
+<link title="File" rel="Chapter" href="File.html">
+<link title="Directory" rel="Chapter" href="Directory.html">
+<link title="Checkpoint" rel="Chapter" href="Checkpoint.html">
+<link title="In_memory_store" rel="Chapter" href="In_memory_store.html">
+<link title="Filesystem_store" rel="Chapter" href="Filesystem_store.html">
+<link title="Config" rel="Chapter" href="Config.html">
+<link title="Server_config" rel="Chapter" href="Server_config.html">
+<link title="Client_config" rel="Chapter" href="Client_config.html">
+<link title="Pathname" rel="Chapter" href="Pathname.html">
+<link title="Tree" rel="Chapter" href="Tree.html"><title>Tree</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Pathname.html" title="Pathname">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;</div>
+<h1>Module <a href="type_Tree.html">Tree</a></h1>
+
+<pre><span class="keyword">module</span> Tree: <code class="code"><span class="keyword">sig</span></code> <a href="Tree.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><hr width="100%">
+
+<pre><code><span id="TYPEentry"><span class="keyword">type</span> <code class="type"></code>entry</span> = {</code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span class="keyword">mutable&nbsp;</span><span id="TYPEELTentry.parent">parent</span>&nbsp;: <code class="type"><a href="Tree.html#TYPEentry">entry</a> option</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span class="keyword">mutable&nbsp;</span><span id="TYPEELTentry.name">name</span>&nbsp;: <code class="type">string</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span class="keyword">mutable&nbsp;</span><span id="TYPEELTentry.modified">modified</span>&nbsp;: <code class="type"><a href="Timestamp.html#TYPEt">Timestamp.t</a></code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTentry.content">content</span>&nbsp;: <code class="type"><a href="Tree.html#TYPEcontent">content</a></code>;</code></td>
+
+</tr></table>
+}
+
+
+
+<pre><code><span id="TYPEcontent"><span class="keyword">type</span> <code class="type"></code>content</span> = </code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTcontent.Directory"><span class="constructor">Directory</span></span> <span class="keyword">of</span> <code class="type"><a href="Tree.html#TYPEdirectory">directory</a></code></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTcontent.File"><span class="constructor">File</span></span></code></td>
+
+</tr></table>
+
+
+
+<pre><code><span id="TYPEdirectory"><span class="keyword">type</span> <code class="type"></code>directory</span> = {</code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span class="keyword">mutable&nbsp;</span><span id="TYPEELTdirectory.children">children</span>&nbsp;: <code class="type"><a href="Tree.html#TYPEentry">entry</a> list</code>;</code></td>
+
+</tr></table>
+}
+
+
+
+<pre><span id="VALstring_of_entry"><span class="keyword">val</span> string_of_entry</span> : <code class="type"><a href="Tree.html#TYPEentry">entry</a> -> string</code></pre>
+<pre><span id="VALwatch"><span class="keyword">val</span> watch</span> : <code class="type"><a href="Pathname.html#TYPEt">Pathname.t</a> -> <a href="Tree.html#TYPEentry">entry</a> Lwt.t</code></pre></body></html>

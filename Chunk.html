@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Block.html">
+<link rel="next" href="Timestamp.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Secret_box" rel="Chapter" href="Secret_box.html">
+<link title="Box" rel="Chapter" href="Box.html">
+<link title="Base64_url" rel="Chapter" href="Base64_url.html">
+<link title="Block" rel="Chapter" href="Block.html">
+<link title="Chunk" rel="Chapter" href="Chunk.html">
+<link title="Timestamp" rel="Chapter" href="Timestamp.html">
+<link title="Data" rel="Chapter" href="Data.html">
+<link title="Graph" rel="Chapter" href="Graph.html">
+<link title="File" rel="Chapter" href="File.html">
+<link title="Directory" rel="Chapter" href="Directory.html">
+<link title="Checkpoint" rel="Chapter" href="Checkpoint.html">
+<link title="In_memory_store" rel="Chapter" href="In_memory_store.html">
+<link title="Filesystem_store" rel="Chapter" href="Filesystem_store.html">
+<link title="Config" rel="Chapter" href="Config.html">
+<link title="Server_config" rel="Chapter" href="Server_config.html">
+<link title="Client_config" rel="Chapter" href="Client_config.html">
+<link title="Pathname" rel="Chapter" href="Pathname.html">
+<link title="Tree" rel="Chapter" href="Tree.html"><title>Chunk</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Block.html" title="Block">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;<a class="post" href="Timestamp.html" title="Timestamp">Next</a>
+</div>
+<h1>Module <a href="type_Chunk.html">Chunk</a></h1>
+
+<pre><span class="keyword">module</span> Chunk: <code class="code"><span class="keyword">sig</span></code> <a href="Chunk.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><div class="info module top">
+Encrypted content-addressable storage.<br>
+</div>
+<hr width="100%">
+
+<pre><span id="VALmax_size"><span class="keyword">val</span> max_size</span> : <code class="type">int</code></pre><div class="info ">
+<code class="code">max_size</code> is the maximum size of the decoded chunk content, currently 10⁷ bytes.<br>
+</div>
+
+<pre><span id="TYPEalgorithm"><span class="keyword">type</span> <code class="type"></code>algorithm</span> = <code class="type">[ `SHA512_XSalsa20_Poly1305 ]</code> </pre>
+<div class="info ">
+The algorithm used for encrypting data to which the capability links.<br>
+</div>
+
+
+<pre><span id="VALalgorithm_to_string"><span class="keyword">val</span> algorithm_to_string</span> : <code class="type"><a href="Chunk.html#TYPEalgorithm">algorithm</a> -> string</code></pre><div class="info ">
+<code class="code">algorithm_to_string a</code> converts algorithm <code class="code">a</code> to an ASCII string
+    representation.<br>
+</div>
+
+<pre><span id="VALalgorithm_of_string"><span class="keyword">val</span> algorithm_of_string</span> : <code class="type">string -> <a href="Chunk.html#TYPEalgorithm">algorithm</a> option</code></pre><div class="info ">
+<code class="code">algorithm_of_string s</code> converts an ASCII string to <code class="code"><span class="constructor">Some</span> algorithm</code>
+    or returns <code class="code"><span class="constructor">None</span></code> if it is unable to recognize the format.<br>
+</div>
+
+<pre><code><span id="TYPEhandle"><span class="keyword">type</span> <code class="type"></code>handle</span> = private {</code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELThandle.digest">digest</span>&nbsp;: <code class="type"><a href="Block.html#TYPEdigest">Block.digest</a></code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELThandle.algorithm">algorithm</span>&nbsp;: <code class="type"><a href="Chunk.html#TYPEalgorithm">algorithm</a></code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELThandle.key">key</span>&nbsp;: <code class="type">bytes</code>;</code></td>
+
+</tr></table>
+}
+
+<div class="info ">
+All information required to retrieve and decode the data chunk.
+    Invariant: <code class="code">handle.key</code> has the length appropriate for <code class="code">handle.algorithm</code>.<br>
+</div>
+
+
+<pre><code><span id="TYPEcapability"><span class="keyword">type</span> <code class="type">'a</code> capability</span> = </code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTcapability.Inline"><span class="constructor">Inline</span></span> <span class="keyword">of</span> <code class="type">bytes</code></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+&lt; An <code class="code"><span class="constructor">Inline</span></code> capability stores the data itself.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTcapability.Stored"><span class="constructor">Stored</span></span> <span class="keyword">of</span> <code class="type"><a href="Chunk.html#TYPEhandle">handle</a></code></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+&lt; A <code class="code"><span class="constructor">Stored</span></code> capability is a link to a Block.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr></table>
+
+<div class="info ">
+A capability is necessary and sufficient to retrieve a chunk.<br>
+</div>
+
+
+<pre><span id="VALinspect_capability"><span class="keyword">val</span> inspect_capability</span> : <code class="type">'a <a href="Chunk.html#TYPEcapability">capability</a> -> string</code></pre><div class="info ">
+<code class="code">inspect_capability ca</code> converts <code class="code">ca</code> to a human-readable string.<br>
+</div>
+
+<pre><span id="VALcapability_digest"><span class="keyword">val</span> capability_digest</span> : <code class="type">'a <a href="Chunk.html#TYPEcapability">capability</a> -> <a href="Block.html#TYPEdigest">Block.digest</a> option</code></pre><div class="info ">
+<code class="code">capability_digest ca</code> returns <code class="code"><span class="constructor">Some</span> digest</code> for stored capability <code class="code">ca</code>
+    or <code class="code"><span class="constructor">None</span></code> for inline capability <code class="code">ca</code>.<br>
+</div>
+
+<pre><span id="VALcapability_from_protobuf"><span class="keyword">val</span> capability_from_protobuf</span> : <code class="type">(Protobuf.Decoder.t -> 'a) -> Protobuf.Decoder.t -> 'a <a href="Chunk.html#TYPEcapability">capability</a></code></pre><div class="info ">
+<code class="code">capability_from_protobuf d</code> deserializes a capability from <code class="code">d</code>.<br>
+</div>
+
+<pre><span id="VALcapability_to_protobuf"><span class="keyword">val</span> capability_to_protobuf</span> : <code class="type">('a -> Protobuf.Encoder.t -> unit) -><br>       'a <a href="Chunk.html#TYPEcapability">capability</a> -> Protobuf.Encoder.t -> unit</code></pre><div class="info ">
+<code class="code">capability_to_protobuf ca e</code> serializes capability <code class="code">ca</code> into <code class="code">e</code>.<br>
+</div>
+
+<pre><span id="VALcapability_of_string"><span class="keyword">val</span> capability_of_string</span> : <code class="type">string -> 'a <a href="Chunk.html#TYPEcapability">capability</a> option</code></pre><div class="info ">
+<code class="code">capability_of_string s</code> deserializes a capability from <code class="code">s</code> and
+    returns <code class="code"><span class="constructor">Some</span> ca</code> or <code class="code"><span class="constructor">None</span></code> if the format is not recognized.<br>
+</div>
+
+<pre><span id="VALcapability_to_string"><span class="keyword">val</span> capability_to_string</span> : <code class="type">'a <a href="Chunk.html#TYPEcapability">capability</a> -> string</code></pre><div class="info ">
+<code class="code">capability_to_string ca</code> serializes capability <code class="code">ca</code> as a string.
+    See <a href="Block.html#VALdigest_to_string"><code class="code"><span class="constructor">Block</span>.digest_to_string</code></a> for details on encoding.<br>
+</div>
+
+<pre><span id="VALcapability_of_data"><span class="keyword">val</span> capability_of_data</span> : <code class="type">encoder:('a -> Protobuf.Encoder.t -> unit) -><br>       convergence:bytes -> 'a -> ('a <a href="Chunk.html#TYPEcapability">capability</a> * bytes option) Lwt.t</code></pre><div class="info ">
+<code class="code">capability_of_data ~encoder ~convergence ch</code> either converts data <code class="code">ch</code> into
+    an inline capability and returns <code class="code"><span class="constructor">Inline</span> bytes, <span class="constructor">None</span></code>, or into a stored
+    capability and returns <code class="code"><span class="constructor">Stored</span> handle, <span class="constructor">Some</span> bytes</code>, where <code class="code">bytes</code> must
+    be stored on the blockserver for the capability to be retrievable.<br>
+</div>
+
+<pre><span id="VALcapability_to_data"><span class="keyword">val</span> capability_to_data</span> : <code class="type">decoder:(Protobuf.Decoder.t -> 'a) -><br>       'a <a href="Chunk.html#TYPEcapability">capability</a> -> bytes option -> [> `Malformed | `Ok of 'a ] Lwt.t</code></pre><div class="info ">
+<code class="code">capability_to_data ~decoder ca b</code> either returns contents of an <code class="code"><span class="constructor">Inline</span></code>
+    capability <code class="code">ca</code>, or decrypts the contents contained in <code class="code"><span class="constructor">Some</span> bytes</code> <code class="code">b</code>
+    using <code class="code">ca</code> and returns it.
+    If <code class="code">ca</code> is a <code class="code"><span class="constructor">Stored</span></code> capability and <code class="code">b</code> is <code class="code"><span class="constructor">None</span></code>, returns <code class="code"><span class="keywordsign">`</span><span class="constructor">Malformed</span></code>.
+    If the encrypted data could not be authenticated, returns <code class="code"><span class="keywordsign">`</span><span class="constructor">Malformed</span></code>.<br>
+</div>
+
+<pre><span id="VALstore_data"><span class="keyword">val</span> store_data</span> : <code class="type">encoder:('a -> Protobuf.Encoder.t -> unit) -><br>       convergence:bytes -><br>       <a href="Block.Client.html#TYPEt">Block.Client.t</a> -><br>       'a -> [> `Not_supported | `Ok of 'a <a href="Chunk.html#TYPEcapability">capability</a> | `Unavailable ] Lwt.t</code></pre><div class="info ">
+<code class="code">store_data ~encoder cl ca</code> stores data using blockserver client <code class="code">cl</code> and
+    returns a capability that would allow to access it.<br>
+</div>
+
+<pre><span id="VALretrieve_data"><span class="keyword">val</span> retrieve_data</span> : <code class="type">decoder:(Protobuf.Decoder.t -> 'a) -><br>       <a href="Block.Client.html#TYPEt">Block.Client.t</a> -><br>       'a <a href="Chunk.html#TYPEcapability">capability</a> -><br>       [> `Malformed | `Not_found | `Ok of 'a | `Unavailable ] Lwt.t</code></pre><div class="info ">
+<code class="code">retrieve_data ~decoder cl ca</code> retrieves data from capability <code class="code">ca</code> using
+    blockserver client <code class="code">cl</code>.<br>
+</div>
+</body></html>

@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="Up" href="Block.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Secret_box" rel="Chapter" href="Secret_box.html">
+<link title="Box" rel="Chapter" href="Box.html">
+<link title="Base64_url" rel="Chapter" href="Base64_url.html">
+<link title="Block" rel="Chapter" href="Block.html">
+<link title="Chunk" rel="Chapter" href="Chunk.html">
+<link title="Timestamp" rel="Chapter" href="Timestamp.html">
+<link title="Data" rel="Chapter" href="Data.html">
+<link title="Graph" rel="Chapter" href="Graph.html">
+<link title="File" rel="Chapter" href="File.html">
+<link title="Directory" rel="Chapter" href="Directory.html">
+<link title="Checkpoint" rel="Chapter" href="Checkpoint.html">
+<link title="In_memory_store" rel="Chapter" href="In_memory_store.html">
+<link title="Filesystem_store" rel="Chapter" href="Filesystem_store.html">
+<link title="Config" rel="Chapter" href="Config.html">
+<link title="Server_config" rel="Chapter" href="Server_config.html">
+<link title="Client_config" rel="Chapter" href="Client_config.html">
+<link title="Pathname" rel="Chapter" href="Pathname.html">
+<link title="Tree" rel="Chapter" href="Tree.html"><title>Block.BACKEND</title>
+</head>
+<body>
+<div class="navbar">&nbsp;<a class="up" href="Block.html" title="Block">Up</a>
+&nbsp;</div>
+<h1>Module type <a href="type_Block.BACKEND.html">Block.BACKEND</a></h1>
+
+<pre><span class="keyword">module type</span> BACKEND = <code class="code"><span class="keyword">sig</span></code> <a href="Block.BACKEND.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><div class="info modtype top">
+<code class="code"><span class="constructor">BACKEND</span></code> is the type of modules implementing blockserver backends.<br>
+</div>
+<hr width="100%">
+
+<pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> </pre>
+<div class="info ">
+The type of backends.<br>
+</div>
+
+
+<pre><span id="VALget"><span class="keyword">val</span> get</span> : <code class="type"><a href="Block.BACKEND.html#TYPEt">t</a> -><br>       <a href="Block.html#TYPEdigest">Block.digest</a> -> [> `Not_found | `Ok of string | `Unavailable ] Lwt.t</code></pre><div class="info ">
+<code class="code">get bd digest</code> retrieves an object corresponding to <code class="code">digest</code> from <code class="code">bd</code>
+      and returns <code class="code"><span class="keywordsign">`</span><span class="constructor">Ok</span> <span class="keyword">object</span></code>.
+      If the object does not exist, <code class="code"><span class="keywordsign">`</span><span class="constructor">Not_found</span></code> is returned.
+      If the backend is temporarily unavailable, e.g. due to a severed network link,
+      <code class="code"><span class="keywordsign">`</span><span class="constructor">Unavailable</span></code> is returned.<br>
+</div>
+
+<pre><span id="VALexists"><span class="keyword">val</span> exists</span> : <code class="type"><a href="Block.BACKEND.html#TYPEt">t</a> -> <a href="Block.html#TYPEdigest">Block.digest</a> -> [> `Not_found | `Ok | `Unavailable ] Lwt.t</code></pre><div class="info ">
+<code class="code">exists bd digest</code> returns <code class="code"><span class="keywordsign">`</span><span class="constructor">Ok</span></code> if an object corresponding to <code class="code">digest</code> exists
+      in <code class="code">bd</code>, or <code class="code"><span class="keywordsign">`</span><span class="constructor">Not_found</span></code> otherwise.
+      If the backend is temporarily unavailable, e.g. due to a severed network link,
+      <code class="code"><span class="keywordsign">`</span><span class="constructor">Unavailable</span></code> is returned.<br>
+</div>
+
+<pre><span id="VALput"><span class="keyword">val</span> put</span> : <code class="type"><a href="Block.BACKEND.html#TYPEt">t</a> -> <a href="Block.html#TYPEdigest">Block.digest</a> -> string -> [> `Ok | `Unavailable ] Lwt.t</code></pre><div class="info ">
+<code class="code">put bd digest obj</code> places an object <code class="code">obj</code> to <code class="code">bd</code> corresponding to digest
+      <code class="code">digest</code> and returns <code class="code"><span class="keywordsign">`</span><span class="constructor">Ok</span></code>. No verification of <code class="code">digest</code> is performed.
+      If the backend is temporarily unavailable, e.g. due to a severed network link
+      or lack of disk space, <code class="code"><span class="keywordsign">`</span><span class="constructor">Unavailable</span></code> is returned.<br>
+</div>
+
+<pre><span id="VALerase"><span class="keyword">val</span> erase</span> : <code class="type"><a href="Block.BACKEND.html#TYPEt">t</a> -> <a href="Block.html#TYPEdigest">Block.digest</a> -> unit Lwt.t</code></pre><div class="info ">
+<code class="code">erase bd digest</code> attempts to remove an object corresponding to <code class="code">digest</code> from
+      <code class="code">bd</code>. If there is no corresponding object or the backend is unavailable,
+      does nothing.<br>
+</div>
+
+<pre><span id="VALenumerate"><span class="keyword">val</span> enumerate</span> : <code class="type"><a href="Block.BACKEND.html#TYPEt">t</a> -><br>       string -> [ `Exhausted | `Ok of string * <a href="Block.html#TYPEdigest">Block.digest</a> list ] Lwt.t</code></pre><div class="info ">
+<code class="code">enumerate bd</code> traverses all digests in <code class="code">bd</code>. The stream may include digests not
+      in <code class="code">bd</code>, or, conversely, may not include digests in <code class="code">bd</code> at the time, because more
+      digests may have been added or erased while the request was in flight.
+<p>
+
+      To spread the workload through several requests, <code class="code">enumerate</code> accepts a cookie,
+      which is an opaque string, and returns a cookie that must be passed back at
+      the next request. The cookie contains all state required to perform traversing.<br>
+</div>
+</body></html>

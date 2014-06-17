@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Directory.html">
+<link rel="next" href="In_memory_store.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Secret_box" rel="Chapter" href="Secret_box.html">
+<link title="Box" rel="Chapter" href="Box.html">
+<link title="Base64_url" rel="Chapter" href="Base64_url.html">
+<link title="Block" rel="Chapter" href="Block.html">
+<link title="Chunk" rel="Chapter" href="Chunk.html">
+<link title="Timestamp" rel="Chapter" href="Timestamp.html">
+<link title="Data" rel="Chapter" href="Data.html">
+<link title="Graph" rel="Chapter" href="Graph.html">
+<link title="File" rel="Chapter" href="File.html">
+<link title="Directory" rel="Chapter" href="Directory.html">
+<link title="Checkpoint" rel="Chapter" href="Checkpoint.html">
+<link title="In_memory_store" rel="Chapter" href="In_memory_store.html">
+<link title="Filesystem_store" rel="Chapter" href="Filesystem_store.html">
+<link title="Config" rel="Chapter" href="Config.html">
+<link title="Server_config" rel="Chapter" href="Server_config.html">
+<link title="Client_config" rel="Chapter" href="Client_config.html">
+<link title="Pathname" rel="Chapter" href="Pathname.html">
+<link title="Tree" rel="Chapter" href="Tree.html"><title>Checkpoint</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Directory.html" title="Directory">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;<a class="post" href="In_memory_store.html" title="In_memory_store">Next</a>
+</div>
+<h1>Module <a href="type_Checkpoint.html">Checkpoint</a></h1>
+
+<pre><span class="keyword">module</span> Checkpoint: <code class="code"><span class="keyword">sig</span></code> <a href="Checkpoint.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><div class="info module top">
+Tree access control.<br>
+</div>
+<hr width="100%">
+
+<pre><span id="TYPEgrant"><span class="keyword">type</span> <code class="type"></code>grant</span> = <code class="type">[ `Owner | `Reader | `Writer ] * <a href="Box.html#TYPEpublic_key">Box.public_key</a></code> </pre>
+
+
+<pre><code><span id="TYPEshadow"><span class="keyword">type</span> <code class="type"></code>shadow</span> = {</code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTshadow.updater">updater</span>&nbsp;: <code class="type"><a href="Box.html#TYPEpublic_key">Box.public_key</a></code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTshadow.grants">grants</span>&nbsp;: <code class="type"><a href="Checkpoint.html#TYPEgrant">grant</a> list</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTshadow.shadow_root">shadow_root</span>&nbsp;: <code class="type"><a href="Graph.html#TYPEshadow">Graph.shadow</a> <a href="Chunk.html#TYPEcapability">Chunk.capability</a></code>;</code></td>
+
+</tr></table>
+}
+
+
+
+<pre><code><span id="TYPEshiny"><span class="keyword">type</span> <code class="type"></code>shiny</span> = {</code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTshiny.shiny_root">shiny_root</span>&nbsp;: <code class="type"><a href="Directory.html#TYPEdirectory">Directory.directory</a> <a href="Chunk.html#TYPEcapability">Chunk.capability</a></code>;</code></td>
+
+</tr></table>
+}
+
+
+
+<pre><code><span id="TYPEkeyring"><span class="keyword">type</span> <code class="type"></code>keyring</span> = {</code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTkeyring.shadow_key">shadow_key</span>&nbsp;: <code class="type"><a href="Secret_box.html#TYPEkey">Secret_box.key</a></code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTkeyring.shiny_key">shiny_key</span>&nbsp;: <code class="type"><a href="Secret_box.html#TYPEkey">Secret_box.key</a> option</code>;</code></td>
+
+</tr></table>
+}
+
+
+
+<pre><code><span id="TYPEcheckpoint"><span class="keyword">type</span> <code class="type"></code>checkpoint</span> = {</code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTcheckpoint.ring_key">ring_key</span>&nbsp;: <code class="type"><a href="Box.html#TYPEpublic_key">Box.public_key</a></code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTcheckpoint.keyrings">keyrings</span>&nbsp;: <code class="type"><a href="Checkpoint.html#TYPEkeyring">keyring</a> <a href="Box.html#TYPEbox">Box.box</a> list</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTcheckpoint.shadow">shadow</span>&nbsp;: <code class="type"><a href="Checkpoint.html#TYPEshadow">shadow</a> <a href="Secret_box.html#TYPEbox">Secret_box.box</a></code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTcheckpoint.shiny">shiny</span>&nbsp;: <code class="type"><a href="Checkpoint.html#TYPEshiny">shiny</a> <a href="Secret_box.html#TYPEbox">Secret_box.box</a></code>;</code></td>
+
+</tr></table>
+}
+
+
+
+<pre><span id="VALcheckpoint_from_protobuf"><span class="keyword">val</span> checkpoint_from_protobuf</span> : <code class="type">Protobuf.Decoder.t -> <a href="Checkpoint.html#TYPEcheckpoint">checkpoint</a></code></pre><div class="info ">
+<code class="code">checkpoint_from_protobuf d</code> deserializes a checkpoint from <code class="code">d</code>.<br>
+</div>
+
+<pre><span id="VALcheckpoint_to_protobuf"><span class="keyword">val</span> checkpoint_to_protobuf</span> : <code class="type"><a href="Checkpoint.html#TYPEcheckpoint">checkpoint</a> -> Protobuf.Encoder.t -> unit</code></pre><div class="info ">
+<code class="code">checkpoint_to_protobuf ca e</code> serializes checkpoint <code class="code">ca</code> into <code class="code">e</code>.<br>
+</div>
+
+<pre><span id="VALcreate"><span class="keyword">val</span> create</span> : <code class="type">convergence:bytes -><br>       client:<a href="Block.Client.html#TYPEt">Block.Client.t</a> -><br>       owner:<a href="Box.html#TYPEpublic_key">Box.public_key</a> -><br>       server:<a href="Box.html#TYPEpublic_key">Box.public_key</a> -><br>       <a href="Directory.html#TYPEdirectory">Directory.directory</a> <a href="Chunk.html#TYPEcapability">Chunk.capability</a> -><br>       [> `Malformed<br>        | `Not_found<br>        | `Not_supported<br>        | `Ok of <a href="Block.html#TYPEdigest">Block.digest</a><br>        | `Unavailable ]<br>       Lwt.t</code></pre><div class="info ">
+<code class="code">create ~convergence ~client ~owner ~server dir</code> creates and uploads a checkpoint for
+    owner public key <code class="code">owner</code>, server public key <code class="code">server</code> and root directory <code class="code">dir</code>
+    using convergence key <code class="code">convergence</code> for creating the shadow tree and client <code class="code">client</code>.<br>
+</div>
+
+<pre><span id="VALunlock"><span class="keyword">val</span> unlock</span> : <code class="type">owner:<a href="Box.html#TYPEsecret_key">Box.secret_key</a> -> <a href="Checkpoint.html#TYPEcheckpoint">checkpoint</a> -> <a href="Checkpoint.html#TYPEkeyring">keyring</a> option</code></pre><div class="info ">
+<code class="code">unlock ~owner digest</code> retrieves checkpoint with from block <code class="code">digest</code> and tries to retrieve
+    the keyring corresponding to secret key <code class="code">owner</code>.<br>
+</div>
+</body></html>

@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="Up" href="Timestamp.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Secret_box" rel="Chapter" href="Secret_box.html">
+<link title="Box" rel="Chapter" href="Box.html">
+<link title="Base64_url" rel="Chapter" href="Base64_url.html">
+<link title="Block" rel="Chapter" href="Block.html">
+<link title="Chunk" rel="Chapter" href="Chunk.html">
+<link title="Timestamp" rel="Chapter" href="Timestamp.html">
+<link title="Data" rel="Chapter" href="Data.html">
+<link title="Graph" rel="Chapter" href="Graph.html">
+<link title="File" rel="Chapter" href="File.html">
+<link title="Directory" rel="Chapter" href="Directory.html">
+<link title="Checkpoint" rel="Chapter" href="Checkpoint.html">
+<link title="In_memory_store" rel="Chapter" href="In_memory_store.html">
+<link title="Filesystem_store" rel="Chapter" href="Filesystem_store.html">
+<link title="Config" rel="Chapter" href="Config.html">
+<link title="Server_config" rel="Chapter" href="Server_config.html">
+<link title="Client_config" rel="Chapter" href="Client_config.html">
+<link title="Pathname" rel="Chapter" href="Pathname.html">
+<link title="Tree" rel="Chapter" href="Tree.html"><title>Timestamp.Delta</title>
+</head>
+<body>
+<div class="navbar">&nbsp;<a class="up" href="Timestamp.html" title="Timestamp">Up</a>
+&nbsp;</div>
+<h1>Module <a href="type_Timestamp.Delta.html">Timestamp.Delta</a></h1>
+
+<pre><span class="keyword">module</span> Delta: <code class="code"><span class="keyword">sig</span></code> <a href="Timestamp.Delta.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><div class="info module top">
+Timestamp deltas.<br>
+</div>
+<hr width="100%">
+
+<pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> = private <code class="type">int64</code> </pre>
+<div class="info ">
+Type of timestamp deltas. Timestamp deltas are represented
+      by differences in Unix times in milliseconds.<br>
+</div>
+
+
+<pre><span id="VALzero"><span class="keyword">val</span> zero</span> : <code class="type"><a href="Timestamp.Delta.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">zero</code> is a delta corresponding to no difference in time.<br>
+</div>
+
+<pre><span id="VALt_from_protobuf"><span class="keyword">val</span> t_from_protobuf</span> : <code class="type">Protobuf.Decoder.t -> <a href="Timestamp.Delta.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">t_from_protobuf d</code> deserializes a timestamp delta from <code class="code">d</code>.<br>
+</div>
+
+<pre><span id="VALt_to_protobuf"><span class="keyword">val</span> t_to_protobuf</span> : <code class="type"><a href="Timestamp.Delta.html#TYPEt">t</a> -> Protobuf.Encoder.t -> unit</code></pre><div class="info ">
+<code class="code">t_to_protobuf t e</code> serializes timestamp delta <code class="code">t</code> into <code class="code">e</code>.<br>
+</div>
+
+<pre><span id="VALof_milliseconds"><span class="keyword">val</span> of_milliseconds</span> : <code class="type">int64 -> <a href="Timestamp.Delta.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">of_milliseconds dut</code> converts Unix time difference <code class="code">dut</code> in
+      milliseconds to a timestamp delta.<br>
+</div>
+
+<pre><span id="VALto_milliseconds"><span class="keyword">val</span> to_milliseconds</span> : <code class="type"><a href="Timestamp.Delta.html#TYPEt">t</a> -> int64</code></pre><div class="info ">
+<code class="code">to_milliseconds dt</code> converts a timestamp delta <code class="code">dt</code> to Unix
+      time difference in milliseconds.<br>
+</div>
+
+<pre><span id="VALto_string"><span class="keyword">val</span> to_string</span> : <code class="type"><a href="Timestamp.Delta.html#TYPEt">t</a> -> string</code></pre><div class="info ">
+<code class="code">to_string dt</code> converts a timestamp delta <code class="code">dt</code> to a formatted
+      string.<br>
+</div>
+
+<pre><span id="VALadd"><span class="keyword">val</span> add</span> : <code class="type"><a href="Timestamp.Delta.html#TYPEt">t</a> -> <a href="Timestamp.Delta.html#TYPEt">t</a> -> <a href="Timestamp.Delta.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">add a b</code> adds timestamp deltas <code class="code">a</code> and <code class="code">b</code>.<br>
+</div>
+
+<pre><span id="VALsub"><span class="keyword">val</span> sub</span> : <code class="type"><a href="Timestamp.Delta.html#TYPEt">t</a> -> <a href="Timestamp.Delta.html#TYPEt">t</a> -> <a href="Timestamp.Delta.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">sub a b</code> subtracts timestamp delta <code class="code">b</code> from <code class="code">a</code>.<br>
+</div>
+
+<pre><span id="VALdiv"><span class="keyword">val</span> div</span> : <code class="type"><a href="Timestamp.Delta.html#TYPEt">t</a> -> int -> <a href="Timestamp.Delta.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">div dt n</code> divides timestamp delta <code class="code">dt</code> to <code class="code">n</code> periods.<br>
+</div>
+</body></html>

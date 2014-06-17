@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Data.html">
+<link rel="next" href="File.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Secret_box" rel="Chapter" href="Secret_box.html">
+<link title="Box" rel="Chapter" href="Box.html">
+<link title="Base64_url" rel="Chapter" href="Base64_url.html">
+<link title="Block" rel="Chapter" href="Block.html">
+<link title="Chunk" rel="Chapter" href="Chunk.html">
+<link title="Timestamp" rel="Chapter" href="Timestamp.html">
+<link title="Data" rel="Chapter" href="Data.html">
+<link title="Graph" rel="Chapter" href="Graph.html">
+<link title="File" rel="Chapter" href="File.html">
+<link title="Directory" rel="Chapter" href="Directory.html">
+<link title="Checkpoint" rel="Chapter" href="Checkpoint.html">
+<link title="In_memory_store" rel="Chapter" href="In_memory_store.html">
+<link title="Filesystem_store" rel="Chapter" href="Filesystem_store.html">
+<link title="Config" rel="Chapter" href="Config.html">
+<link title="Server_config" rel="Chapter" href="Server_config.html">
+<link title="Client_config" rel="Chapter" href="Client_config.html">
+<link title="Pathname" rel="Chapter" href="Pathname.html">
+<link title="Tree" rel="Chapter" href="Tree.html"><title>Graph</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Data.html" title="Data">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;<a class="post" href="File.html" title="File">Next</a>
+</div>
+<h1>Module <a href="type_Graph.html">Graph</a></h1>
+
+<pre><span class="keyword">module</span> Graph: <code class="code"><span class="keyword">sig</span></code> <a href="Graph.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><div class="info module top">
+Filesystem DAG.<br>
+</div>
+<hr width="100%">
+
+<pre><code><span id="TYPEshadow"><span class="keyword">type</span> <code class="type"></code>shadow</span> = {</code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTshadow.children">children</span>&nbsp;: <code class="type"><a href="Graph.html#TYPEshadow">shadow</a> <a href="Chunk.html#TYPEcapability">Chunk.capability</a> list</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTshadow.blocks">blocks</span>&nbsp;: <code class="type"><a href="Block.html#TYPEdigest">Block.digest</a> list</code>;</code></td>
+
+</tr></table>
+}
+
+<div class="info ">
+A type of shadow blocks.<br>
+</div>
+
+
+<pre><span id="VALshadow_from_protobuf"><span class="keyword">val</span> shadow_from_protobuf</span> : <code class="type">Protobuf.Decoder.t -> <a href="Graph.html#TYPEshadow">shadow</a></code></pre><div class="info ">
+<code class="code">shadow_from_protobuf d</code> deserializes a shadow block from <code class="code">d</code>.<br>
+</div>
+
+<pre><span id="VALshadow_to_protobuf"><span class="keyword">val</span> shadow_to_protobuf</span> : <code class="type"><a href="Graph.html#TYPEshadow">shadow</a> -> Protobuf.Encoder.t -> unit</code></pre><div class="info ">
+<code class="code">shadow_to_protobuf sb e</code> serializes shadow block <code class="code">sb</code> into <code class="code">e</code>.<br>
+</div>
+
+<pre><span id="VALfile_shadow"><span class="keyword">val</span> file_shadow</span> : <code class="type">convergence:bytes -><br>       client:<a href="Block.Client.html#TYPEt">Block.Client.t</a> -><br>       <a href="File.html#TYPEfile">File.file</a> <a href="Chunk.html#TYPEcapability">Chunk.capability</a> -><br>       [> `Malformed<br>        | `Not_found<br>        | `Not_supported<br>        | `Ok of <a href="Graph.html#TYPEshadow">shadow</a> <a href="Chunk.html#TYPEcapability">Chunk.capability</a><br>        | `Unavailable ]<br>       Lwt.t</code></pre><div class="info ">
+<code class="code">file_shadow f</code> returns the shadow for file <code class="code">f</code>.<br>
+</div>
+
+<pre><span id="VALdirectory_shadow"><span class="keyword">val</span> directory_shadow</span> : <code class="type">convergence:bytes -><br>       client:<a href="Block.Client.html#TYPEt">Block.Client.t</a> -><br>       <a href="Directory.html#TYPEdirectory">Directory.directory</a> <a href="Chunk.html#TYPEcapability">Chunk.capability</a> -><br>       [> `Malformed<br>        | `Not_found<br>        | `Not_supported<br>        | `Ok of <a href="Graph.html#TYPEshadow">shadow</a> <a href="Chunk.html#TYPEcapability">Chunk.capability</a><br>        | `Unavailable ]<br>       Lwt.t</code></pre><div class="info ">
+<code class="code">directory_shadow f</code> returns the shadow for directory <code class="code">f</code>.<br>
+</div>
+</body></html>

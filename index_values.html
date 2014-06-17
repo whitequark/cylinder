@@ -1,0 +1,787 @@
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Secret_box" rel="Chapter" href="Secret_box.html">
+<link title="Box" rel="Chapter" href="Box.html">
+<link title="Base64_url" rel="Chapter" href="Base64_url.html">
+<link title="Block" rel="Chapter" href="Block.html">
+<link title="Chunk" rel="Chapter" href="Chunk.html">
+<link title="Timestamp" rel="Chapter" href="Timestamp.html">
+<link title="Data" rel="Chapter" href="Data.html">
+<link title="Graph" rel="Chapter" href="Graph.html">
+<link title="File" rel="Chapter" href="File.html">
+<link title="Directory" rel="Chapter" href="Directory.html">
+<link title="Checkpoint" rel="Chapter" href="Checkpoint.html">
+<link title="In_memory_store" rel="Chapter" href="In_memory_store.html">
+<link title="Filesystem_store" rel="Chapter" href="Filesystem_store.html">
+<link title="Config" rel="Chapter" href="Config.html">
+<link title="Server_config" rel="Chapter" href="Server_config.html">
+<link title="Client_config" rel="Chapter" href="Client_config.html">
+<link title="Pathname" rel="Chapter" href="Pathname.html">
+<link title="Tree" rel="Chapter" href="Tree.html"><title>Index of values</title>
+</head>
+<body>
+<div class="navbar">&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;</div>
+<h1>Index of values</h1>
+<table>
+<tr><td align="left"><br>A</td></tr>
+<tr><td><a href="Timestamp.Delta.html#VALadd">add</a> [<a href="Timestamp.Delta.html">Timestamp.Delta</a>]</td>
+<td><div class="info">
+<code class="code">add a b</code> adds timestamp deltas <code class="code">a</code> and <code class="code">b</code>.
+</div>
+</td></tr>
+<tr><td><a href="Timestamp.html#VALadvance">advance</a> [<a href="Timestamp.html">Timestamp</a>]</td>
+<td><div class="info">
+<code class="code">advance t d</code> advances timestamp <code class="code">t</code> by <code class="code">d</code>.
+</div>
+</td></tr>
+<tr><td><a href="Chunk.html#VALalgorithm_of_string">algorithm_of_string</a> [<a href="Chunk.html">Chunk</a>]</td>
+<td><div class="info">
+<code class="code">algorithm_of_string s</code> converts an ASCII string to <code class="code"><span class="constructor">Some</span> algorithm</code>
+    or returns <code class="code"><span class="constructor">None</span></code> if it is unable to recognize the format.
+</div>
+</td></tr>
+<tr><td><a href="Chunk.html#VALalgorithm_to_string">algorithm_to_string</a> [<a href="Chunk.html">Chunk</a>]</td>
+<td><div class="info">
+<code class="code">algorithm_to_string a</code> converts algorithm <code class="code">a</code> to an ASCII string
+    representation.
+</div>
+</td></tr>
+<tr><td align="left"><br>B</td></tr>
+<tr><td><a href="Pathname.html#VALbasename">basename</a> [<a href="Pathname.html">Pathname</a>]</td>
+<td><div class="info">
+<code class="code">basename p</code> returns all but the last component of <code class="code">p</code>.
+</div>
+</td></tr>
+<tr><td><a href="Box.html#VALbox_from_protobuf">box_from_protobuf</a> [<a href="Box.html">Box</a>]</td>
+<td><div class="info">
+<code class="code">box_from_protobuf d</code> deserializes a secret box from <code class="code">d</code>.
+</div>
+</td></tr>
+<tr><td><a href="Secret_box.html#VALbox_from_protobuf">box_from_protobuf</a> [<a href="Secret_box.html">Secret_box</a>]</td>
+<td><div class="info">
+<code class="code">box_from_protobuf d</code> deserializes a secret box from <code class="code">d</code>.
+</div>
+</td></tr>
+<tr><td><a href="Box.html#VALbox_to_protobuf">box_to_protobuf</a> [<a href="Box.html">Box</a>]</td>
+<td><div class="info">
+<code class="code">box_to_protobuf sb e</code> serializes secret box <code class="code">sb</code> into <code class="code">e</code>.
+</div>
+</td></tr>
+<tr><td><a href="Secret_box.html#VALbox_to_protobuf">box_to_protobuf</a> [<a href="Secret_box.html">Secret_box</a>]</td>
+<td><div class="info">
+<code class="code">box_to_protobuf sb e</code> serializes secret box <code class="code">sb</code> into <code class="code">e</code>.
+</div>
+</td></tr>
+<tr><td align="left"><br>C</td></tr>
+<tr><td><a href="Chunk.html#VALcapability_digest">capability_digest</a> [<a href="Chunk.html">Chunk</a>]</td>
+<td><div class="info">
+<code class="code">capability_digest ca</code> returns <code class="code"><span class="constructor">Some</span> digest</code> for stored capability <code class="code">ca</code>
+    or <code class="code"><span class="constructor">None</span></code> for inline capability <code class="code">ca</code>.
+</div>
+</td></tr>
+<tr><td><a href="Chunk.html#VALcapability_from_protobuf">capability_from_protobuf</a> [<a href="Chunk.html">Chunk</a>]</td>
+<td><div class="info">
+<code class="code">capability_from_protobuf d</code> deserializes a capability from <code class="code">d</code>.
+</div>
+</td></tr>
+<tr><td><a href="Chunk.html#VALcapability_of_data">capability_of_data</a> [<a href="Chunk.html">Chunk</a>]</td>
+<td><div class="info">
+<code class="code">capability_of_data ~encoder ~convergence ch</code> either converts data <code class="code">ch</code> into
+    an inline capability and returns <code class="code"><span class="constructor">Inline</span> bytes, <span class="constructor">None</span></code>, or into a stored
+    capability and returns <code class="code"><span class="constructor">Stored</span> handle, <span class="constructor">Some</span> bytes</code>, where <code class="code">bytes</code> must
+    be stored on the blockserver for the capability to be retrievable.
+</div>
+</td></tr>
+<tr><td><a href="Chunk.html#VALcapability_of_string">capability_of_string</a> [<a href="Chunk.html">Chunk</a>]</td>
+<td><div class="info">
+<code class="code">capability_of_string s</code> deserializes a capability from <code class="code">s</code> and
+    returns <code class="code"><span class="constructor">Some</span> ca</code> or <code class="code"><span class="constructor">None</span></code> if the format is not recognized.
+</div>
+</td></tr>
+<tr><td><a href="Chunk.html#VALcapability_to_data">capability_to_data</a> [<a href="Chunk.html">Chunk</a>]</td>
+<td><div class="info">
+<code class="code">capability_to_data ~decoder ca b</code> either returns contents of an <code class="code"><span class="constructor">Inline</span></code>
+    capability <code class="code">ca</code>, or decrypts the contents contained in <code class="code"><span class="constructor">Some</span> bytes</code> <code class="code">b</code>
+    using <code class="code">ca</code> and returns it.
+</div>
+</td></tr>
+<tr><td><a href="Chunk.html#VALcapability_to_protobuf">capability_to_protobuf</a> [<a href="Chunk.html">Chunk</a>]</td>
+<td><div class="info">
+<code class="code">capability_to_protobuf ca e</code> serializes capability <code class="code">ca</code> into <code class="code">e</code>.
+</div>
+</td></tr>
+<tr><td><a href="Chunk.html#VALcapability_to_string">capability_to_string</a> [<a href="Chunk.html">Chunk</a>]</td>
+<td><div class="info">
+<code class="code">capability_to_string ca</code> serializes capability <code class="code">ca</code> as a string.
+</div>
+</td></tr>
+<tr><td><a href="Checkpoint.html#VALcheckpoint_from_protobuf">checkpoint_from_protobuf</a> [<a href="Checkpoint.html">Checkpoint</a>]</td>
+<td><div class="info">
+<code class="code">checkpoint_from_protobuf d</code> deserializes a checkpoint from <code class="code">d</code>.
+</div>
+</td></tr>
+<tr><td><a href="Checkpoint.html#VALcheckpoint_to_protobuf">checkpoint_to_protobuf</a> [<a href="Checkpoint.html">Checkpoint</a>]</td>
+<td><div class="info">
+<code class="code">checkpoint_to_protobuf ca e</code> serializes checkpoint <code class="code">ca</code> into <code class="code">e</code>.
+</div>
+</td></tr>
+<tr><td><a href="Client_config.html#VALclient_config_of_string">client_config_of_string</a> [<a href="Client_config.html">Client_config</a>]</td>
+<td></td></tr>
+<tr><td><a href="Client_config.html#VALclient_config_to_string">client_config_to_string</a> [<a href="Client_config.html">Client_config</a>]</td>
+<td></td></tr>
+<tr><td><a href="Pathname.html#VALconcat">concat</a> [<a href="Pathname.html">Pathname</a>]</td>
+<td><div class="info">
+<code class="code">concat a b</code> returns concatenation of <code class="code">a</code> and <code class="code">b</code>.
+</div>
+</td></tr>
+<tr><td><a href="Filesystem_store.html#VALcreate">create</a> [<a href="Filesystem_store.html">Filesystem_store</a>]</td>
+<td></td></tr>
+<tr><td><a href="In_memory_store.html#VALcreate">create</a> [<a href="In_memory_store.html">In_memory_store</a>]</td>
+<td></td></tr>
+<tr><td><a href="Checkpoint.html#VALcreate">create</a> [<a href="Checkpoint.html">Checkpoint</a>]</td>
+<td><div class="info">
+<code class="code">create ~convergence ~client ~owner ~server dir</code> creates and uploads a checkpoint for
+    owner public key <code class="code">owner</code>, server public key <code class="code">server</code> and root directory <code class="code">dir</code>
+    using convergence key <code class="code">convergence</code> for creating the shadow tree and client <code class="code">client</code>.
+</div>
+</td></tr>
+<tr><td><a href="Block.Client.html#VALcreate">create</a> [<a href="Block.Client.html">Block.Client</a>]</td>
+<td><div class="info">
+<code class="code">create sock</code> creates a client for a ZeroMQ socket <code class="code">sock</code>.
+</div>
+</td></tr>
+<tr><td><a href="Block.Server.html#VALcreate">create</a> [<a href="Block.Server.html">Block.Server</a>]</td>
+<td><div class="info">
+<code class="code">create backend sock</code> creates a server for backend <code class="code">backend</code> and a ZeroMQ
+      socket <code class="code">sock</code>.
+</div>
+</td></tr>
+<tr><td><a href="Directory.html#VALcreate_from_path">create_from_path</a> [<a href="Directory.html">Directory</a>]</td>
+<td><div class="info">
+<code class="code">create_from_path ~convergence ~client fd</code> returns a directory capability
+    reflecting the metadata and content of a directory at <code class="code">path</code> and
+    uploads the blocks representing its content via <code class="code">client</code>.
+</div>
+</td></tr>
+<tr><td><a href="File.html#VALcreate_from_unix_fd">create_from_unix_fd</a> [<a href="File.html">File</a>]</td>
+<td><div class="info">
+<code class="code">create_from_unix_fd ~convergence ~client fd</code> returns a file capability
+    reflecting the metadata and content of Unix file descriptor <code class="code">fd</code> and
+    uploads the blocks representing its content via <code class="code">client</code>.
+</div>
+</td></tr>
+<tr><td align="left"><br>D</td></tr>
+<tr><td><a href="Data.html#VALdata_from_protobuf">data_from_protobuf</a> [<a href="Data.html">Data</a>]</td>
+<td><div class="info">
+<code class="code">data_from_protobuf d</code> deserializes a data chunk from <code class="code">d</code>.
+</div>
+</td></tr>
+<tr><td><a href="Data.html#VALdata_of_bytes">data_of_bytes</a> [<a href="Data.html">Data</a>]</td>
+<td><div class="info">
+<code class="code">data_of_bytes b</code> encodes opaque byte sequence <code class="code">b</code> into a data chunk.
+</div>
+</td></tr>
+<tr><td><a href="Data.html#VALdata_to_bytes">data_to_bytes</a> [<a href="Data.html">Data</a>]</td>
+<td><div class="info">
+<code class="code">data_to_bytes ch</code> decodes data chunk <code class="code">ch</code> into an opaque byte sequence.
+</div>
+</td></tr>
+<tr><td><a href="Data.html#VALdata_to_protobuf">data_to_protobuf</a> [<a href="Data.html">Data</a>]</td>
+<td><div class="info">
+<code class="code">data_to_protobuf ch e</code> serializes data chunk <code class="code">ch</code> into <code class="code">e</code>.
+</div>
+</td></tr>
+<tr><td><a href="Base64_url.html#VALdecode">decode</a> [<a href="Base64_url.html">Base64_url</a>]</td>
+<td><div class="info">
+<code class="code">decode b</code> decodes <code class="code">b</code> using RFC 4648 'base64url' and returns
+    <code class="code"><span class="constructor">Some</span> b'</code> or <code class="code"><span class="constructor">None</span></code> if <code class="code">b</code> contains invalid characters.
+</div>
+</td></tr>
+<tr><td><a href="Box.html#VALdecrypt">decrypt</a> [<a href="Box.html">Box</a>]</td>
+<td><div class="info">
+<code class="code">decrypt box key</code> decrypts the data stored in <code class="code">box</code> using <code class="code">key</code> and nonce
+    stored together with data and returns <code class="code"><span class="constructor">Some</span> data</code>, or <code class="code"><span class="constructor">None</span></code> if verification
+    failed.
+</div>
+</td></tr>
+<tr><td><a href="Secret_box.html#VALdecrypt">decrypt</a> [<a href="Secret_box.html">Secret_box</a>]</td>
+<td><div class="info">
+<code class="code">decrypt box key</code> decrypts the data stored in <code class="code">box</code> using <code class="code">key</code> and nonce
+    stored together with data and returns <code class="code"><span class="constructor">Some</span> data</code>, or <code class="code"><span class="constructor">None</span></code> if verification
+    failed.
+</div>
+</td></tr>
+<tr><td><a href="Timestamp.html#VALdiff">diff</a> [<a href="Timestamp.html">Timestamp</a>]</td>
+<td><div class="info">
+<code class="code">diff a b</code> returns a relative difference between <code class="code">a</code> and <code class="code">b</code>.
+</div>
+</td></tr>
+<tr><td><a href="Block.html#VALdigest_bigbytes">digest_bigbytes</a> [<a href="Block.html">Block</a>]</td>
+<td><div class="info">
+<code class="code">digest_bigbytes b</code> behaves like <code class="code">digest_bytes</code>.
+</div>
+</td></tr>
+<tr><td><a href="Block.html#VALdigest_bytes">digest_bytes</a> [<a href="Block.html">Block</a>]</td>
+<td><div class="info">
+<code class="code">digest_bytes b</code> hashes <code class="code">b</code> with the preferred function, or returns an <code class="code"><span class="keywordsign">`</span><span class="constructor">Inline</span></code>
+    digest if <code class="code">b</code> is shorter than the length of hash function output.
+</div>
+</td></tr>
+<tr><td><a href="Block.html#VALdigest_from_protobuf">digest_from_protobuf</a> [<a href="Block.html">Block</a>]</td>
+<td><div class="info">
+<code class="code">digest_from_protobuf d</code> deserializes a digest from <code class="code">d</code>.
+</div>
+</td></tr>
+<tr><td><a href="Block.html#VALdigest_kind_of_string">digest_kind_of_string</a> [<a href="Block.html">Block</a>]</td>
+<td><div class="info">
+<code class="code">digest_kind_of_string s</code> converts an ASCII string to <code class="code"><span class="constructor">Some</span> digest_kind</code>
+    or returns <code class="code"><span class="constructor">None</span></code> if it is unable to recognize the format.
+</div>
+</td></tr>
+<tr><td><a href="Block.html#VALdigest_kind_to_string">digest_kind_to_string</a> [<a href="Block.html">Block</a>]</td>
+<td><div class="info">
+<code class="code">digest_kind_to_string dk</code> converts digest kind <code class="code">dk</code> to an ASCII string
+    representation.
+</div>
+</td></tr>
+<tr><td><a href="Block.html#VALdigest_of_string">digest_of_string</a> [<a href="Block.html">Block</a>]</td>
+<td><div class="info">
+<code class="code">digest_of_string s</code> converts an ASCII string to <code class="code"><span class="constructor">Some</span> digest</code> or returns <code class="code"><span class="constructor">None</span></code>
+    if it is unable to recognize the format.
+</div>
+</td></tr>
+<tr><td><a href="Block.html#VALdigest_to_protobuf">digest_to_protobuf</a> [<a href="Block.html">Block</a>]</td>
+<td><div class="info">
+<code class="code">digest_to_protobuf d e</code> serializes digest <code class="code">d</code> into <code class="code">e</code>.
+</div>
+</td></tr>
+<tr><td><a href="Block.html#VALdigest_to_string">digest_to_string</a> [<a href="Block.html">Block</a>]</td>
+<td><div class="info">
+<code class="code">digest_to_string d</code> converts digest <code class="code">d</code> to an ASCII string representation,
+    encoded .
+</div>
+</td></tr>
+<tr><td><a href="Block.Client.html#VALdigests">digests</a> [<a href="Block.Client.html">Block.Client</a>]</td>
+<td><div class="info">
+<code class="code">digests client</code> returns a stream of all digests, collected through <code class="code">enumerate</code>.
+</div>
+</td></tr>
+<tr><td><a href="Directory.html#VALdirectory_from_protobuf">directory_from_protobuf</a> [<a href="Directory.html">Directory</a>]</td>
+<td><div class="info">
+<code class="code">directory_from_protobuf d</code> deserializes a directory from <code class="code">d</code>.
+</div>
+</td></tr>
+<tr><td><a href="Graph.html#VALdirectory_shadow">directory_shadow</a> [<a href="Graph.html">Graph</a>]</td>
+<td><div class="info">
+<code class="code">directory_shadow f</code> returns the shadow for directory <code class="code">f</code>.
+</div>
+</td></tr>
+<tr><td><a href="Directory.html#VALdirectory_to_protobuf">directory_to_protobuf</a> [<a href="Directory.html">Directory</a>]</td>
+<td><div class="info">
+<code class="code">directory_to_protobuf dir e</code> serializes directory <code class="code">dir</code> into <code class="code">e</code>.
+</div>
+</td></tr>
+<tr><td><a href="Timestamp.Delta.html#VALdiv">div</a> [<a href="Timestamp.Delta.html">Timestamp.Delta</a>]</td>
+<td><div class="info">
+<code class="code">div dt n</code> divides timestamp delta <code class="code">dt</code> to <code class="code">n</code> periods.
+</div>
+</td></tr>
+<tr><td align="left"><br>E</td></tr>
+<tr><td><a href="Pathname.html#VALempty">empty</a> [<a href="Pathname.html">Pathname</a>]</td>
+<td><div class="info">
+An empty path.
+</div>
+</td></tr>
+<tr><td><a href="Base64_url.html#VALencode">encode</a> [<a href="Base64_url.html">Base64_url</a>]</td>
+<td><div class="info">
+<code class="code">encode b</code> encodes <code class="code">b</code> using RFC 4648 'base64url' encoding.
+</div>
+</td></tr>
+<tr><td><a href="Data.html#VALencoding_of_string">encoding_of_string</a> [<a href="Data.html">Data</a>]</td>
+<td><div class="info">
+<code class="code">encoding_of_string s</code> converts an ASCII string to <code class="code"><span class="constructor">Some</span> encoding</code>
+    or returns <code class="code"><span class="constructor">None</span></code> if it is unable to recognize the format.
+</div>
+</td></tr>
+<tr><td><a href="Data.html#VALencoding_to_string">encoding_to_string</a> [<a href="Data.html">Data</a>]</td>
+<td><div class="info">
+<code class="code">encoding_to_string e</code> converts encoding <code class="code">e</code> to an ASCII string
+    representation.
+</div>
+</td></tr>
+<tr><td><a href="Filesystem_store.html#VALenumerate">enumerate</a> [<a href="Filesystem_store.html">Filesystem_store</a>]</td>
+<td></td></tr>
+<tr><td><a href="In_memory_store.html#VALenumerate">enumerate</a> [<a href="In_memory_store.html">In_memory_store</a>]</td>
+<td></td></tr>
+<tr><td><a href="Block.BACKEND.html#VALenumerate">enumerate</a> [<a href="Block.BACKEND.html">Block.BACKEND</a>]</td>
+<td><div class="info">
+<code class="code">enumerate bd</code> traverses all digests in <code class="code">bd</code>.
+</div>
+</td></tr>
+<tr><td><a href="Block.Client.html#VALenumerate">enumerate</a> [<a href="Block.Client.html">Block.Client</a>]</td>
+<td><div class="info">
+See <a href="Block.BACKEND.html#VALenumerate"><code class="code"><span class="constructor">Block</span>.<span class="constructor">BACKEND</span>.enumerate</code></a>.
+</div>
+</td></tr>
+<tr><td><a href="Filesystem_store.html#VALerase">erase</a> [<a href="Filesystem_store.html">Filesystem_store</a>]</td>
+<td></td></tr>
+<tr><td><a href="In_memory_store.html#VALerase">erase</a> [<a href="In_memory_store.html">In_memory_store</a>]</td>
+<td></td></tr>
+<tr><td><a href="Block.BACKEND.html#VALerase">erase</a> [<a href="Block.BACKEND.html">Block.BACKEND</a>]</td>
+<td><div class="info">
+<code class="code">erase bd digest</code> attempts to remove an object corresponding to <code class="code">digest</code> from
+      <code class="code">bd</code>.
+</div>
+</td></tr>
+<tr><td><a href="Block.Client.html#VALerase">erase</a> [<a href="Block.Client.html">Block.Client</a>]</td>
+<td><div class="info">
+See <a href="Block.BACKEND.html#VALerase"><code class="code"><span class="constructor">Block</span>.<span class="constructor">BACKEND</span>.erase</code></a>.
+</div>
+</td></tr>
+<tr><td><a href="Filesystem_store.html#VALexists">exists</a> [<a href="Filesystem_store.html">Filesystem_store</a>]</td>
+<td></td></tr>
+<tr><td><a href="In_memory_store.html#VALexists">exists</a> [<a href="In_memory_store.html">In_memory_store</a>]</td>
+<td></td></tr>
+<tr><td><a href="Block.BACKEND.html#VALexists">exists</a> [<a href="Block.BACKEND.html">Block.BACKEND</a>]</td>
+<td><div class="info">
+<code class="code">exists bd digest</code> returns <code class="code"><span class="keywordsign">`</span><span class="constructor">Ok</span></code> if an object corresponding to <code class="code">digest</code> exists
+      in <code class="code">bd</code>, or <code class="code"><span class="keywordsign">`</span><span class="constructor">Not_found</span></code> otherwise.
+</div>
+</td></tr>
+<tr><td><a href="Block.Client.html#VALexists">exists</a> [<a href="Block.Client.html">Block.Client</a>]</td>
+<td><div class="info">
+See <a href="Block.BACKEND.html#VALexists"><code class="code"><span class="constructor">Block</span>.<span class="constructor">BACKEND</span>.exists</code></a>.
+</div>
+</td></tr>
+<tr><td><a href="Pathname.html#VALextend">extend</a> [<a href="Pathname.html">Pathname</a>]</td>
+<td><div class="info">
+<code class="code">extend p p'</code> appends path <code class="code">p'</code> (represented as string) to path <code class="code">p</code>.
+</div>
+</td></tr>
+<tr><td><a href="Pathname.html#VALextension">extension</a> [<a href="Pathname.html">Pathname</a>]</td>
+<td><div class="info">
+<code class="code">extension p</code> returns the part of the last component of <code class="code">p</code> after
+    the last dot.
+</div>
+</td></tr>
+<tr><td align="left"><br>F</td></tr>
+<tr><td><a href="File.html#VALfile_from_protobuf">file_from_protobuf</a> [<a href="File.html">File</a>]</td>
+<td><div class="info">
+<code class="code">file_from_protobuf d</code> deserializes file metadata from <code class="code">d</code>.
+</div>
+</td></tr>
+<tr><td><a href="Graph.html#VALfile_shadow">file_shadow</a> [<a href="Graph.html">Graph</a>]</td>
+<td><div class="info">
+<code class="code">file_shadow f</code> returns the shadow for file <code class="code">f</code>.
+</div>
+</td></tr>
+<tr><td><a href="File.html#VALfile_to_protobuf">file_to_protobuf</a> [<a href="File.html">File</a>]</td>
+<td><div class="info">
+<code class="code">file_to_protobuf f e</code> serializes file metadata <code class="code">f</code> into <code class="code">e</code>.
+</div>
+</td></tr>
+<tr><td><a href="Pathname.html#VALfilename">filename</a> [<a href="Pathname.html">Pathname</a>]</td>
+<td><div class="info">
+<code class="code">filename p</code> returns the last component of <code class="code">p</code>.
+</div>
+</td></tr>
+<tr><td><a href="Timestamp.html#VALfloor">floor</a> [<a href="Timestamp.html">Timestamp</a>]</td>
+<td><div class="info">
+<code class="code">floor t p</code> rounds <code class="code">t</code> down with <code class="code">p</code> as unit.
+</div>
+</td></tr>
+<tr><td align="left"><br>G</td></tr>
+<tr><td><a href="Filesystem_store.html#VALget">get</a> [<a href="Filesystem_store.html">Filesystem_store</a>]</td>
+<td></td></tr>
+<tr><td><a href="In_memory_store.html#VALget">get</a> [<a href="In_memory_store.html">In_memory_store</a>]</td>
+<td></td></tr>
+<tr><td><a href="Block.BACKEND.html#VALget">get</a> [<a href="Block.BACKEND.html">Block.BACKEND</a>]</td>
+<td><div class="info">
+<code class="code">get bd digest</code> retrieves an object corresponding to <code class="code">digest</code> from <code class="code">bd</code>
+      and returns <code class="code"><span class="keywordsign">`</span><span class="constructor">Ok</span> <span class="keyword">object</span></code>.
+</div>
+</td></tr>
+<tr><td><a href="Block.Client.html#VALget">get</a> [<a href="Block.Client.html">Block.Client</a>]</td>
+<td><div class="info">
+See <a href="Block.BACKEND.html#VALget"><code class="code"><span class="constructor">Block</span>.<span class="constructor">BACKEND</span>.get</code></a>.
+</div>
+</td></tr>
+<tr><td align="left"><br>I</td></tr>
+<tr><td><a href="Config.html#VALinit">init</a> [<a href="Config.html">Config</a>]</td>
+<td><div class="info">
+<code class="code">init ~app ~name ~init ~loader ~dumper</code> attempts to load the configuration.
+</div>
+</td></tr>
+<tr><td><a href="Chunk.html#VALinspect_capability">inspect_capability</a> [<a href="Chunk.html">Chunk</a>]</td>
+<td><div class="info">
+<code class="code">inspect_capability ca</code> converts <code class="code">ca</code> to a human-readable string.
+</div>
+</td></tr>
+<tr><td><a href="Block.html#VALinspect_digest">inspect_digest</a> [<a href="Block.html">Block</a>]</td>
+<td><div class="info">
+<code class="code">inspect_digest d</code> converts <code class="code">d</code> to a human-readable string.
+</div>
+</td></tr>
+<tr><td><a href="Pathname.html#VALis_empty">is_empty</a> [<a href="Pathname.html">Pathname</a>]</td>
+<td><div class="info">
+<code class="code">is_empty p</code> returns <code class="code"><span class="keyword">true</span></code> if <code class="code">p</code> is an empty path.
+</div>
+</td></tr>
+<tr><td align="left"><br>K</td></tr>
+<tr><td><a href="Secret_box.html#VALkey_from_protobuf">key_from_protobuf</a> [<a href="Secret_box.html">Secret_box</a>]</td>
+<td><div class="info">
+<code class="code">key_from_protobuf d</code> deserializes a secret box key from <code class="code">d</code>.
+</div>
+</td></tr>
+<tr><td><a href="Secret_box.html#VALkey_of_string">key_of_string</a> [<a href="Secret_box.html">Secret_box</a>]</td>
+<td><div class="info">
+<code class="code">key_of_string d</code> deserializes a secret box key from string <code class="code">s</code>.
+</div>
+</td></tr>
+<tr><td><a href="Secret_box.html#VALkey_to_protobuf">key_to_protobuf</a> [<a href="Secret_box.html">Secret_box</a>]</td>
+<td><div class="info">
+<code class="code">key_to_protobuf k e</code> serializes secret box key <code class="code">k</code> into <code class="code">e</code>.
+</div>
+</td></tr>
+<tr><td><a href="Secret_box.html#VALkey_to_string">key_to_string</a> [<a href="Secret_box.html">Secret_box</a>]</td>
+<td><div class="info">
+<code class="code">key_to_string k</code> serializes secret box key <code class="code">k</code> as a string.
+</div>
+</td></tr>
+<tr><td align="left"><br>L</td></tr>
+<tr><td><a href="Block.Server.html#VALlisten">listen</a> [<a href="Block.Server.html">Block.Server</a>]</td>
+<td><div class="info">
+<code class="code">listen server</code> starts and returns a thread that handles requests to <code class="code">server</code>.
+</div>
+</td></tr>
+<tr><td><a href="Config.html#VALload">load</a> [<a href="Config.html">Config</a>]</td>
+<td><div class="info">
+<code class="code">load ~app ~name ~loader</code> attempts to load the configuration,
+    deserializing it with <code class="code">loader</code>, and returns <code class="code"><span class="constructor">Some</span> cfg</code> if it is found,
+    otherwise returns <code class="code"><span class="constructor">None</span></code>.
+</div>
+</td></tr>
+<tr><td><a href="Config.html#VALlocate">locate</a> [<a href="Config.html">Config</a>]</td>
+<td><div class="info">
+<code class="code">locate ~app ~name</code> returns the appropriate path to a configuration file <code class="code">name</code>
+    of application <code class="code">app</code> on the current platform.
+</div>
+</td></tr>
+<tr><td align="left"><br>M</td></tr>
+<tr><td><a href="Block.html#VALmax_message_size">max_message_size</a> [<a href="Block.html">Block</a>]</td>
+<td><div class="info">
+Maximum message size to prevent DoS.
+</div>
+</td></tr>
+<tr><td><a href="Chunk.html#VALmax_size">max_size</a> [<a href="Chunk.html">Chunk</a>]</td>
+<td><div class="info">
+<code class="code">max_size</code> is the maximum size of the decoded chunk content, currently 10⁷ bytes.
+</div>
+</td></tr>
+<tr><td align="left"><br>N</td></tr>
+<tr><td><a href="Pathname.html#VALno_extension">no_extension</a> [<a href="Pathname.html">Pathname</a>]</td>
+<td><div class="info">
+<code class="code">no_extension p</code> returns the part of the last component of <code class="code">p</code> before
+    the last dot.
+</div>
+</td></tr>
+<tr><td><a href="Timestamp.html#VALnow">now</a> [<a href="Timestamp.html">Timestamp</a>]</td>
+<td><div class="info">
+<code class="code">now ()</code> returns a timestamp corresponding to current time.
+</div>
+</td></tr>
+<tr><td align="left"><br>O</td></tr>
+<tr><td><a href="Pathname.html#VALof_list">of_list</a> [<a href="Pathname.html">Pathname</a>]</td>
+<td><div class="info">
+<code class="code">of_list l</code> creates a path from a list.
+</div>
+</td></tr>
+<tr><td><a href="Timestamp.Delta.html#VALof_milliseconds">of_milliseconds</a> [<a href="Timestamp.Delta.html">Timestamp.Delta</a>]</td>
+<td><div class="info">
+<code class="code">of_milliseconds dut</code> converts Unix time difference <code class="code">dut</code> in
+      milliseconds to a timestamp delta.
+</div>
+</td></tr>
+<tr><td><a href="Timestamp.html#VALof_milliseconds">of_milliseconds</a> [<a href="Timestamp.html">Timestamp</a>]</td>
+<td><div class="info">
+<code class="code">of_milliseconds ut</code> converts Unix time <code class="code">ut</code> in milliseconds to
+    a timestamp.
+</div>
+</td></tr>
+<tr><td><a href="Timestamp.html#VALof_seconds">of_seconds</a> [<a href="Timestamp.html">Timestamp</a>]</td>
+<td><div class="info">
+<code class="code">of_seconds ut</code> converts Unix time <code class="code">ut</code> in seconds to
+    a timestamp.
+</div>
+</td></tr>
+<tr><td><a href="Pathname.html#VALof_string">of_string</a> [<a href="Pathname.html">Pathname</a>]</td>
+<td><div class="info">
+<code class="code">of_string s</code> creates a path from a string.
+</div>
+</td></tr>
+<tr><td><a href="Timestamp.html#VALof_unix_time">of_unix_time</a> [<a href="Timestamp.html">Timestamp</a>]</td>
+<td><div class="info">
+<code class="code">of_unix_time t</code> converts Unix time <code class="code">t</code> (possibly returned
+    by <code class="code"><span class="constructor">Unix</span>.time ()</code>) to a timestamp.
+</div>
+</td></tr>
+<tr><td align="left"><br>P</td></tr>
+<tr><td><a href="Pathname.html#VALparent">parent</a> [<a href="Pathname.html">Pathname</a>]</td>
+<td><div class="info">
+<code class="code">parent p</code> returns all but the last component of <code class="code">p</code>.
+</div>
+</td></tr>
+<tr><td><a href="Box.html#VALpublic_key_from_protobuf">public_key_from_protobuf</a> [<a href="Box.html">Box</a>]</td>
+<td><div class="info">
+<code class="code">public_key_from_protobuf d</code> deserializes a box public key from <code class="code">d</code>.
+</div>
+</td></tr>
+<tr><td><a href="Box.html#VALpublic_key_of_string">public_key_of_string</a> [<a href="Box.html">Box</a>]</td>
+<td><div class="info">
+<code class="code">public_key_of_string d</code> deserializes a box public key from string <code class="code">s</code>.
+</div>
+</td></tr>
+<tr><td><a href="Box.html#VALpublic_key_to_protobuf">public_key_to_protobuf</a> [<a href="Box.html">Box</a>]</td>
+<td><div class="info">
+<code class="code">public_key_to_protobuf pk e</code> serializes box public key <code class="code">pk</code> into <code class="code">e</code>.
+</div>
+</td></tr>
+<tr><td><a href="Box.html#VALpublic_key_to_string">public_key_to_string</a> [<a href="Box.html">Box</a>]</td>
+<td><div class="info">
+<code class="code">public_key_to_string pk</code> serializes box public key <code class="code">pk</code> as a string.
+</div>
+</td></tr>
+<tr><td><a href="Filesystem_store.html#VALput">put</a> [<a href="Filesystem_store.html">Filesystem_store</a>]</td>
+<td></td></tr>
+<tr><td><a href="In_memory_store.html#VALput">put</a> [<a href="In_memory_store.html">In_memory_store</a>]</td>
+<td></td></tr>
+<tr><td><a href="Block.BACKEND.html#VALput">put</a> [<a href="Block.BACKEND.html">Block.BACKEND</a>]</td>
+<td><div class="info">
+<code class="code">put bd digest obj</code> places an object <code class="code">obj</code> to <code class="code">bd</code> corresponding to digest
+      <code class="code">digest</code> and returns <code class="code"><span class="keywordsign">`</span><span class="constructor">Ok</span></code>.
+</div>
+</td></tr>
+<tr><td><a href="Block.Client.html#VALput">put</a> [<a href="Block.Client.html">Block.Client</a>]</td>
+<td><div class="info">
+See <a href="Block.BACKEND.html#VALput"><code class="code"><span class="constructor">Block</span>.<span class="constructor">BACKEND</span>.put</code></a>.
+</div>
+</td></tr>
+<tr><td align="left"><br>R</td></tr>
+<tr><td><a href="Secret_box.html#VALrandom_key">random_key</a> [<a href="Secret_box.html">Secret_box</a>]</td>
+<td><div class="info">
+<code class="code">random_key ()</code> returns a random secret box key.
+</div>
+</td></tr>
+<tr><td><a href="Box.html#VALrandom_key_pair">random_key_pair</a> [<a href="Box.html">Box</a>]</td>
+<td><div class="info">
+<code class="code">random_key_pair ()</code> returns a random box key pair.
+</div>
+</td></tr>
+<tr><td><a href="Chunk.html#VALretrieve_data">retrieve_data</a> [<a href="Chunk.html">Chunk</a>]</td>
+<td><div class="info">
+<code class="code">retrieve_data ~decoder cl ca</code> retrieves data from capability <code class="code">ca</code> using
+    blockserver client <code class="code">cl</code>.
+</div>
+</td></tr>
+<tr><td><a href="Directory.html#VALretrieve_to_path">retrieve_to_path</a> [<a href="Directory.html">Directory</a>]</td>
+<td><div class="info">
+<code class="code">retrieve_to_path ~client dir_capa fd</code> fills an empty directory <code class="code">dir</code> using
+    the metadata and content of a directory with capability <code class="code">dir_capa</code>,
+    downloading chunks via <code class="code">client</code>.
+</div>
+</td></tr>
+<tr><td><a href="File.html#VALretrieve_to_unix_fd">retrieve_to_unix_fd</a> [<a href="File.html">File</a>]</td>
+<td><div class="info">
+<code class="code">retrieve_to_unix_fd ~client file fd</code> updates the metadata and content of <code class="code">fd</code>,
+    downloading chunks via <code class="code">client</code>.
+</div>
+</td></tr>
+<tr><td align="left"><br>S</td></tr>
+<tr><td><a href="Box.html#VALsecret_key_from_protobuf">secret_key_from_protobuf</a> [<a href="Box.html">Box</a>]</td>
+<td><div class="info">
+<code class="code">secret_key_from_protobuf d</code> deserializes a box secret key from <code class="code">d</code>.
+</div>
+</td></tr>
+<tr><td><a href="Box.html#VALsecret_key_of_string">secret_key_of_string</a> [<a href="Box.html">Box</a>]</td>
+<td><div class="info">
+<code class="code">secret_key_of_string d</code> deserializes a box secret key from string <code class="code">s</code>.
+</div>
+</td></tr>
+<tr><td><a href="Box.html#VALsecret_key_to_protobuf">secret_key_to_protobuf</a> [<a href="Box.html">Box</a>]</td>
+<td><div class="info">
+<code class="code">secret_key_to_protobuf pk e</code> serializes box secret key <code class="code">pk</code> into <code class="code">e</code>.
+</div>
+</td></tr>
+<tr><td><a href="Box.html#VALsecret_key_to_string">secret_key_to_string</a> [<a href="Box.html">Box</a>]</td>
+<td><div class="info">
+<code class="code">secret_key_to_string sk</code> serializes box secret key <code class="code">sk</code> as a string.
+</div>
+</td></tr>
+<tr><td><a href="Pathname.html#VALsep">sep</a> [<a href="Pathname.html">Pathname</a>]</td>
+<td><div class="info">
+The directory separator ("/" on *nix, "\\" on Windows).
+</div>
+</td></tr>
+<tr><td><a href="Server_config.html#VALserver_config_of_string">server_config_of_string</a> [<a href="Server_config.html">Server_config</a>]</td>
+<td></td></tr>
+<tr><td><a href="Server_config.html#VALserver_config_to_string">server_config_to_string</a> [<a href="Server_config.html">Server_config</a>]</td>
+<td></td></tr>
+<tr><td><a href="Graph.html#VALshadow_from_protobuf">shadow_from_protobuf</a> [<a href="Graph.html">Graph</a>]</td>
+<td><div class="info">
+<code class="code">shadow_from_protobuf d</code> deserializes a shadow block from <code class="code">d</code>.
+</div>
+</td></tr>
+<tr><td><a href="Graph.html#VALshadow_to_protobuf">shadow_to_protobuf</a> [<a href="Graph.html">Graph</a>]</td>
+<td><div class="info">
+<code class="code">shadow_to_protobuf sb e</code> serializes shadow block <code class="code">sb</code> into <code class="code">e</code>.
+</div>
+</td></tr>
+<tr><td><a href="Config.html#VALstore">store</a> [<a href="Config.html">Config</a>]</td>
+<td><div class="info">
+<code class="code">store ~app ~name ~dumper cfg</code> stores configuration <code class="code">cfg</code>, serializing it
+    with <code class="code">dumper</code>.
+</div>
+</td></tr>
+<tr><td><a href="Box.html#VALstore">store</a> [<a href="Box.html">Box</a>]</td>
+<td><div class="info">
+<code class="code">store data key</code> stores <code class="code">data</code> and <code class="code">key</code> in a box.
+</div>
+</td></tr>
+<tr><td><a href="Secret_box.html#VALstore">store</a> [<a href="Secret_box.html">Secret_box</a>]</td>
+<td><div class="info">
+<code class="code">store data key</code> stores <code class="code">data</code> and <code class="code">key</code> in a box.
+</div>
+</td></tr>
+<tr><td><a href="Chunk.html#VALstore_data">store_data</a> [<a href="Chunk.html">Chunk</a>]</td>
+<td><div class="info">
+<code class="code">store_data ~encoder cl ca</code> stores data using blockserver client <code class="code">cl</code> and
+    returns a capability that would allow to access it.
+</div>
+</td></tr>
+<tr><td><a href="Tree.html#VALstring_of_entry">string_of_entry</a> [<a href="Tree.html">Tree</a>]</td>
+<td></td></tr>
+<tr><td><a href="Timestamp.Delta.html#VALsub">sub</a> [<a href="Timestamp.Delta.html">Timestamp.Delta</a>]</td>
+<td><div class="info">
+<code class="code">sub a b</code> subtracts timestamp delta <code class="code">b</code> from <code class="code">a</code>.
+</div>
+</td></tr>
+<tr><td align="left"><br>T</td></tr>
+<tr><td><a href="Timestamp.Delta.html#VALt_from_protobuf">t_from_protobuf</a> [<a href="Timestamp.Delta.html">Timestamp.Delta</a>]</td>
+<td><div class="info">
+<code class="code">t_from_protobuf d</code> deserializes a timestamp delta from <code class="code">d</code>.
+</div>
+</td></tr>
+<tr><td><a href="Timestamp.html#VALt_from_protobuf">t_from_protobuf</a> [<a href="Timestamp.html">Timestamp</a>]</td>
+<td><div class="info">
+<code class="code">t_from_protobuf d</code> deserializes a timestamp from <code class="code">d</code>.
+</div>
+</td></tr>
+<tr><td><a href="Timestamp.Delta.html#VALt_to_protobuf">t_to_protobuf</a> [<a href="Timestamp.Delta.html">Timestamp.Delta</a>]</td>
+<td><div class="info">
+<code class="code">t_to_protobuf t e</code> serializes timestamp delta <code class="code">t</code> into <code class="code">e</code>.
+</div>
+</td></tr>
+<tr><td><a href="Timestamp.html#VALt_to_protobuf">t_to_protobuf</a> [<a href="Timestamp.html">Timestamp</a>]</td>
+<td><div class="info">
+<code class="code">t_to_protobuf t e</code> serializes timestamp <code class="code">t</code> into <code class="code">e</code>.
+</div>
+</td></tr>
+<tr><td><a href="Pathname.html#VALto_list">to_list</a> [<a href="Pathname.html">Pathname</a>]</td>
+<td><div class="info">
+<code class="code">to_list p</code> returns list of components of <code class="code">p</code>.
+</div>
+</td></tr>
+<tr><td><a href="Timestamp.Delta.html#VALto_milliseconds">to_milliseconds</a> [<a href="Timestamp.Delta.html">Timestamp.Delta</a>]</td>
+<td><div class="info">
+<code class="code">to_milliseconds dt</code> converts a timestamp delta <code class="code">dt</code> to Unix
+      time difference in milliseconds.
+</div>
+</td></tr>
+<tr><td><a href="Timestamp.html#VALto_milliseconds">to_milliseconds</a> [<a href="Timestamp.html">Timestamp</a>]</td>
+<td><div class="info">
+<code class="code">to_milliseconds t</code> converts a timestamp <code class="code">t</code> to Unix time in
+    milliseconds.
+</div>
+</td></tr>
+<tr><td><a href="Timestamp.html#VALto_seconds">to_seconds</a> [<a href="Timestamp.html">Timestamp</a>]</td>
+<td><div class="info">
+<code class="code">to_seconds t</code> converts a timestamp <code class="code">t</code> to Unix time in
+    seconds.
+</div>
+</td></tr>
+<tr><td><a href="Block.Client.html#VALto_socket">to_socket</a> [<a href="Block.Client.html">Block.Client</a>]</td>
+<td><div class="info">
+<code class="code">to_socket client</code> returns the ZeroMQ socket used by <code class="code">client</code>.
+</div>
+</td></tr>
+<tr><td><a href="Block.Server.html#VALto_socket">to_socket</a> [<a href="Block.Server.html">Block.Server</a>]</td>
+<td><div class="info">
+<code class="code">to_socket server</code> returns the ZeroMQ socket used by <code class="code">server</code>.
+</div>
+</td></tr>
+<tr><td><a href="Pathname.html#VALto_string">to_string</a> [<a href="Pathname.html">Pathname</a>]</td>
+<td><div class="info">
+<code class="code">to_string p</code> converts path <code class="code">p</code> to string.
+</div>
+</td></tr>
+<tr><td><a href="Timestamp.Delta.html#VALto_string">to_string</a> [<a href="Timestamp.Delta.html">Timestamp.Delta</a>]</td>
+<td><div class="info">
+<code class="code">to_string dt</code> converts a timestamp delta <code class="code">dt</code> to a formatted
+      string.
+</div>
+</td></tr>
+<tr><td><a href="Timestamp.html#VALto_string">to_string</a> [<a href="Timestamp.html">Timestamp</a>]</td>
+<td><div class="info">
+<code class="code">to_string ?format t</code> converts a timestamp <code class="code">t</code> to a formatted string.
+</div>
+</td></tr>
+<tr><td><a href="Timestamp.html#VALto_unix_time">to_unix_time</a> [<a href="Timestamp.html">Timestamp</a>]</td>
+<td><div class="info">
+<code class="code">to_unix_time t</code> converts a timestamp <code class="code">t</code> to Unix time.
+</div>
+</td></tr>
+<tr><td align="left"><br>U</td></tr>
+<tr><td><a href="Checkpoint.html#VALunlock">unlock</a> [<a href="Checkpoint.html">Checkpoint</a>]</td>
+<td><div class="info">
+<code class="code">unlock ~owner digest</code> retrieves checkpoint with from block <code class="code">digest</code> and tries to retrieve
+    the keyring corresponding to secret key <code class="code">owner</code>.
+</div>
+</td></tr>
+<tr><td><a href="File.html#VALupdate_with_unix_fd">update_with_unix_fd</a> [<a href="File.html">File</a>]</td>
+<td><div class="info">
+<code class="code">update_with_unix_fd ~convergence ~client base fd</code> returns a file capability
+    reflecting the metadata and content of Unix file descriptor <code class="code">fd</code>, uploading
+    the chunks via <code class="code">client</code>.
+</div>
+</td></tr>
+<tr><td align="left"><br>V</td></tr>
+<tr><td><a href="Block.html#VALverify_bytes">verify_bytes</a> [<a href="Block.html">Block</a>]</td>
+<td><div class="info">
+<code class="code">verify_bytes d b</code> checks whether digest <code class="code">d</code> is indeed the digest of <code class="code">b</code>.
+</div>
+</td></tr>
+<tr><td align="left"><br>W</td></tr>
+<tr><td><a href="Tree.html#VALwatch">watch</a> [<a href="Tree.html">Tree</a>]</td>
+<td></td></tr>
+<tr><td align="left"><br>Z</td></tr>
+<tr><td><a href="Timestamp.Delta.html#VALzero">zero</a> [<a href="Timestamp.Delta.html">Timestamp.Delta</a>]</td>
+<td><div class="info">
+<code class="code">zero</code> is a delta corresponding to no difference in time.
+</div>
+</td></tr>
+<tr><td><a href="Timestamp.html#VALzero">zero</a> [<a href="Timestamp.html">Timestamp</a>]</td>
+<td><div class="info">
+<code class="code">zero</code> is a timestamp pointing to <code class="code">1970-01-01 00:00 <span class="constructor">UTC</span></code>.
+</div>
+</td></tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Client_config.html">
+<link rel="next" href="Tree.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Secret_box" rel="Chapter" href="Secret_box.html">
+<link title="Box" rel="Chapter" href="Box.html">
+<link title="Base64_url" rel="Chapter" href="Base64_url.html">
+<link title="Block" rel="Chapter" href="Block.html">
+<link title="Chunk" rel="Chapter" href="Chunk.html">
+<link title="Timestamp" rel="Chapter" href="Timestamp.html">
+<link title="Data" rel="Chapter" href="Data.html">
+<link title="Graph" rel="Chapter" href="Graph.html">
+<link title="File" rel="Chapter" href="File.html">
+<link title="Directory" rel="Chapter" href="Directory.html">
+<link title="Checkpoint" rel="Chapter" href="Checkpoint.html">
+<link title="In_memory_store" rel="Chapter" href="In_memory_store.html">
+<link title="Filesystem_store" rel="Chapter" href="Filesystem_store.html">
+<link title="Config" rel="Chapter" href="Config.html">
+<link title="Server_config" rel="Chapter" href="Server_config.html">
+<link title="Client_config" rel="Chapter" href="Client_config.html">
+<link title="Pathname" rel="Chapter" href="Pathname.html">
+<link title="Tree" rel="Chapter" href="Tree.html"><title>Pathname</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Client_config.html" title="Client_config">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;<a class="post" href="Tree.html" title="Tree">Next</a>
+</div>
+<h1>Module <a href="type_Pathname.html">Pathname</a></h1>
+
+<pre><span class="keyword">module</span> Pathname: <code class="code"><span class="keyword">sig</span></code> <a href="Pathname.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><div class="info module top">
+Pathname manipulation.
+<p>
+
+    Derived from code by: Barbara Lepage &lt;db0company<br>
+</div>
+<hr width="100%">
+
+<pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> </pre>
+<div class="info ">
+Type of pathnames.<br>
+</div>
+
+
+<pre><span id="VALsep"><span class="keyword">val</span> sep</span> : <code class="type">string</code></pre><div class="info ">
+The directory separator ("/" on *nix, "\\" on Windows).<br>
+</div>
+
+<pre><span id="VALempty"><span class="keyword">val</span> empty</span> : <code class="type"><a href="Pathname.html#TYPEt">t</a></code></pre><div class="info ">
+An empty path.<br>
+</div>
+
+<pre><span id="VALis_empty"><span class="keyword">val</span> is_empty</span> : <code class="type"><a href="Pathname.html#TYPEt">t</a> -> bool</code></pre><div class="info ">
+<code class="code">is_empty p</code> returns <code class="code"><span class="keyword">true</span></code> if <code class="code">p</code> is an empty path.<br>
+</div>
+
+<pre><span id="VALof_string"><span class="keyword">val</span> of_string</span> : <code class="type">string -> <a href="Pathname.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">of_string s</code> creates a path from a string.<br>
+</div>
+
+<pre><span id="VALof_list"><span class="keyword">val</span> of_list</span> : <code class="type">?is_real:bool -> string list -> <a href="Pathname.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">of_list l</code> creates a path from a list.<br>
+</div>
+
+<pre><span id="VALconcat"><span class="keyword">val</span> concat</span> : <code class="type"><a href="Pathname.html#TYPEt">t</a> -> <a href="Pathname.html#TYPEt">t</a> -> <a href="Pathname.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">concat a b</code> returns concatenation of <code class="code">a</code> and <code class="code">b</code>.<br>
+</div>
+
+<pre><span id="VALextend"><span class="keyword">val</span> extend</span> : <code class="type"><a href="Pathname.html#TYPEt">t</a> -> string -> <a href="Pathname.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">extend p p'</code> appends path <code class="code">p'</code> (represented as string) to path <code class="code">p</code>.<br>
+</div>
+
+<pre><span id="VALto_string"><span class="keyword">val</span> to_string</span> : <code class="type"><a href="Pathname.html#TYPEt">t</a> -> string</code></pre><div class="info ">
+<code class="code">to_string p</code> converts path <code class="code">p</code> to string.<br>
+</div>
+
+<pre><span id="VALto_list"><span class="keyword">val</span> to_list</span> : <code class="type"><a href="Pathname.html#TYPEt">t</a> -> string list</code></pre><div class="info ">
+<code class="code">to_list p</code> returns list of components of <code class="code">p</code>.<br>
+</div>
+
+<pre><span id="VALfilename"><span class="keyword">val</span> filename</span> : <code class="type"><a href="Pathname.html#TYPEt">t</a> -> string</code></pre><div class="info ">
+<code class="code">filename p</code> returns the last component of <code class="code">p</code>. If <code class="code">p</code>
+    is empty, raises <code class="code"><span class="constructor">Invalid_argument</span></code>.<br>
+</div>
+
+<pre><span id="VALbasename"><span class="keyword">val</span> basename</span> : <code class="type"><a href="Pathname.html#TYPEt">t</a> -> <a href="Pathname.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">basename p</code> returns all but the last component of <code class="code">p</code>. If <code class="code">p</code>
+    is empty, raises <code class="code"><span class="constructor">Invalid_argument</span></code>.<br>
+</div>
+
+<pre><span id="VALparent"><span class="keyword">val</span> parent</span> : <code class="type"><a href="Pathname.html#TYPEt">t</a> -> <a href="Pathname.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">parent p</code> returns all but the last component of <code class="code">p</code>. If <code class="code">p</code>
+    is empty, returns <code class="code">p</code>.<br>
+</div>
+
+<pre><span id="VALextension"><span class="keyword">val</span> extension</span> : <code class="type"><a href="Pathname.html#TYPEt">t</a> -> string</code></pre><div class="info ">
+<code class="code">extension p</code> returns the part of the last component of <code class="code">p</code> after
+    the last dot.<br>
+</div>
+
+<pre><span id="VALno_extension"><span class="keyword">val</span> no_extension</span> : <code class="type"><a href="Pathname.html#TYPEt">t</a> -> string</code></pre><div class="info ">
+<code class="code">no_extension p</code> returns the part of the last component of <code class="code">p</code> before
+    the last dot.<br>
+</div>
+</body></html>

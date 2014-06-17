@@ -1,0 +1,50 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Checkpoint.html">
+<link rel="next" href="Filesystem_store.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Secret_box" rel="Chapter" href="Secret_box.html">
+<link title="Box" rel="Chapter" href="Box.html">
+<link title="Base64_url" rel="Chapter" href="Base64_url.html">
+<link title="Block" rel="Chapter" href="Block.html">
+<link title="Chunk" rel="Chapter" href="Chunk.html">
+<link title="Timestamp" rel="Chapter" href="Timestamp.html">
+<link title="Data" rel="Chapter" href="Data.html">
+<link title="Graph" rel="Chapter" href="Graph.html">
+<link title="File" rel="Chapter" href="File.html">
+<link title="Directory" rel="Chapter" href="Directory.html">
+<link title="Checkpoint" rel="Chapter" href="Checkpoint.html">
+<link title="In_memory_store" rel="Chapter" href="In_memory_store.html">
+<link title="Filesystem_store" rel="Chapter" href="Filesystem_store.html">
+<link title="Config" rel="Chapter" href="Config.html">
+<link title="Server_config" rel="Chapter" href="Server_config.html">
+<link title="Client_config" rel="Chapter" href="Client_config.html">
+<link title="Pathname" rel="Chapter" href="Pathname.html">
+<link title="Tree" rel="Chapter" href="Tree.html"><title>In_memory_store</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Checkpoint.html" title="Checkpoint">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;<a class="post" href="Filesystem_store.html" title="Filesystem_store">Next</a>
+</div>
+<h1>Module <a href="type_In_memory_store.html">In_memory_store</a></h1>
+
+<pre><span class="keyword">module</span> In_memory_store: <code class="code"><span class="keyword">sig</span></code> <a href="In_memory_store.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><hr width="100%">
+
+<pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> </pre>
+
+
+<pre><span id="VALcreate"><span class="keyword">val</span> create</span> : <code class="type">unit -> <a href="In_memory_store.html#TYPEt">t</a></code></pre>
+<pre><span id="VALget"><span class="keyword">val</span> get</span> : <code class="type"><a href="In_memory_store.html#TYPEt">t</a> -> <a href="Block.html#TYPEdigest">Block.digest</a> -> [> `Not_found | `Ok of string ] Lwt.t</code></pre>
+<pre><span id="VALexists"><span class="keyword">val</span> exists</span> : <code class="type"><a href="In_memory_store.html#TYPEt">t</a> -> <a href="Block.html#TYPEdigest">Block.digest</a> -> [> `Not_found | `Ok ] Lwt.t</code></pre>
+<pre><span id="VALput"><span class="keyword">val</span> put</span> : <code class="type"><a href="In_memory_store.html#TYPEt">t</a> -> <a href="Block.html#TYPEdigest">Block.digest</a> -> string -> [> `Ok ] Lwt.t</code></pre>
+<pre><span id="VALerase"><span class="keyword">val</span> erase</span> : <code class="type"><a href="In_memory_store.html#TYPEt">t</a> -> <a href="Block.html#TYPEdigest">Block.digest</a> -> unit Lwt.t</code></pre>
+<pre><span id="VALenumerate"><span class="keyword">val</span> enumerate</span> : <code class="type"><a href="In_memory_store.html#TYPEt">t</a> -><br>       string -> [ `Exhausted | `Ok of string * <a href="Block.html#TYPEdigest">Block.digest</a> list ] Lwt.t</code></pre></body></html>

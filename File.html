@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Graph.html">
+<link rel="next" href="Directory.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Secret_box" rel="Chapter" href="Secret_box.html">
+<link title="Box" rel="Chapter" href="Box.html">
+<link title="Base64_url" rel="Chapter" href="Base64_url.html">
+<link title="Block" rel="Chapter" href="Block.html">
+<link title="Chunk" rel="Chapter" href="Chunk.html">
+<link title="Timestamp" rel="Chapter" href="Timestamp.html">
+<link title="Data" rel="Chapter" href="Data.html">
+<link title="Graph" rel="Chapter" href="Graph.html">
+<link title="File" rel="Chapter" href="File.html">
+<link title="Directory" rel="Chapter" href="Directory.html">
+<link title="Checkpoint" rel="Chapter" href="Checkpoint.html">
+<link title="In_memory_store" rel="Chapter" href="In_memory_store.html">
+<link title="Filesystem_store" rel="Chapter" href="Filesystem_store.html">
+<link title="Config" rel="Chapter" href="Config.html">
+<link title="Server_config" rel="Chapter" href="Server_config.html">
+<link title="Client_config" rel="Chapter" href="Client_config.html">
+<link title="Pathname" rel="Chapter" href="Pathname.html">
+<link title="Tree" rel="Chapter" href="Tree.html"><title>File</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Graph.html" title="Graph">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;<a class="post" href="Directory.html" title="Directory">Next</a>
+</div>
+<h1>Module <a href="type_File.html">File</a></h1>
+
+<pre><span class="keyword">module</span> File: <code class="code"><span class="keyword">sig</span></code> <a href="File.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><div class="info module top">
+File metadata storage.<br>
+</div>
+<hr width="100%">
+
+<pre><code><span id="TYPEfile"><span class="keyword">type</span> <code class="type"></code>file</span> = {</code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTfile.last_modified">last_modified</span>&nbsp;: <code class="type"><a href="Timestamp.html#TYPEt">Timestamp.t</a></code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTfile.executable">executable</span>&nbsp;: <code class="type">bool</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTfile.chunks">chunks</span>&nbsp;: <code class="type"><a href="Data.html#TYPEdata">Data.data</a> <a href="Chunk.html#TYPEcapability">Chunk.capability</a> list</code>;</code></td>
+
+</tr></table>
+}
+
+
+
+<pre><span id="VALfile_from_protobuf"><span class="keyword">val</span> file_from_protobuf</span> : <code class="type">Protobuf.Decoder.t -> <a href="File.html#TYPEfile">file</a></code></pre><div class="info ">
+<code class="code">file_from_protobuf d</code> deserializes file metadata from <code class="code">d</code>.<br>
+</div>
+
+<pre><span id="VALfile_to_protobuf"><span class="keyword">val</span> file_to_protobuf</span> : <code class="type"><a href="File.html#TYPEfile">file</a> -> Protobuf.Encoder.t -> unit</code></pre><div class="info ">
+<code class="code">file_to_protobuf f e</code> serializes file metadata <code class="code">f</code> into <code class="code">e</code>.<br>
+</div>
+
+<pre><span id="VALcreate_from_unix_fd"><span class="keyword">val</span> create_from_unix_fd</span> : <code class="type">convergence:bytes -><br>       client:<a href="Block.Client.html#TYPEt">Block.Client.t</a> -><br>       Lwt_unix.file_descr -><br>       [ `Not_supported | `Ok of <a href="File.html#TYPEfile">file</a> <a href="Chunk.html#TYPEcapability">Chunk.capability</a> | `Unavailable ] Lwt.t</code></pre><div class="info ">
+<code class="code">create_from_unix_fd ~convergence ~client fd</code> returns a file capability
+    reflecting the metadata and content of Unix file descriptor <code class="code">fd</code> and
+    uploads the blocks representing its content via <code class="code">client</code>.
+<p>
+
+    <code class="code">fd</code> will be rewound to the end of file.<br>
+</div>
+
+<pre><span id="VALupdate_with_unix_fd"><span class="keyword">val</span> update_with_unix_fd</span> : <code class="type">convergence:bytes -><br>       client:<a href="Block.Client.html#TYPEt">Block.Client.t</a> -><br>       <a href="File.html#TYPEfile">file</a> <a href="Chunk.html#TYPEcapability">Chunk.capability</a> -><br>       Lwt_unix.file_descr -><br>       [ `Malformed<br>       | `Not_found<br>       | `Not_supported<br>       | `Ok of <a href="File.html#TYPEfile">file</a> <a href="Chunk.html#TYPEcapability">Chunk.capability</a><br>       | `Unavailable ] Lwt.t</code></pre><div class="info ">
+<code class="code">update_with_unix_fd ~convergence ~client base fd</code> returns a file capability
+    reflecting the metadata and content of Unix file descriptor <code class="code">fd</code>, uploading
+    the chunks via <code class="code">client</code>.
+<p>
+
+    The data chunks which are identical in <code class="code">base</code> and <code class="code">fd</code> (even if <code class="code">convergence</code> differs)
+    will be shared between the input and the output file.
+<p>
+
+    <code class="code">fd</code> will be rewound to the end of file.<br>
+</div>
+
+<pre><span id="VALretrieve_to_unix_fd"><span class="keyword">val</span> retrieve_to_unix_fd</span> : <code class="type">client:<a href="Block.Client.html#TYPEt">Block.Client.t</a> -><br>       <a href="File.html#TYPEfile">file</a> <a href="Chunk.html#TYPEcapability">Chunk.capability</a> -><br>       Lwt_unix.file_descr -> [ `Malformed | `Not_found | `Ok | `Unavailable ] Lwt.t</code></pre><div class="info ">
+<code class="code">retrieve_to_unix_fd ~client file fd</code> updates the metadata and content of <code class="code">fd</code>,
+    downloading chunks via <code class="code">client</code>.
+<p>
+
+    <code class="code">fd</code> will be rewound to the end of file.<br>
+</div>
+</body></html>

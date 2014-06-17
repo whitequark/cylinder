@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Secret_box.html">
+<link rel="next" href="Base64_url.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Secret_box" rel="Chapter" href="Secret_box.html">
+<link title="Box" rel="Chapter" href="Box.html">
+<link title="Base64_url" rel="Chapter" href="Base64_url.html">
+<link title="Block" rel="Chapter" href="Block.html">
+<link title="Chunk" rel="Chapter" href="Chunk.html">
+<link title="Timestamp" rel="Chapter" href="Timestamp.html">
+<link title="Data" rel="Chapter" href="Data.html">
+<link title="Graph" rel="Chapter" href="Graph.html">
+<link title="File" rel="Chapter" href="File.html">
+<link title="Directory" rel="Chapter" href="Directory.html">
+<link title="Checkpoint" rel="Chapter" href="Checkpoint.html">
+<link title="In_memory_store" rel="Chapter" href="In_memory_store.html">
+<link title="Filesystem_store" rel="Chapter" href="Filesystem_store.html">
+<link title="Config" rel="Chapter" href="Config.html">
+<link title="Server_config" rel="Chapter" href="Server_config.html">
+<link title="Client_config" rel="Chapter" href="Client_config.html">
+<link title="Pathname" rel="Chapter" href="Pathname.html">
+<link title="Tree" rel="Chapter" href="Tree.html"><title>Box</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Secret_box.html" title="Secret_box">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;<a class="post" href="Base64_url.html" title="Base64_url">Next</a>
+</div>
+<h1>Module <a href="type_Box.html">Box</a></h1>
+
+<pre><span class="keyword">module</span> Box: <code class="code"><span class="keyword">sig</span></code> <a href="Box.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><div class="info module top">
+Type-safe and algorithm-agnostic public key based encrypted container.
+    The container allows serialization round-trips without decryption.<br>
+</div>
+<hr width="100%">
+
+<pre><code><span id="TYPEkey"><span class="keyword">type</span> <code class="type"></code>key</span> = {</code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTkey.algorithm">algorithm</span>&nbsp;: <code class="type">[ `Curve25519_XSalsa20_Poly1305 ]</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTkey.key">key</span>&nbsp;: <code class="type">bytes</code>;</code></td>
+
+</tr></table>
+}
+
+<div class="info ">
+Type of keys. Invariant: length of <code class="code">key</code> is specified by <code class="code">algorithm</code>.<br>
+</div>
+
+
+<pre><span id="TYPEpublic_key"><span class="keyword">type</span> <code class="type"></code>public_key</span> = private <code class="type"><a href="Box.html#TYPEkey">key</a></code> </pre>
+<div class="info ">
+Type of public keys.<br>
+</div>
+
+
+<pre><span id="TYPEsecret_key"><span class="keyword">type</span> <code class="type"></code>secret_key</span> = private <code class="type"><a href="Box.html#TYPEkey">key</a></code> </pre>
+<div class="info ">
+Type of secret keys.<br>
+</div>
+
+
+<pre><span id="TYPEkey_pair"><span class="keyword">type</span> <code class="type"></code>key_pair</span> = <code class="type"><a href="Box.html#TYPEsecret_key">secret_key</a> * <a href="Box.html#TYPEpublic_key">public_key</a></code> </pre>
+<div class="info ">
+Type of key pairs.<br>
+</div>
+
+
+<pre><span id="VALsecret_key_from_protobuf"><span class="keyword">val</span> secret_key_from_protobuf</span> : <code class="type">Protobuf.Decoder.t -> <a href="Box.html#TYPEsecret_key">secret_key</a></code></pre><div class="info ">
+<code class="code">secret_key_from_protobuf d</code> deserializes a box secret key from <code class="code">d</code>.<br>
+</div>
+
+<pre><span id="VALsecret_key_to_protobuf"><span class="keyword">val</span> secret_key_to_protobuf</span> : <code class="type"><a href="Box.html#TYPEsecret_key">secret_key</a> -> Protobuf.Encoder.t -> unit</code></pre><div class="info ">
+<code class="code">secret_key_to_protobuf pk e</code> serializes box secret key <code class="code">pk</code> into <code class="code">e</code>.<br>
+</div>
+
+<pre><span id="VALsecret_key_of_string"><span class="keyword">val</span> secret_key_of_string</span> : <code class="type">string -> <a href="Box.html#TYPEsecret_key">secret_key</a> option</code></pre><div class="info ">
+<code class="code">secret_key_of_string d</code> deserializes a box secret key from string <code class="code">s</code>.<br>
+</div>
+
+<pre><span id="VALsecret_key_to_string"><span class="keyword">val</span> secret_key_to_string</span> : <code class="type"><a href="Box.html#TYPEsecret_key">secret_key</a> -> string</code></pre><div class="info ">
+<code class="code">secret_key_to_string sk</code> serializes box secret key <code class="code">sk</code> as a string.<br>
+</div>
+
+<pre><span id="VALpublic_key_from_protobuf"><span class="keyword">val</span> public_key_from_protobuf</span> : <code class="type">Protobuf.Decoder.t -> <a href="Box.html#TYPEpublic_key">public_key</a></code></pre><div class="info ">
+<code class="code">public_key_from_protobuf d</code> deserializes a box public key from <code class="code">d</code>.<br>
+</div>
+
+<pre><span id="VALpublic_key_to_protobuf"><span class="keyword">val</span> public_key_to_protobuf</span> : <code class="type"><a href="Box.html#TYPEpublic_key">public_key</a> -> Protobuf.Encoder.t -> unit</code></pre><div class="info ">
+<code class="code">public_key_to_protobuf pk e</code> serializes box public key <code class="code">pk</code> into <code class="code">e</code>.<br>
+</div>
+
+<pre><span id="VALpublic_key_of_string"><span class="keyword">val</span> public_key_of_string</span> : <code class="type">string -> <a href="Box.html#TYPEpublic_key">public_key</a> option</code></pre><div class="info ">
+<code class="code">public_key_of_string d</code> deserializes a box public key from string <code class="code">s</code>.<br>
+</div>
+
+<pre><span id="VALpublic_key_to_string"><span class="keyword">val</span> public_key_to_string</span> : <code class="type"><a href="Box.html#TYPEpublic_key">public_key</a> -> string</code></pre><div class="info ">
+<code class="code">public_key_to_string pk</code> serializes box public key <code class="code">pk</code> as a string.<br>
+</div>
+
+<pre><span id="VALrandom_key_pair"><span class="keyword">val</span> random_key_pair</span> : <code class="type">unit -> <a href="Box.html#TYPEkey_pair">key_pair</a></code></pre><div class="info ">
+<code class="code">random_key_pair ()</code> returns a random box key pair.<br>
+</div>
+
+<pre><span id="TYPEbox"><span class="keyword">type</span> <code class="type">'a</code> box</span> </pre>
+<div class="info ">
+Type of serialized data in a box.<br>
+</div>
+
+
+<pre><span id="VALbox_from_protobuf"><span class="keyword">val</span> box_from_protobuf</span> : <code class="type">(Protobuf.Decoder.t -> 'a) -> Protobuf.Decoder.t -> 'a <a href="Box.html#TYPEbox">box</a></code></pre><div class="info ">
+<code class="code">box_from_protobuf d</code> deserializes a secret box from <code class="code">d</code>.<br>
+</div>
+
+<pre><span id="VALbox_to_protobuf"><span class="keyword">val</span> box_to_protobuf</span> : <code class="type">('a -> Protobuf.Encoder.t -> unit) -><br>       'a <a href="Box.html#TYPEbox">box</a> -> Protobuf.Encoder.t -> unit</code></pre><div class="info ">
+<code class="code">box_to_protobuf sb e</code> serializes secret box <code class="code">sb</code> into <code class="code">e</code>.<br>
+</div>
+
+<pre><span id="VALstore"><span class="keyword">val</span> store</span> : <code class="type">'a -> <a href="Box.html#TYPEsecret_key">secret_key</a> -> <a href="Box.html#TYPEpublic_key">public_key</a> -> 'a <a href="Box.html#TYPEbox">box</a></code></pre><div class="info ">
+<code class="code">store data key</code> stores <code class="code">data</code> and <code class="code">key</code> in a box. The box is not encrypted
+    until it is serialized.<br>
+</div>
+
+<pre><span id="VALdecrypt"><span class="keyword">val</span> decrypt</span> : <code class="type">'a <a href="Box.html#TYPEbox">box</a> -> <a href="Box.html#TYPEsecret_key">secret_key</a> -> <a href="Box.html#TYPEpublic_key">public_key</a> -> 'a option</code></pre><div class="info ">
+<code class="code">decrypt box key</code> decrypts the data stored in <code class="code">box</code> using <code class="code">key</code> and nonce
+    stored together with data and returns <code class="code"><span class="constructor">Some</span> data</code>, or <code class="code"><span class="constructor">None</span></code> if verification
+    failed.<br>
+</div>
+</body></html>

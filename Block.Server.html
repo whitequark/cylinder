@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="next" href="Block.Client.html">
+<link rel="Up" href="Block.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Secret_box" rel="Chapter" href="Secret_box.html">
+<link title="Box" rel="Chapter" href="Box.html">
+<link title="Base64_url" rel="Chapter" href="Base64_url.html">
+<link title="Block" rel="Chapter" href="Block.html">
+<link title="Chunk" rel="Chapter" href="Chunk.html">
+<link title="Timestamp" rel="Chapter" href="Timestamp.html">
+<link title="Data" rel="Chapter" href="Data.html">
+<link title="Graph" rel="Chapter" href="Graph.html">
+<link title="File" rel="Chapter" href="File.html">
+<link title="Directory" rel="Chapter" href="Directory.html">
+<link title="Checkpoint" rel="Chapter" href="Checkpoint.html">
+<link title="In_memory_store" rel="Chapter" href="In_memory_store.html">
+<link title="Filesystem_store" rel="Chapter" href="Filesystem_store.html">
+<link title="Config" rel="Chapter" href="Config.html">
+<link title="Server_config" rel="Chapter" href="Server_config.html">
+<link title="Client_config" rel="Chapter" href="Client_config.html">
+<link title="Pathname" rel="Chapter" href="Pathname.html">
+<link title="Tree" rel="Chapter" href="Tree.html"><title>Block.Server</title>
+</head>
+<body>
+<div class="navbar">&nbsp;<a class="up" href="Block.html" title="Block">Up</a>
+&nbsp;<a class="post" href="Block.Client.html" title="Block.Client">Next</a>
+</div>
+<h1>Functor <a href="type_Block.Server.html">Block.Server</a></h1>
+
+<pre><span class="keyword">module</span> Server <code class="code">(</code><code class="code"><span class="constructor">Backend</span></code><code class="code"> : </code><code class="type"><a href="Block.BACKEND.html">BACKEND</a></code><code class="code">) </code>: <code class="code"><span class="keyword">sig</span></code> <a href="Block.Server.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><table border="0" cellpadding="3" width="100%">
+<tr>
+<td align="left" valign="top" width="1%%"><b>Parameters: </b></td>
+<td>
+<table class="paramstable">
+<tr>
+<td align="center" valign="top" width="15%">
+<code>Backend</code></td>
+<td align="center" valign="top">:</td>
+<td><code class="type"><a href="Block.BACKEND.html">BACKEND</a></code>
+</table>
+</td>
+</tr>
+</table>
+<hr width="100%">
+
+<pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> </pre>
+<div class="info ">
+The type of storage servers.<br>
+</div>
+
+
+<pre><span id="VALcreate"><span class="keyword">val</span> create</span> : <code class="type">Backend.t -> [ `Router ] ZMQ.Socket.t -> <a href="Block.Server.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">create backend sock</code> creates a server for backend <code class="code">backend</code> and a ZeroMQ
+      socket <code class="code">sock</code>. The maximum message length of <code class="code">sock</code> must be set to <code class="code">max_message_size</code>.<br>
+</div>
+
+<pre><span id="VALto_socket"><span class="keyword">val</span> to_socket</span> : <code class="type"><a href="Block.Server.html#TYPEt">t</a> -> [ `Router ] ZMQ.Socket.t</code></pre><div class="info ">
+<code class="code">to_socket server</code> returns the ZeroMQ socket used by <code class="code">server</code>.<br>
+</div>
+
+<pre><span id="VALlisten"><span class="keyword">val</span> listen</span> : <code class="type"><a href="Block.Server.html#TYPEt">t</a> -> unit Lwt.t</code></pre><div class="info ">
+<code class="code">listen server</code> starts and returns a thread that handles requests to <code class="code">server</code>.
+      The thread will terminate on any unexpected failure.<br>
+</div>
+</body></html>

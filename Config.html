@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Filesystem_store.html">
+<link rel="next" href="Server_config.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Secret_box" rel="Chapter" href="Secret_box.html">
+<link title="Box" rel="Chapter" href="Box.html">
+<link title="Base64_url" rel="Chapter" href="Base64_url.html">
+<link title="Block" rel="Chapter" href="Block.html">
+<link title="Chunk" rel="Chapter" href="Chunk.html">
+<link title="Timestamp" rel="Chapter" href="Timestamp.html">
+<link title="Data" rel="Chapter" href="Data.html">
+<link title="Graph" rel="Chapter" href="Graph.html">
+<link title="File" rel="Chapter" href="File.html">
+<link title="Directory" rel="Chapter" href="Directory.html">
+<link title="Checkpoint" rel="Chapter" href="Checkpoint.html">
+<link title="In_memory_store" rel="Chapter" href="In_memory_store.html">
+<link title="Filesystem_store" rel="Chapter" href="Filesystem_store.html">
+<link title="Config" rel="Chapter" href="Config.html">
+<link title="Server_config" rel="Chapter" href="Server_config.html">
+<link title="Client_config" rel="Chapter" href="Client_config.html">
+<link title="Pathname" rel="Chapter" href="Pathname.html">
+<link title="Tree" rel="Chapter" href="Tree.html"><title>Config</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Filesystem_store.html" title="Filesystem_store">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;<a class="post" href="Server_config.html" title="Server_config">Next</a>
+</div>
+<h1>Module <a href="type_Config.html">Config</a></h1>
+
+<pre><span class="keyword">module</span> Config: <code class="code"><span class="keyword">sig</span></code> <a href="Config.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><div class="info module top">
+Configuration file storage.<br>
+</div>
+<hr width="100%">
+
+<pre><span id="VALlocate"><span class="keyword">val</span> locate</span> : <code class="type">app:string -> name:string -> string</code></pre><div class="info ">
+<code class="code">locate ~app ~name</code> returns the appropriate path to a configuration file <code class="code">name</code>
+    of application <code class="code">app</code> on the current platform.
+<p>
+
+    The location of configuration is platform-specific:
+      * on Linux, <code class="code">$(config_home)/.config/$(app)/$(name)</code>, where <code class="code">$(config_home)</code>
+        is the first <code class="code">:</code>-separated component of <code class="code">$<span class="constructor">XDG_CONFIG_HOME</span></code>, or <code class="code"><span class="keywordsign">~/.</span>config</code>.
+      * on other Unixes, <code class="code">$<span class="constructor">HOME</span>/.$(app)/$(name)</code>.<br>
+</div>
+
+<pre><span id="VALload"><span class="keyword">val</span> load</span> : <code class="type">app:string -> name:string -> loader:(string -> 'a) -> 'a option</code></pre><div class="info ">
+<code class="code">load ~app ~name ~loader</code> attempts to load the configuration,
+    deserializing it with <code class="code">loader</code>, and returns <code class="code"><span class="constructor">Some</span> cfg</code> if it is found,
+    otherwise returns <code class="code"><span class="constructor">None</span></code>.
+<p>
+
+    See <a href="Config.html#VALlocate"><code class="code"><span class="constructor">Config</span>.locate</code></a>.<br>
+</div>
+
+<pre><span id="VALstore"><span class="keyword">val</span> store</span> : <code class="type">app:string -> name:string -> dumper:('a -> string) -> 'a -> unit</code></pre><div class="info ">
+<code class="code">store ~app ~name ~dumper cfg</code> stores configuration <code class="code">cfg</code>, serializing it
+    with <code class="code">dumper</code>. The configuration is written atomically. The file permissions
+    are set so that only the current user will be able to read or modify it.
+<p>
+
+    See <a href="Config.html#VALlocate"><code class="code"><span class="constructor">Config</span>.locate</code></a>.<br>
+</div>
+
+<pre><span id="VALinit"><span class="keyword">val</span> init</span> : <code class="type">app:string -><br>       name:string -><br>       init:(unit -> 'a) -> loader:(string -> 'a) -> dumper:('a -> string) -> 'a</code></pre><div class="info ">
+<code class="code">init ~app ~name ~init ~loader ~dumper</code> attempts to load the configuration.
+    If it is not found, the value returned by <code class="code">init ()</code> is stored and returned.
+<p>
+
+    See <a href="Config.html#VALload"><code class="code"><span class="constructor">Config</span>.load</code></a>.<br>
+</div>
+</body></html>
