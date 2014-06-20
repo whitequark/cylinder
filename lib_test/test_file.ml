@@ -38,7 +38,7 @@ let test_update_inline ctxt =
                  (file'.File.chunks);
     Lwt.return_unit
   | _ -> assert_failure "File.update_with_unix_fd"
-  end >>= fun () ->
+  end >>
   let%lwt fd = Helper.tmpdata_bracket ctxt "helloHI" in
   begin match%lwt File.update_with_unix_fd ~convergence:"" ~client origin_capa fd with
   | `Ok file_capa' ->
@@ -61,14 +61,14 @@ let test_roundtrip ctxt =
     let%lwt fd' = Helper.tmpdata_bracket ctxt "" in
     begin match%lwt File.retrieve_to_unix_fd ~client capa fd' with
     | `Ok -> Lwt.return_unit | _ -> assert_failure "File.restore_to_unix_fd"
-    end >>= fun () ->
+    end >>
 
     Lwt_unix.lseek fd' 0 Lwt_unix.SEEK_SET >>= fun _ ->
     let%lwt data' = Lwt_io.read (Lwt_io.of_fd ~mode:Lwt_io.input fd') in
     assert_equal ~printer:(Printf.sprintf "%s") data data';
     Lwt.return_unit
   in
-  roundtrip (String.make 10 'A') >>= fun () ->
+  roundtrip (String.make 10 'A') >>
   roundtrip (String.make 200 'A')
 
 let suite = "Test File" >::: [

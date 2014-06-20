@@ -66,11 +66,11 @@ let retrieve_to_path ~client dir_capa path =
             Lwt_unix.close fd
           end
         | `Directory dir_capa ->
-          Lwt_unix.mkdir full_name 0o755 >>= fun () ->
+          Lwt_unix.mkdir full_name 0o755 >>
           handle_path dir_capa full_name)
     | (`Malformed | `Not_found | `Unavailable) as err -> [%lwt raise (Error err)]
   in
   try%lwt
-    handle_path dir_capa path >>= fun () -> Lwt.return `Ok
+    handle_path dir_capa path >> Lwt.return `Ok
   with Error ((`Not_supported | `Unavailable | `Not_empty | `Malformed | `Not_found) as err) ->
     Lwt.return err

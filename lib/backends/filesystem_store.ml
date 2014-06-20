@@ -17,7 +17,7 @@ let get root digest =
   try%lwt
     let%lwt file    = Lwt_io.open_file ~mode:Lwt_io.input (Pathname.to_string path) in
     let%lwt content = Lwt_io.read file in
-    Lwt_io.close file >>= fun () ->
+    Lwt_io.close file >>
     Lwt.return (`Ok content)
   with Unix.Unix_error _ ->
     Lwt.return `Not_found
@@ -32,15 +32,15 @@ let put root digest obj =
   try%lwt
     FileUtil.mkdir ~parent:true (Pathname.to_string (Pathname.basename path));
     let%lwt file = Lwt_io.open_file ~mode:Lwt_io.output (Pathname.to_string path) in
-    Lwt_io.write file obj >>= fun () ->
-    Lwt_io.close file >>= fun () ->
+    Lwt_io.write file obj >>
+    Lwt_io.close file >>
     Lwt.return `Ok
   with Unix.Unix_error _ ->
     Lwt.return `Unavailable
 
 let erase root digest =
   let path = pathname_of_digest root digest in
-  Lwt_unix.unlink (Pathname.to_string path) >>= fun () ->
+  Lwt_unix.unlink (Pathname.to_string path) >>
   Lwt.return_unit
 
 let rec file_list root path cookie fuel =

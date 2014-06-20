@@ -27,7 +27,7 @@ end) = struct
     let%lwt store  = Backend.create () in
     let%lwt result = Backend.put store digest "the quick brown fox" in
     assert_equal `Ok result;
-    Backend.erase store digest >>= fun () ->
+    Backend.erase store digest >>
     let%lwt result = Backend.get store digest in
     assert_equal `Not_found result;
     Lwt.return_unit

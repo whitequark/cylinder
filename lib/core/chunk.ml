@@ -90,7 +90,7 @@ let capability_to_data ~decoder capa chunk_enc =
 let store_data ~encoder ~convergence client data =
   match%lwt capability_of_data ~convergence ~encoder data with
   | (Inline _) as capa, None ->
-    Lwt_log.debug_f ~section "inline: %s" (inspect_capability capa) >>= fun () ->
+    Lwt_log.debug_f ~section "inline: %s" (inspect_capability capa) >>
     Lwt.return (`Ok capa)
   | Stored { digest = (digest_kind, _) as digest } as capa, Some bytes ->
     begin match%lwt Block.Client.exists client digest with
@@ -98,18 +98,18 @@ let store_data ~encoder ~convergence client data =
       begin match%lwt Block.Client.put client digest_kind bytes with
       | (`Unavailable | `Not_supported) as result -> Lwt.return result
       | `Ok ->
-        Lwt_log.debug_f ~section "uploaded: %s" (inspect_capability capa) >>= fun () ->
+        Lwt_log.debug_f ~section "uploaded: %s" (inspect_capability capa) >>
         Lwt.return (`Ok capa)
       end
     | `Unavailable as result -> Lwt.return result
     | `Ok ->
-      Lwt_log.debug_f ~section "exists: %s" (inspect_capability capa) >>= fun () ->
+      Lwt_log.debug_f ~section "exists: %s" (inspect_capability capa) >>
       Lwt.return (`Ok capa)
     end
   | _ -> assert false
 
 let retrieve_data ~decoder client capa =
-  Lwt_log.debug_f ~section "retrieve: %s" (inspect_capability capa) >>= fun () ->
+  Lwt_log.debug_f ~section "retrieve: %s" (inspect_capability capa) >>
   match capa with
   | Inline _ -> capability_to_data ~decoder capa None
   | Stored { digest } ->

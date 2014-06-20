@@ -156,16 +156,16 @@ module Server(Backend: BACKEND) = struct
     let open Protocol in
     try%lwt
       let request = Protobuf.Decoder.decode_exn request_from_protobuf request in
-      Lwt_log.debug ~section (Protocol.request_to_string request) >>= fun () ->
+      Lwt_log.debug ~section (Protocol.request_to_string request) >>
       begin match request with
       | `Get digest ->
         Backend.get server.backend digest >>= fun response ->
-        Lwt_log.debug ~section (Protocol.get_response_to_string response) >>= fun () ->
+        Lwt_log.debug ~section (Protocol.get_response_to_string response) >>
         Lwt.return (Protobuf.Encoder.encode_exn get_response_to_protobuf response)
 
       | `Exists digest ->
         Backend.exists server.backend digest >>= fun response ->
-        Lwt_log.debug ~section (Protocol.exists_response_to_string response) >>= fun () ->
+        Lwt_log.debug ~section (Protocol.exists_response_to_string response) >>
         Lwt.return (Protobuf.Encoder.encode_exn exists_response_to_protobuf response)
 
       | `Put (digest_kind, data) ->
@@ -177,20 +177,20 @@ module Server(Backend: BACKEND) = struct
           else
             Backend.put server.backend digest data
         end >>= fun response ->
-        Lwt_log.debug ~section (Protocol.put_response_to_string response) >>= fun () ->
+        Lwt_log.debug ~section (Protocol.put_response_to_string response) >>
         Lwt.return (Protobuf.Encoder.encode_exn put_response_to_protobuf response)
 
       | `Erase digest ->
         (* TODO check auth; needs libzmq support *)
-        Backend.erase server.backend digest >>= fun () ->
+        Backend.erase server.backend digest >>
         Lwt.return `Ok >>= fun response ->
-        Lwt_log.debug ~section (Protocol.erase_response_to_string response) >>= fun () ->
+        Lwt_log.debug ~section (Protocol.erase_response_to_string response) >>
         Lwt.return (Protobuf.Encoder.encode_exn erase_response_to_protobuf response)
 
       | `Enumerate cookie ->
         (* TODO check auth; needs libzmq support *)
         Backend.enumerate server.backend cookie >>= fun response ->
-        Lwt_log.debug ~section (Protocol.enumerate_response_to_string response) >>= fun () ->
+        Lwt_log.debug ~section (Protocol.enumerate_response_to_string response) >>
         Lwt.return (Protobuf.Encoder.encode_exn enumerate_response_to_protobuf response)
 
       end >>= fun reply ->
@@ -203,7 +203,7 @@ module Server(Backend: BACKEND) = struct
     | (id, [""; request]) ->
       Lwt.join [handle server id request; listen server]
     | (id, _) ->
-      Lwt_log.notice_f ~section "%S: Malformed packet" (id :> string) >>= fun () ->
+      Lwt_log.notice_f ~section "%S: Malformed packet" (id :> string) >>
       listen server
 end
 
@@ -220,16 +220,16 @@ module Client = struct
     Lwt_zmq.Socket.to_socket socket
 
   let roundtrip socket decoder stringifier request =
-    Lwt_log.debug ~section (Protocol.request_to_string request) >>= fun () ->
+    Lwt_log.debug ~section (Protocol.request_to_string request) >>
     let message = Protobuf.Encoder.encode_exn Protocol.request_to_protobuf request in
-    Lwt_zmq.Socket.send socket message >>= fun () ->
-    Lwt_zmq.Socket.recv socket >>= fun message' ->
+    Lwt_zmq.Socket.send socket message >>
+    let%lwt message' = Lwt_zmq.Socket.recv socket in
     try
       let response = Protobuf.Decoder.decode_exn decoder message' in
-      Lwt_log.debug ~section (stringifier response) >>= fun () ->
+      Lwt_log.debug ~section (stringifier response) >>
       Lwt.return response
     with exn ->
-      Lwt_log.notice_f ~section ~exn "Decoder failure: " >>= fun () ->
+      Lwt_log.notice_f ~section ~exn "Decoder failure: " >>
       Lwt.fail exn
 
   let get socket digest =

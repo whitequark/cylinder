@@ -69,12 +69,12 @@ let server listener host port =
   with Unix.Unix_error(Unix.EINVAL, "zmq_setsockopt", _) ->
     failwith "libzmq was compiled without libsodium"
   end;
-  Lwt_log.notice_f "Public key: %s" (Box.public_key_to_string config.public_key) >>= fun () ->
+  Lwt_log.notice_f "Public key: %s" (Box.public_key_to_string config.public_key) >>
   resolve host (string_of_int port) >:= fun (addr, port) ->
   try
     ZMQ.Socket.bind zsocket (Printf.sprintf "tcp://%s:%d" addr port);
-    Lwt_log.notice_f "Listening at %s:%d..." addr port >>= fun () ->
-    listener zsocket >>= fun () ->
+    Lwt_log.notice_f "Listening at %s:%d..." addr port >>
+    listener zsocket >>
     return_ok
   with exn ->
     return_error_f "Cannot bind to %s:%d" addr port
@@ -160,21 +160,21 @@ let put_block digest_kind filename =
   match%lwt Block.Client.put client digest_kind data with
   | (`Unavailable | `Not_supported) as err -> handle_error err
   | `Ok ->
-    Lwt_io.printl (Block.digest_to_string (Block.digest_bytes data)) >>= fun () ->
+    Lwt_io.printl (Block.digest_to_string (Block.digest_bytes data)) >>
     return_ok
 
 let show_chunk capa =
   connect () >:= fun (config, client) ->
   match capa with
   | Chunk.Inline bytes ->
-    Lwt_io.printl  "Type:      inline" >>= fun () ->
-    Lwt_io.printlf "Length:    %d bytes" (Bytes.length bytes) >>= fun () ->
+    Lwt_io.printl  "Type:      inline" >>
+    Lwt_io.printlf "Length:    %d bytes" (Bytes.length bytes) >>
     return_ok
   | Chunk.Stored { Chunk.digest; algorithm; key } ->
-    Lwt_io.printl  "Type:      stored" >>= fun () ->
-    Lwt_io.printlf "Algorithm: %s" (Chunk.algorithm_to_string algorithm) >>= fun () ->
-    Lwt_io.printlf "Key:       %s" (Base64_url.encode key) >>= fun () ->
-    Lwt_io.printlf "Digest:    %s" (Block.digest_to_string digest) >>= fun () ->
+    Lwt_io.printl  "Type:      stored" >>
+    Lwt_io.printlf "Algorithm: %s" (Chunk.algorithm_to_string algorithm) >>
+    Lwt_io.printlf "Key:       %s" (Base64_url.encode key) >>
+    Lwt_io.printlf "Digest:    %s" (Block.digest_to_string digest) >>
     return_ok
 
 let get_chunk ~decoder client capa =
@@ -190,8 +190,8 @@ let put_chunk ~convergence ~encoder client data =
 let show_data capa =
   connect () >:= fun (config, client) ->
   get_chunk ~decoder:Data.data_from_protobuf client capa >:= fun { Data.encoding; content } ->
-  Lwt_io.printlf "Encoding: %s" (Data.encoding_to_string encoding) >>= fun () ->
-  Lwt_io.printlf "Length:   %d bytes" (Bytes.length content) >>= fun () ->
+  Lwt_io.printlf "Encoding: %s" (Data.encoding_to_string encoding) >>
+  Lwt_io.printlf "Length:   %d bytes" (Bytes.length content) >>
   return_ok
 
 let store_data convergence filename =
@@ -199,24 +199,24 @@ let store_data convergence filename =
   let%lwt input = istream_of_filename filename >>= Lwt_io.read in
   put_chunk ~convergence ~encoder:Data.data_to_protobuf
             client (Data.data_of_bytes input) >:= fun capa ->
-  Lwt_io.printl (Chunk.capability_to_string capa) >>= fun () ->
+  Lwt_io.printl (Chunk.capability_to_string capa) >>
   return_ok
 
 let retrieve_data capa filename =
   connect () >:= fun (config, client) ->
   get_chunk ~decoder:Data.data_from_protobuf client capa >:= fun data ->
   let%lwt stream = ostream_of_filename filename in
-  Lwt_io.write stream (Data.data_to_bytes data) >>= fun () ->
+  Lwt_io.write stream (Data.data_to_bytes data) >>
   return_ok
 
 let show_shadow capa =
   connect () >:= fun (config, client) ->
   get_chunk ~decoder:Graph.shadow_from_protobuf client capa >:= fun shadow ->
   let { Graph.children; blocks } = shadow in
-  Lwt_io.printl "Children:" >>= fun () ->
-  Lwt_list.iter_s Lwt_io.printl (List.map Chunk.capability_to_string children) >>= fun () ->
-  Lwt_io.printl "Blocks:" >>= fun () ->
-  Lwt_list.iter_s Lwt_io.printl (List.map Block.digest_to_string blocks) >>= fun () ->
+  Lwt_io.printl "Children:" >>
+  Lwt_list.iter_s Lwt_io.printl (List.map Chunk.capability_to_string children) >>
+  Lwt_io.printl "Blocks:" >>
+  Lwt_list.iter_s Lwt_io.printl (List.map Block.digest_to_string blocks) >>
   return_ok
 
 let unix_fd_of_filename filename mode =
@@ -227,11 +227,11 @@ let unix_fd_of_filename filename mode =
 let show_file capa =
   connect () >:= fun (config, client) ->
   get_chunk ~decoder:File.file_from_protobuf client capa >:= fun file ->
-  Lwt_io.printlf "Modified:   %s" (Timestamp.to_string file.File.last_modified) >>= fun () ->
-  Lwt_io.printlf "Executable: %B" file.File.executable >>= fun () ->
-  Lwt_io.printl  "Chunks:" >>= fun () ->
+  Lwt_io.printlf "Modified:   %s" (Timestamp.to_string file.File.last_modified) >>
+  Lwt_io.printlf "Executable: %B" file.File.executable >>
+  Lwt_io.printl  "Chunks:" >>
   file.File.chunks |> Lwt_list.iter_s (fun capa ->
-    Lwt_io.printl (Chunk.capability_to_string capa)) >>= fun () ->
+    Lwt_io.printl (Chunk.capability_to_string capa)) >>
   return_ok
 
 let store_file convergence data =
@@ -240,7 +240,7 @@ let store_file convergence data =
   match%lwt File.create_from_unix_fd ~convergence ~client fd with
   | (`Unavailable | `Not_supported) as err -> handle_error err
   | `Ok file_capa ->
-    Lwt_io.printl (Chunk.capability_to_string file_capa) >>= fun () ->
+    Lwt_io.printl (Chunk.capability_to_string file_capa) >>
     return_ok
 
 let retrieve_file capa data =
@@ -255,7 +255,7 @@ let store_directory convergence path =
   match%lwt Directory.create_from_path ~convergence ~client path with
   | (`Unavailable | `Not_supported) as err -> handle_error err
   | `Ok dir_capa ->
-    Lwt_io.printl (Chunk.capability_to_string dir_capa) >>= fun () ->
+    Lwt_io.printl (Chunk.capability_to_string dir_capa) >>
     return_ok
 
 let retrieve_directory capa path =
@@ -270,7 +270,7 @@ let shadow fn convergence capa =
   match%lwt fn ~convergence ~client capa with
   | (`Not_found | `Unavailable | `Malformed | `Not_supported) as err -> handle_error err
   | `Ok shadow_capa ->
-    Lwt_io.printl (Chunk.capability_to_string shadow_capa) >>= fun () ->
+    Lwt_io.printl (Chunk.capability_to_string shadow_capa) >>
     return_ok
 
 let shadow_file = shadow Graph.file_shadow
@@ -283,7 +283,7 @@ let create_checkpoint convergence dir_capa =
                               ~owner:config.public_key ~server:config.server_key dir_capa with
   | (`Not_found | `Unavailable | `Malformed | `Not_supported) as err -> handle_error err
   | `Ok digest ->
-    Lwt_io.printl (Block.digest_to_string digest) >>= fun () ->
+    Lwt_io.printl (Block.digest_to_string digest) >>
     return_ok
 
 let show_checkpoint digest =
@@ -293,33 +293,33 @@ let show_checkpoint digest =
   | (`Not_found | `Unavailable | `Malformed) as err -> handle_error err
   | `Ok bytes ->
     let checkpoint = Protobuf.Decoder.decode_exn Checkpoint.checkpoint_from_protobuf bytes in
-    Lwt_io.printlf "Ring key:    %s" (Box.public_key_to_string checkpoint.Checkpoint.ring_key) >>= fun () ->
+    Lwt_io.printlf "Ring key:    %s" (Box.public_key_to_string checkpoint.Checkpoint.ring_key) >>
     match Checkpoint.unlock ~owner:config.secret_key checkpoint with
     | None ->
-      Lwt_io.printl "No access." >>= fun () ->
+      Lwt_io.printl "No access." >>
       return_ok
     | Some keyring ->
       match Secret_box.decrypt checkpoint.Checkpoint.shadow keyring.Checkpoint.shadow_key with
       | None -> return_error "Cannot decrypt shadow."
       | Some shadow ->
-        Lwt_io.printlf "Updater:     %s" (Box.public_key_to_string shadow.Checkpoint.updater) >>= fun () ->
-        Lwt_io.printl  "Grants:" >>= fun () ->
+        Lwt_io.printlf "Updater:     %s" (Box.public_key_to_string shadow.Checkpoint.updater) >>
+        Lwt_io.printl  "Grants:" >>
         shadow.Checkpoint.grants |> Lwt_list.iter_s (fun (level, public_key) ->
           let level' = match level with `Owner -> "Owner " | `Writer -> "Writer" | `Reader -> "Reader" in
-          Lwt_io.printlf "%s %s" (Box.public_key_to_string shadow.Checkpoint.updater) level') >>= fun () ->
+          Lwt_io.printlf "%s %s" (Box.public_key_to_string shadow.Checkpoint.updater) level') >>
         let shadow_root = Chunk.capability_to_string shadow.Checkpoint.shadow_root in
-        Lwt_io.printlf "Shadow root: %s" shadow_root >>= fun () ->
+        Lwt_io.printlf "Shadow root: %s" shadow_root >>
         match keyring.Checkpoint.shiny_key with
         | Some shiny_key ->
           begin match Secret_box.decrypt checkpoint.Checkpoint.shiny shiny_key with
           | None -> return_error "Cannot decrypt shiny."
           | Some shiny ->
             let shiny_root = Chunk.capability_to_string shiny.Checkpoint.shiny_root in
-            Lwt_io.printlf "Shiny root:  %s" shiny_root >>= fun () ->
+            Lwt_io.printlf "Shiny root:  %s" shiny_root >>
             return_ok
           end
         | None ->
-          Lwt_io.printl  "No shiny access." >>= fun () ->
+          Lwt_io.printl  "No shiny access." >>
           return_ok
 
 (* Command specification *)

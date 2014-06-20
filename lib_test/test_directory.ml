@@ -6,9 +6,9 @@ let run f ctxt = Lwt_main.run (f ctxt)
 let test_roundtrip ctxt =
   let _, _, _, client = Helper.blockserver_bracket ctxt in
   let tmpdir = bracket_tmpdir ~prefix:"cyldir" ctxt in
-  Helper.write_file (Filename.concat tmpdir "file1") "foobar" >>= fun () ->
-  Lwt_unix.mkdir (Filename.concat tmpdir "dir1") 0o755 >>= fun () ->
-  (* Helper.write_file (List.fold_left Filename.concat tmpdir ["dir1"; "file2"]) "barbaz" >>= fun () -> *)
+  Helper.write_file (Filename.concat tmpdir "file1") "foobar" >>
+  Lwt_unix.mkdir (Filename.concat tmpdir "dir1") 0o755 >>
+  (* Helper.write_file (List.fold_left Filename.concat tmpdir ["dir1"; "file2"]) "barbaz" >> *)
   match%lwt Directory.create_from_path ~convergence:"" ~client tmpdir with
   | `Ok dir_capa ->
     let tmpdir' = bracket_tmpdir ~prefix:"cyldir" ctxt in

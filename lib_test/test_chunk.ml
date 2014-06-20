@@ -63,8 +63,8 @@ let test_network_stored ctxt =
       assert_equal dataL dataL';
       Lwt.return_unit
     | _ -> assert_failure "Chunk.retrieve_data"
-    end >>= fun () ->
-    In_memory_store.erase backend handle.Chunk.digest >>= fun () ->
+    end >>
+    In_memory_store.erase backend handle.Chunk.digest >>
     begin match%lwt Chunk.retrieve_data ~decoder client capa with
     | `Not_found -> Lwt.return_unit
     | _ -> assert_failure "Chunk.retrieve_data"

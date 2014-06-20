@@ -124,7 +124,7 @@ let watch path =
     begin match events with
     | [Inotify.Q_overflow] -> [%lwt raise (Failure "Tree.watch: queue overflow")]
     | _ -> return_unit
-    end >>= fun () ->
+    end >>
     (* In general, filesystem events arrive strictly in order, but may
        arbitrarily race against initial traversal of filesystem. It is guaranteed
        that no events will be missed, but at any moment, an event may arrive
@@ -211,7 +211,7 @@ let watch path =
     (* Something we didn't expect *)
     | _ -> [%lwt raise (Failure (Printf.sprintf "Tree.watch: unknown event %s"
                         (String.concat ", " (List.map Inotify.string_of_event_kind events))))]
-    end >>= fun () ->
+    end >>
     print_endline (string_of_entry root);
     listen ()
   in

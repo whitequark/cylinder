@@ -52,5 +52,5 @@ let put_chunk ?(convergence="") ~encoder client data =
 
 let write_file path data =
   let%lwt chan = Lwt_io.open_file Lwt_io.output path in
-  Lwt_io.write chan data >>= fun () ->
+  Lwt_io.write chan data >>
   Lwt_io.close chan

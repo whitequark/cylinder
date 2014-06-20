@@ -31,7 +31,7 @@ let rec update_with_unix_fd ~convergence ~client file_capa fd =
     Lwt_unix.lseek fd 0 Lwt_unix.SEEK_SET >>= fun _ ->
     let%lwt capas =
       Lwt_list.fold_left_s (fun capas capa ->
-          check_mtime () >>= fun () ->
+          check_mtime () >>
           (* Pull out the existing chunk to compare it with present data. *)
           let%lwt old_bytes =
             match%lwt Chunk.retrieve_data ~decoder:Data.data_from_protobuf client capa with
@@ -65,7 +65,7 @@ let rec update_with_unix_fd ~convergence ~client file_capa fd =
     (* Append the rest of the file to the chunk list *)
     let%lwt capas =
       let rec handle_chunk capas =
-        check_mtime () >>= fun () ->
+        check_mtime () >>
         (* Read a chunk. *)
         let bytes = Bytes.create Chunk.max_size in
         let%lwt length = Lwt_unix.read fd bytes 0 (Bytes.length bytes) in
@@ -114,7 +114,7 @@ let retrieve_to_unix_fd ~client file_capa fd =
     (* Go through the chunks and write them to the file. *)
     ignore_espipe (fun () ->
       Lwt_unix.lseek fd 0 Lwt_unix.SEEK_SET >>= fun _ ->
-      Lwt.return_unit) >>= fun () ->
+      Lwt.return_unit) >>
     file.chunks |> Lwt_list.iter_s (fun capa ->
       let%lwt bytes =
         match%lwt Chunk.retrieve_data ~decoder:Data.data_from_protobuf client capa with
@@ -122,11 +122,11 @@ let retrieve_to_unix_fd ~client file_capa fd =
         | (`Not_found | `Unavailable | `Malformed) as err -> [%lwt raise (Error err)]
       in
       Lwt_unix.write fd bytes 0 (Bytes.length bytes) >>= fun _ ->
-      Lwt.return_unit) >>= fun () ->
+      Lwt.return_unit) >>
     (* Truncate the file to its current size. *)
     ignore_espipe (fun () ->
       let%lwt length = Lwt_unix.lseek fd 0 Lwt_unix.SEEK_CUR in
-      Lwt_unix.ftruncate fd length) >>= fun () ->
+      Lwt_unix.ftruncate fd length) >>
     (* At last, update metadata. *)
     let%lwt { Lwt_unix.st_perm } = Lwt_unix.fstat fd in
     begin if file.executable && st_perm land 0o100 = 0 then
@@ -135,7 +135,7 @@ let retrieve_to_unix_fd ~client file_capa fd =
       Lwt_unix.fchmod fd (st_perm land (lnot 0o111))
     else
       Lwt.return_unit
-    end >>= fun () ->
+    end >>
     (* We would want to set mtimes here, but it's highly platform-specific
        and nothing in OCaml so far exports those functions. *)
     Lwt.return `Ok
