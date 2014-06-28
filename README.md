@@ -14,8 +14,7 @@ opam pin ppx_tools git://github.com/alainfrisch/ppx_tools
 opam pin ppx_protobuf git://github.com/whitequark/ocaml-ppx_protobuf
 opam pin ctypes git://github.com/whitequark/ocaml-ctypes#whitequark-bytes
 opam pin cmdliner git://github.com/dbuenzli/cmdliner
-opam pin sodium git://github.com/whitequark/ocaml-sodium#zero-copy
-opam pin zmq git://github.com/issuu/ocaml-zmq
+opam pin sodium git://github.com/dsheets/ocaml-sodium
 opam pin utop git://github.com/diml/utop
 opam install oasis extlib extunix lwt inotify ppx_protobuf sodium lwt-zmq yojson utop cmdliner fileutils
 ./configure
