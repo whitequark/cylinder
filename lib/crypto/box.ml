@@ -28,7 +28,7 @@ let public_key_to_string key =
   Base64_url.encode (Protobuf.Encoder.encode_exn public_key_to_protobuf key)
 
 let random_key_pair () =
-  let sk, pk = Sodium.Box.random_key_pair () in
+  let sk, pk = Sodium.Box.random_keypair () in
   { algorithm = `Curve25519_XSalsa20_Poly1305;
     key       = Sodium.Box.Bytes.of_secret_key sk },
   { algorithm = `Curve25519_XSalsa20_Poly1305;
