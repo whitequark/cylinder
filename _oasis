@@ -18,13 +18,11 @@ Library "cylinder"
                     config/Config, config/Server_config, config/Client_config,
                     local/Pathname, local/Tree
   Pack:             true
-  BuildDepends:     threads, lwt, lwt.unix, lwt.preemptive,
+  BuildDepends:     threads, lwt, lwt.unix, lwt.preemptive, lwt.ppx,
                     extlib, extunix (>= 0.1.1),
                     ZMQ (>= 4.0), lwt-zmq, protobuf, sodium,
                     yojson, cmdliner,
                     fileutils, inotify (>= 2.0), inotify.lwt
-  ByteOpt:          -ppx ppx_lwt -ppx ppx_protobuf
-  NativeOpt:        -ppx ppx_lwt -ppx ppx_protobuf
 
 Executable "cylinder-cli"
   Path:             lib
@@ -44,10 +42,8 @@ Executable "test_cylinder"
   Path:             lib_test
   MainIs:           test_cylinder.ml
   Install:          false
-  BuildDepends:     oUnit (>= 2.0), cylinder
+  BuildDepends:     oUnit (>= 2.0), cylinder, lwt.ppx, protobuf
   CompiledObject:   best
-  ByteOpt:          -ppx ppx_lwt -ppx ppx_protobuf
-  NativeOpt:        -ppx ppx_lwt -ppx ppx_protobuf
 
 Test "test_cylinder"
   Command:          $test_cylinder -runner sequential
