@@ -1,5 +1,5 @@
 type encoding = [ `None [@key 1] | `LZ4 [@key 2] ]
-[@@protobuf]
+[@@deriving protobuf]
 
 let encoding_to_string enc =
   match enc with
@@ -16,7 +16,7 @@ type data = {
   encoding  : encoding [@key  1] [@default `None] [@bare];
   content   : bytes    [@key 15];
 }
-[@@protobuf]
+[@@deriving protobuf]
 
 let data_of_bytes bytes =
   { encoding = `None; content = bytes }

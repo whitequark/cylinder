@@ -3,7 +3,7 @@ open OUnit2
 let (>>=) = Lwt.(>>=)
 let run f ctxt = Lwt_main.run (f ctxt)
 
-type message = string [@@protobuf]
+type message = string [@@deriving protobuf]
 
 let data    = "wild wild fox"
 let dataL   = String.make 128 'A'

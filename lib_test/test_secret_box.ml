@@ -6,7 +6,7 @@ let test_roundtrip_key ctxt =
   let key'  = Protobuf.Decoder.decode_exn Secret_box.key_from_protobuf bytes in
   assert_equal key key'
 
-type message = string [@@protobuf]
+type message = string [@@deriving protobuf]
 
 let test_roundclear_clear ctxt =
   let msg  = "wild wild fox" in

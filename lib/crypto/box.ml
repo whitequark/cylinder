@@ -1,7 +1,7 @@
 type key = {
   algorithm : [ `Curve25519_XSalsa20_Poly1305 [@key 1] ] [@key 1];
   key       : bytes [@key 2];
-} [@@protobuf]
+} [@@deriving protobuf]
 
 type public_key = key
 type secret_key = key
@@ -37,7 +37,7 @@ let random_key_pair () =
 type encrypted = {
   data      : bytes [@key 1];
   nonce     : bytes [@key 2];
-} [@@protobuf]
+} [@@deriving protobuf]
 
 type 'content box =
 | Cleartext  of 'content  * secret_key * public_key
@@ -67,17 +67,17 @@ let decrypt encrypted secret_key public_key =
     with Sodium.Verification_failure ->
       None
 
-let box_from_protobuf content_from_protobuf decoder =
+let box_from_protobuf contenfrom_protobuf decoder =
   let encrypted = encrypted_from_protobuf decoder in
-  Ciphertext (encrypted, content_from_protobuf)
+  Ciphertext (encrypted, contenfrom_protobuf)
 
-let box_to_protobuf content_to_protobuf box encoder =
+let box_to_protobuf contento_protobuf box encoder =
   match box with
   | Ciphertext (encrypted, _) ->
     encrypted_to_protobuf encrypted encoder
   | Cleartext (content, secret_key, public_key)
       when secret_key.algorithm = public_key.algorithm ->
-    let clear_bytes = Protobuf.Encoder.encode_exn content_to_protobuf content in
+    let clear_bytes = Protobuf.Encoder.encode_exn contento_protobuf content in
     let encrypted   = encrypt clear_bytes secret_key public_key in
     encrypted_to_protobuf encrypted encoder
   | _ -> assert false
@@ -93,7 +93,7 @@ let decrypt box secret_key public_key =
        Encrypt&decrypt a dummy string. *)
     decrypt (encrypt Bytes.empty secret_key' public_key') secret_key public_key |>
     Option.map (fun _ -> content)
-  | Ciphertext (encrypted, content_from_protobuf) ->
+  | Ciphertext (encrypted, contenfrom_protobuf) ->
     decrypt encrypted secret_key public_key |>
-    Option.map (Protobuf.Decoder.decode_exn content_from_protobuf)
+    Option.map (Protobuf.Decoder.decode_exn contenfrom_protobuf)
 

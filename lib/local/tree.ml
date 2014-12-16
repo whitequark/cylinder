@@ -211,7 +211,7 @@ let watch path =
     (* Something we didn't expect *)
     | _ -> [%lwt raise (Failure (Printf.sprintf "Tree.watch: unknown event %s"
                         (String.concat ", " (List.map Inotify.string_of_event_kind events))))]
-    end >>
+    end >>= fun () ->
     print_endline (string_of_entry root);
     listen ()
   in

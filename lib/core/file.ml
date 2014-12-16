@@ -4,7 +4,7 @@ type file = {
   last_modified : Timestamp.t                      [@key 1];
   executable    : bool                             [@key 2];
   chunks        : Data.data Chunk.capability list [@key 15];
-} [@@protobuf]
+} [@@deriving protobuf]
 
 exception Retry
 exception Error of [ `Not_found | `Unavailable | `Malformed | `Not_supported ]
@@ -114,7 +114,7 @@ let retrieve_to_unix_fd ~client file_capa fd =
     (* Go through the chunks and write them to the file. *)
     ignore_espipe (fun () ->
       Lwt_unix.lseek fd 0 Lwt_unix.SEEK_SET >>= fun _ ->
-      Lwt.return_unit) >>
+      Lwt.return_unit) >>= fun () ->
     file.chunks |> Lwt_list.iter_s (fun capa ->
       let%lwt bytes =
         match%lwt Chunk.retrieve_data ~decoder:Data.data_from_protobuf client capa with

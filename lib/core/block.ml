@@ -2,7 +2,7 @@ let (>>=) = Lwt.(>>=)
 let (>|=) = Lwt.(>|=)
 
 type digest_kind = [ `SHA512 [@key 1] ]
-[@@protobuf]
+[@@deriving protobuf]
 
 let digest_kind_to_string digest_kind =
   match digest_kind with
@@ -14,7 +14,7 @@ let digest_kind_of_string str =
   | _ -> None
 
 type digest = digest_kind [@bare] * string
-[@@protobuf]
+[@@deriving protobuf]
 
 let digest_bytes bytes =
   `SHA512, Bytes.to_string (Sodium.Hash.Bytes.of_hash (Sodium.Hash.Bytes.digest bytes))
@@ -53,7 +53,7 @@ module Protocol = struct
   | `Put            [@key 3] of digest_kind [@bare] * bytes
   | `Erase          [@key 4] of digest
   | `Enumerate      [@key 5] of string
-  ] [@@protobuf]
+  ] [@@deriving protobuf]
 
   let shorten bytes =
     if Bytes.length bytes < 10
@@ -77,7 +77,7 @@ module Protocol = struct
   [ `Ok             [@key 1] of bytes
   | `Not_found      [@key 2]
   | `Unavailable    [@key 3]
-  ] [@@protobuf]
+  ] [@@deriving protobuf]
 
   let get_response_to_string resp =
     match resp with
@@ -89,7 +89,7 @@ module Protocol = struct
   [ `Ok             [@key 1]
   | `Not_found      [@key 2]
   | `Unavailable    [@key 3]
-  ] [@@protobuf]
+  ] [@@deriving protobuf]
 
   let exists_response_to_string resp =
     match resp with
@@ -101,7 +101,7 @@ module Protocol = struct
   [ `Ok             [@key 1]
   | `Unavailable    [@key 2]
   | `Not_supported  [@key 3]
-  ] [@@protobuf]
+  ] [@@deriving protobuf]
 
   let put_response_to_string resp =
     match resp with
@@ -112,7 +112,7 @@ module Protocol = struct
   type erase_response =
   [ `Ok             [@key 1]
   | `Forbidden      [@key 2]
-  ] [@@protobuf]
+  ] [@@deriving protobuf]
 
   let erase_response_to_string resp =
     match resp with
@@ -123,7 +123,7 @@ module Protocol = struct
   [ `Ok             [@key 1] of string * digest list
   | `Exhausted      [@key 2]
   | `Forbidden      [@key 3]
-  ] [@@protobuf]
+  ] [@@deriving protobuf]
 
   let enumerate_response_to_string resp =
     match resp with

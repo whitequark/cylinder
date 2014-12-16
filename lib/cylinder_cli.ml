@@ -229,7 +229,7 @@ let show_file capa =
   get_chunk ~decoder:File.file_from_protobuf client capa >:= fun file ->
   Lwt_io.printlf "Modified:   %s" (Timestamp.to_string file.File.last_modified) >>
   Lwt_io.printlf "Executable: %B" file.File.executable >>
-  Lwt_io.printl  "Chunks:" >>
+  Lwt_io.printl  "Chunks:" >>= fun () ->
   file.File.chunks |> Lwt_list.iter_s (fun capa ->
     Lwt_io.printl (Chunk.capability_to_string capa)) >>
   return_ok
@@ -303,7 +303,7 @@ let show_checkpoint digest =
       | None -> return_error "Cannot decrypt shadow."
       | Some shadow ->
         Lwt_io.printlf "Updater:     %s" (Box.public_key_to_string shadow.Checkpoint.updater) >>
-        Lwt_io.printl  "Grants:" >>
+        Lwt_io.printl  "Grants:" >>= fun () ->
         shadow.Checkpoint.grants |> Lwt_list.iter_s (fun (level, public_key) ->
           let level' = match level with `Owner -> "Owner " | `Writer -> "Writer" | `Reader -> "Reader" in
           Lwt_io.printlf "%s %s" (Box.public_key_to_string shadow.Checkpoint.updater) level') >>

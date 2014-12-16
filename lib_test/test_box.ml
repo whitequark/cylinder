@@ -9,7 +9,7 @@ let test_roundtrip_keys ctxt =
   let pk'    = Protobuf.Decoder.decode_exn Box.public_key_from_protobuf pbytes in
   assert_equal pk pk'
 
-type message = string [@@protobuf]
+type message = string [@@deriving protobuf]
 
 let test_roundclear_clear ctxt =
   let msg        = "wild wild fox" in

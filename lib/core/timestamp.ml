@@ -1,5 +1,5 @@
 module Delta = struct
-  type t = int64 [@@protobuf]
+  type t = int64 [@@deriving protobuf]
 
   let zero = 0L
 
@@ -14,7 +14,7 @@ module Delta = struct
   let div dt n = Int64.div dt (Int64.of_int n)
 end
 
-type t = int64 [@@protobuf]
+type t = int64 [@@deriving protobuf]
 
 let zero = 0L
 

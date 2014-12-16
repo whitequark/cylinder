@@ -13,11 +13,11 @@ module Delta : sig
   (** [zero] is a delta corresponding to no difference in time. *)
   val zero : t
 
-  (** [t_from_protobuf d] deserializes a timestamp delta from [d]. *)
-  val t_from_protobuf  : Protobuf.Decoder.t -> t
+  (** [from_protobuf d] deserializes a timestamp delta from [d]. *)
+  val from_protobuf  : Protobuf.Decoder.t -> t
 
-  (** [t_to_protobuf t e] serializes timestamp delta [t] into [e]. *)
-  val t_to_protobuf    : t -> Protobuf.Encoder.t -> unit
+  (** [to_protobuf t e] serializes timestamp delta [t] into [e]. *)
+  val to_protobuf    : t -> Protobuf.Encoder.t -> unit
 
   (** [of_milliseconds dut] converts Unix time difference [dut] in
       milliseconds to a timestamp delta. *)
@@ -47,11 +47,11 @@ val zero : t
 (** [now ()] returns a timestamp corresponding to current time. *)
 val now : unit -> t
 
-(** [t_from_protobuf d] deserializes a timestamp from [d]. *)
-val t_from_protobuf  : Protobuf.Decoder.t -> t
+(** [from_protobuf d] deserializes a timestamp from [d]. *)
+val from_protobuf  : Protobuf.Decoder.t -> t
 
-(** [t_to_protobuf t e] serializes timestamp [t] into [e]. *)
-val t_to_protobuf    : t -> Protobuf.Encoder.t -> unit
+(** [to_protobuf t e] serializes timestamp [t] into [e]. *)
+val to_protobuf    : t -> Protobuf.Encoder.t -> unit
 
 (** [of_unix_time t] converts Unix time [t] (possibly returned
     by [Unix.time ()]) to a timestamp. *)

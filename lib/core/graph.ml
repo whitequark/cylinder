@@ -1,7 +1,7 @@
 type shadow = {
   children : shadow Chunk.capability list [@key 1];
   blocks   : Block.digest list            [@key 2];
-} [@@protobuf]
+} [@@deriving protobuf]
 
 exception Error of [ `Not_found | `Unavailable | `Malformed | `Not_supported ]
 

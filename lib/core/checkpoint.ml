@@ -1,27 +1,27 @@
 type grant = [ `Owner [@key 1] | `Writer [@key 2] | `Reader [@key 3] ] * Box.public_key
-[@@protobuf]
+[@@deriving protobuf]
 
 type shadow = {
   updater     : Box.public_key                [@key 1];
   grants      : grant list                    [@key 2];
   shadow_root : Graph.shadow Chunk.capability [@key 3];
-} [@@protobuf]
+} [@@deriving protobuf]
 
 type shiny = {
   shiny_root  : Directory.directory Chunk.capability [@key 1];
-} [@@protobuf]
+} [@@deriving protobuf]
 
 type keyring = {
   shadow_key  : Secret_box.key        [@key 1];
   shiny_key   : Secret_box.key option [@key 2];
-} [@@protobuf]
+} [@@deriving protobuf]
 
 type checkpoint = {
   ring_key    : Box.public_key        [@key 1];
   keyrings    : keyring Box.box list  [@key 2];
   shadow      : shadow Secret_box.box [@key 3];
   shiny       : shiny Secret_box.box  [@key 4];
-} [@@protobuf]
+} [@@deriving protobuf]
 
 let create ~convergence ~client ~owner:owner_public ~server:server_public shiny_root =
   match%lwt Graph.directory_shadow ~convergence ~client shiny_root with

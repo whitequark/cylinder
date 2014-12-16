@@ -3,13 +3,13 @@ let (>>=) = Lwt.(>>=)
 type content =
 [ `File       [@key 1] of File.file Chunk.capability
 | `Directory  [@key 2] of directory Chunk.capability
-] [@@protobuf]
+] [@@deriving protobuf]
 and entry = {
   name    : string  [@key 1];
   content : content [@key 2];
-} [@@protobuf]
+} [@@deriving protobuf]
 and directory = entry list
-[@@protobuf]
+[@@deriving protobuf]
 
 exception Error of [ `Unavailable | `Not_supported | `Not_empty | `Malformed | `Not_found ]
 
@@ -28,13 +28,11 @@ let create_from_path ~convergence ~client path =
         end
       | _, { Lwt_unix.st_kind = Lwt_unix.S_REG } ->
         let%lwt fd = Lwt_unix.openfile full_name [Lwt_unix.O_RDONLY] 0 in
-        begin try%lwt
+        Lwt.finalize (fun () ->
           match%lwt File.create_from_unix_fd ~convergence ~client fd with
           | (`Unavailable | `Not_supported) as err -> [%lwt raise (Error err)]
-          | `Ok capa -> Lwt.return [{ name; content = `File capa }]
-        with [%finally] ->
-          Lwt_unix.close fd
-        end
+          | `Ok capa -> Lwt.return [{ name; content = `File capa }])
+          (fun () -> Lwt_unix.close fd)
       | _ -> Lwt.return []) |>
     Lwt_stream.to_list >>= fun dir ->
     Chunk.store_data ~encoder:directory_to_protobuf ~convergence client dir
@@ -58,13 +56,11 @@ let retrieve_to_path ~client dir_capa path =
         match content with
         | `File file_capa ->
           let%lwt fd = Lwt_unix.openfile full_name Lwt_unix.[O_WRONLY;O_CREAT] 0o644 in
-          begin try%lwt
+          Lwt.finalize (fun () ->
             match%lwt File.retrieve_to_unix_fd ~client file_capa fd with
             | `Ok -> Lwt.return_unit
-            | (`Not_found | `Unavailable | `Malformed) as err -> [%lwt raise (Error err)]
-          with [%finally] ->
-            Lwt_unix.close fd
-          end
+            | (`Not_found | `Unavailable | `Malformed) as err -> [%lwt raise (Error err)])
+            (fun () -> Lwt_unix.close fd)
         | `Directory dir_capa ->
           Lwt_unix.mkdir full_name 0o755 >>
           handle_path dir_capa full_name)

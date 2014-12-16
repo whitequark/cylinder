@@ -5,7 +5,7 @@ let max_size = 10_000_000
 
 type algorithm =
 [ `SHA512_XSalsa20_Poly1305 [@key 1] ]
-[@@protobuf]
+[@@deriving protobuf]
 
 let algorithm_to_string algo =
   match algo with
@@ -24,7 +24,7 @@ and handle = {
   algorithm : algorithm     [@key 2] [@bare];
   key       : bytes         [@key 3];
 }
-[@@protobuf]
+[@@deriving protobuf]
 
 let capability_from_protobuf_ decoder =
   capability_from_protobuf (fun _ -> assert false) decoder

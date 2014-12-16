@@ -20,7 +20,7 @@ Library "cylinder"
   Pack:             true
   BuildDepends:     threads, lwt, lwt.unix, lwt.preemptive, lwt.ppx,
                     extlib, extunix (>= 0.1.1),
-                    ZMQ (>= 4.0), lwt-zmq, protobuf, sodium,
+                    ZMQ (>= 4.0), lwt-zmq, ppx_deriving_protobuf, sodium,
                     yojson, cmdliner,
                     fileutils, inotify (>= 2.0), inotify.lwt
 
@@ -30,19 +30,11 @@ Executable "cylinder-cli"
   BuildDepends:     cylinder
   CompiledObject:   best
 
-Executable "cylinder_top"
-  Path:             lib
-  MainIs:           cylinder_top.ml
-  Install:          false
-  BuildDepends:     cylinder, compiler-libs.toplevel, utop
-  CompiledObject:   byte
-  ByteOpt:          -linkall -predicates create_toploop
-
 Executable "test_cylinder"
   Path:             lib_test
   MainIs:           test_cylinder.ml
   Install:          false
-  BuildDepends:     oUnit (>= 2.0), cylinder, lwt.ppx, protobuf
+  BuildDepends:     oUnit (>= 2.0), cylinder, lwt.ppx, ppx_deriving_protobuf
   CompiledObject:   best
 
 Test "test_cylinder"
